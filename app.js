@@ -558,19 +558,6 @@ function updateAuthButton(user) {
   }
 }
 
-// ใน auth.onAuthStateChanged ให้เรียก updateAuthButton
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    currentUser = user;
-    updateAuthButton(user);
-    // ... ที่เหลือ
-  } else {
-    currentUser = null;
-    updateAuthButton(null);
-    // ... ที่เหลือ
-  }
-});
-
 /* ============================================
    PWA SERVICE WORKER
    ============================================ */
