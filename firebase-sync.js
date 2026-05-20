@@ -194,6 +194,18 @@ function loginWithGoogle() {
 }
 
 function logoutFromFirebase() {
+  // 🔥 ล้าง localStorage ด้วย
+  const keysToClear = [
+    'v1_coffee_license',
+    'v1_coffee_license_override',
+    'current_session',
+    'firebase_first_sync_done'
+  ];
+  
+  for (let i = 0; i < keysToClear.length; i++) {
+    localStorage.removeItem(keysToClear[i]);
+  }
+  
   window.auth.signOut()
     .then(() => {
       if (typeof toast === 'function') {
