@@ -207,6 +207,18 @@ function logoutStaff() {
     
     ST.remove('current_session');
     
+    // 🔥 เพิ่ม: เคลียร์ License ด้วย
+    localStorage.removeItem('v1_coffee_license');
+    localStorage.removeItem('v1_coffee_license_override');
+    
+    if (typeof LicenseManager !== 'undefined') {
+      LicenseManager.tier = 'free';
+      LicenseManager.currentKey = null;
+      if (typeof LicenseManager.afterLicenseChange === 'function') {
+        LicenseManager.afterLicenseChange();
+      }
+    }
+    
     updateLoginUI();
     updateSidebarByStaffPermission();
     
@@ -216,7 +228,7 @@ function logoutStaff() {
       renderPOSView();
     }
     
-    toast(name + ' ออกจากระบบแล้ว', 'info');
+    toast(name + ' ออกจากระบบแล้ว (กลับสู่ Free Edition)', 'info');
   });
 }
 
@@ -671,7 +683,6 @@ function applyFeatureToggle() {
   }
 }
 /* อัปเดต Sidebar ตามสิทธิ์พนักงาน */
-/* อัปเดต Sidebar ตามสิทธิ์พนักงาน + License */
 function updateSidebarByStaffPermission() {
   console.log('[updateSidebarByStaffPermission] Called, currentStaff:', APP.currentStaff);
   
@@ -679,19 +690,20 @@ function updateSidebarByStaffPermission() {
   var recentStrip = $('#recentStrip');
   var holdStrip = $('#holdOrdersStrip');
   
-  /* ตรวจสอบ license tier ปัจจุบัน */
+  // 🔥 ตรวจสอบ license tier ปัจจุบัน (จาก LicenseManager)
   var licenseTier = 'free';
-  if (typeof FeatureManager !== 'undefined') {
-    licenseTier = FeatureManager.getLicenseTier();
-  } else if (typeof LicenseManager !== 'undefined') {
+  if (typeof LicenseManager !== 'undefined') {
     licenseTier = LicenseManager.getTier();
   }
   
-  /* ถ้าไม่มี staff login → ซ่อน sidebar ทั้งหมด */
+  // 🔥 ถ้าไม่มี staff login → แสดงเมนูตาม License เท่านั้น (ไม่ใช่ทุกอย่าง)
   if (!APP.currentStaff) {
     for (var i = 0; i < sideItems.length; i++) {
-      sideItems[i].style.display = 'none';
+      var view = sideItems[i].getAttribute('data-view');
+      var show = isViewAllowedByLicense(view, licenseTier);
+      sideItems[i].style.display = show ? '' : 'none';
     }
+    
     if (recentStrip) recentStrip.style.display = 'none';
     if (holdStrip) holdStrip.style.display = 'none';
     
@@ -702,23 +714,18 @@ function updateSidebarByStaffPermission() {
     return;
   }
   
-  /* มี staff login → แสดงตามสิทธิ์ + license */
+  // 🔥 มี staff login → แสดงตามสิทธิ์ + license
   for (var i = 0; i < sideItems.length; i++) {
     var view = sideItems[i].getAttribute('data-view');
     var canAccess = false;
     
-    /* 1. ตรวจสอบว่า license อนุญาตให้แสดง view นี้หรือไม่ */
     var licenseAllowed = isViewAllowedByLicense(view, licenseTier);
     
     if (!licenseAllowed) {
       canAccess = false;
-    } 
-    /* 2. Manager: เข้าถึงได้เฉพาะ view ที่ license อนุญาต */
-    else if (APP.currentStaff.role === 'manager') {
-      canAccess = licenseAllowed;  /* manager ก็ต้องอยู่ใต้ license */
-    } 
-    /* 3. cashier/barista: เห็นแค่ POS และ Orders ที่ license อนุญาต */
-    else {
+    } else if (APP.currentStaff.role === 'manager') {
+      canAccess = licenseAllowed;
+    } else {
       var allowedViews = ['pos', 'orders'];
       canAccess = (allowedViews.indexOf(view) !== -1) && licenseAllowed;
     }
@@ -726,11 +733,9 @@ function updateSidebarByStaffPermission() {
     sideItems[i].style.display = canAccess ? '' : 'none';
   }
   
-  /* แสดง recent orders และ hold orders */
   if (recentStrip) recentStrip.style.display = '';
   if (holdStrip) holdStrip.style.display = '';
   
-  /* แสดงปุ่ม Logout ซ่อนปุ่ม Login */
   var loginBtn = $('#loginBtn');
   var logoutBtn = $('#logoutBtn');
   if (loginBtn) loginBtn.style.display = 'none';
