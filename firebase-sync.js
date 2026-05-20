@@ -2,8 +2,13 @@
    FIREBASE SYNC - Multi-tenant
    ============================================ */
 
-let currentUser = null;
-let userDb = null;
+// ตรวจสอบว่าประกาศไปแล้วหรือยัง
+if (typeof window.currentUser === 'undefined') {
+  window.currentUser = null;
+}
+if (typeof window.userDb === 'undefined') {
+  window.userDb = null;
+}
 
 // รอให้ Firebase โหลดเสร็จ
 document.addEventListener('DOMContentLoaded', function() {
@@ -13,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initFirebase() {
-  // Firebase config (ของคุณ)
   const firebaseConfig = {
     apiKey: "AIzaSyAO3hKQQJTmEt79XbgIf7u0o9P6pJjG7TM",
     authDomain: "coffee-pos-saas-7f310.firebaseapp.com",
@@ -28,14 +32,13 @@ function initFirebase() {
     firebase.initializeApp(firebaseConfig);
   }
   
-  const auth = firebase.auth();
+  window.auth = firebase.auth();
   const db = firebase.firestore();
   
-  // ตรวจสอบสถานะ Login
-  auth.onAuthStateChanged(async (user) => {
+  window.auth.onAuthStateChanged(async (user) => {
     if (user) {
-      currentUser = user;
-      userDb = db.collection('users').doc(user.uid);
+      window.currentUser = user;
+      window.userDb = db.collection('users').doc(user.uid);
       console.log('[Firebase] Logged in:', user.email);
       
       await loadUserLicense(user.email);
@@ -46,8 +49,8 @@ function initFirebase() {
         toast('✅ เข้าสู่ระบบสำเร็จ', 'success');
       }
     } else {
-      currentUser = null;
-      userDb = null;
+      window.currentUser = null;
+      window.userDb = null;
       updateUIForLogout();
     }
   });
@@ -93,12 +96,12 @@ async function loadUserLicense(email) {
 }
 
 async function loadUserData() {
-  if (!userDb) return;
+  if (!window.userDb) return;
   
   try {
-    const doc = await userDb.get();
+    const doc = await window.userDb.get();
     if (!doc.exists) {
-      await userDb.set({
+      await window.userDb.set({
         shopName: 'ร้านของฉัน',
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString()
@@ -161,11 +164,11 @@ function loginWithGoogle() {
     return;
   }
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider);
+  window.auth.signInWithPopup(provider);
 }
 
 function logoutFromFirebase() {
-  firebase.auth().signOut()
+  window.auth.signOut()
     .then(() => {
       if (typeof toast === 'function') {
         toast('ออกจากระบบแล้ว', 'info');
@@ -180,9 +183,8 @@ function logoutFromFirebase() {
     });
 }
 
-// 🔥 เพิ่มฟังก์ชัน handleAuth สำหรับปุ่มใน sidebar
 function handleAuth() {
-  if (currentUser) {
+  if (window.currentUser) {
     logoutFromFirebase();
   } else {
     loginWithGoogle();
