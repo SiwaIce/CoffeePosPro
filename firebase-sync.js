@@ -100,13 +100,39 @@ async function loadUserData() {
   
   try {
     const doc = await window.userDb.get();
-    if (!doc.exists) {
+    const isFirstSync = localStorage.getItem('firebase_first_sync_done');
+    
+    if (!doc.exists && !isFirstSync) {
+      // 🔥 เฉพาะครั้งแรกที่ Login และไม่มีข้อมูลใน Firebase
+      console.log('[Firebase] First time sync, checking local data...');
+      
+      // ถ้ามีออเดอร์ค้างใน Local ให้ถามก่อนล้าง
+      const holdOrders = localStorage.getItem('v1_coffee_hold_orders');
+      if (holdOrders && holdOrders !== '[]') {
+        const confirmClear = confirm('พบออเดอร์ค้างในเครื่อง ต้องการล้างและเริ่มต้นใหม่ หรือยกเลิก?');
+        if (!confirmClear) {
+          console.log('[Firebase] User cancelled clear');
+          return;
+        }
+      }
+      
+      // บันทึกว่าทำการล้างครั้งแรกแล้ว
+      localStorage.setItem('firebase_first_sync_done', 'true');
+      
+      // สร้างข้อมูลเริ่มต้นใน Firebase
       await window.userDb.set({
         shopName: 'ร้านของฉัน',
         createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
+        lastLogin: new Date().toISOString(),
+        syncedAt: new Date().toISOString()
       });
-    } else {
+      
+      if (typeof toast === 'function') {
+        toast('✅ พร้อมใช้งาน', 'success');
+      }
+      
+    } else if (doc.exists) {
+      // มีข้อมูลอยู่แล้ว → โหลดจาก Firebase (ไม่ล้างอะไร)
       const data = doc.data();
       if (data.settings && typeof ST !== 'undefined') {
         ST.saveConfig(data.settings);
@@ -114,12 +140,12 @@ async function loadUserData() {
       if (data.shopName && typeof applyShopName === 'function') {
         applyShopName();
       }
+      console.log('[Firebase] Loaded existing user data');
     }
   } catch(e) {
     console.log('[Firebase] loadUserData error:', e);
   }
 }
-
 function updateUIForLogin(user) {
   const loginBtn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
