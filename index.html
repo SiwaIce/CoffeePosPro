@@ -16,6 +16,31 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
+<script>
+    // เคลียร์ license ถ้ายังไม่ Login
+    (function() {
+      try {
+        // ตรวจสอบว่า Firebase โหลดหรือยัง
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+          // ถ้ายังไม่มี user login ให้เคลียร์ localStorage ที่เกี่ยวกับ license
+          if (!firebase.auth().currentUser) {
+            localStorage.removeItem('v1_coffee_license');
+            localStorage.removeItem('v1_coffee_license_override');
+            localStorage.removeItem('current_session');
+            console.log('[Init] Cleared license (no user)');
+          }
+        } else {
+          // Firebase ยังไม่โหลด ก็ให้เคลียร์ทิ้ง
+          localStorage.removeItem('v1_coffee_license');
+          localStorage.removeItem('v1_coffee_license_override');
+          localStorage.removeItem('current_session');
+        }
+      } catch(e) {
+        console.log('[Init] Error clearing license:', e);
+      }
+    })();
+  </script>
+
 <!-- Firebase Config (จะเอาค่าไปใส่ทีหลัง) -->
 <script>
   const firebaseConfig = {
