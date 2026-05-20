@@ -35,26 +35,37 @@ function initFirebase() {
   window.auth = firebase.auth();
   const db = firebase.firestore();
   
-  window.auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      window.currentUser = user;
-      window.userDb = db.collection('users').doc(user.uid);
-      console.log('[Firebase] Logged in:', user.email);
-      
-      await loadUserLicense(user.email);
-      await loadUserData();
-      updateUIForLogin(user);
-      
-      if (typeof toast === 'function') {
-        toast('✅ เข้าสู่ระบบสำเร็จ', 'success');
-      }
-    } else {
-      window.currentUser = null;
-      window.userDb = null;
-      updateUIForLogout();
+window.auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    window.currentUser = user;
+    window.userDb = db.collection('users').doc(user.uid);
+    console.log('[Firebase] Logged in:', user.email);
+    
+    // 🔥 โหลด License (จะได้ tier ตามอีเมล)
+    await loadUserLicense(user.email);
+    
+    await loadUserData();
+    updateUIForLogin(user);
+    
+    if (typeof toast === 'function') {
+      toast('✅ เข้าสู่ระบบสำเร็จ', 'success');
     }
-  });
-}
+  } else {
+    window.currentUser = null;
+    window.userDb = null;
+    
+    // 🔥 logout แล้วกลับเป็น Free
+    if (typeof LicenseManager !== 'undefined') {
+      LicenseManager.tier = 'free';
+      LicenseManager.currentKey = null;
+      if (typeof LicenseManager.afterLicenseChange === 'function') {
+        LicenseManager.afterLicenseChange();
+      }
+    }
+    
+    updateUIForLogout();
+  }
+});
 
 async function loadUserLicense(email) {
   if (typeof LicenseManager === 'undefined') return;
@@ -69,12 +80,17 @@ async function loadUserLicense(email) {
     
     if (!licenseQuery.empty) {
       const license = licenseQuery.docs[0].data();
-      if (typeof LicenseManager.setTier === 'function') {
-        LicenseManager.setTier(license.tier);
-      }
-      if (typeof LicenseManager.setKey === 'function') {
-        LicenseManager.setKey(license.key);
-      }
+      
+      // 🔥 ตั้งค่า License
+      LicenseManager.tier = license.tier;
+      LicenseManager.currentKey = license.key;
+      
+      // บันทึกใน localStorage
+      localStorage.setItem('v1_coffee_license', JSON.stringify({
+        key: license.key,
+        tier: license.tier,
+        activatedAt: Date.now()
+      }));
       
       if (license.expiresAt && new Date(license.expiresAt) < new Date()) {
         if (typeof toast === 'function') {
@@ -86,15 +102,25 @@ async function loadUserLicense(email) {
         }
       }
     } else {
-      if (typeof LicenseManager.setTier === 'function') {
-        LicenseManager.setTier('free');
+      // 🔥 ไม่มี License → Free
+      LicenseManager.tier = 'free';
+      LicenseManager.currentKey = null;
+      localStorage.removeItem('v1_coffee_license');
+      
+      if (typeof toast === 'function') {
+        toast('🆓 ใช้เวอร์ชัน Free', 'info');
       }
     }
+    
+    // 🔥 อัปเดต UI ตาม License
+    if (typeof LicenseManager.afterLicenseChange === 'function') {
+      LicenseManager.afterLicenseChange();
+    }
+    
   } catch(e) {
     console.log('[Firebase] loadUserLicense error:', e);
   }
 }
-
 async function loadUserData() {
   if (!window.userDb) return;
   
@@ -193,8 +219,9 @@ function loginWithGoogle() {
   window.auth.signInWithPopup(provider);
 }
 
+// ฟังก์ชัน Logout
 function logoutFromFirebase() {
-  // 🔥 ล้าง localStorage ด้วย
+  // 🔥 ล้าง localStorage ที่เกี่ยวกับ License ทั้งหมด
   const keysToClear = [
     'v1_coffee_license',
     'v1_coffee_license_override',
@@ -206,18 +233,31 @@ function logoutFromFirebase() {
     localStorage.removeItem(keysToClear[i]);
   }
   
+  // 🔥 รีเซ็ต LicenseManager เป็น Free
+  if (typeof LicenseManager !== 'undefined') {
+    LicenseManager.tier = 'free';
+    LicenseManager.currentKey = null;
+    if (typeof LicenseManager.afterLicenseChange === 'function') {
+      LicenseManager.afterLicenseChange();
+    }
+  }
+  
+  // 🔥 รีเซ็ต APP.currentStaff
+  if (typeof APP !== 'undefined') {
+    APP.currentStaff = null;
+  }
+  
+  // Sign out from Firebase
   window.auth.signOut()
     .then(() => {
       if (typeof toast === 'function') {
-        toast('ออกจากระบบแล้ว', 'info');
-      }
-      if (typeof APP !== 'undefined') {
-        APP.currentStaff = null;
+        toast('ออกจากระบบแล้ว กลับสู่ Free Edition', 'info');
       }
       location.reload();
     })
     .catch((error) => {
       console.error(error);
+      location.reload();
     });
 }
 
