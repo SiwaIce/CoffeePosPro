@@ -400,6 +400,75 @@ var LicenseManager = {
     return 'PRO-' + parts.join('-');
   }
 };
+  // 🔥 เพิ่มฟังก์ชัน forceTier
+  forceTier: function(tier, key) {
+    this.tier = tier;
+    this.currentKey = key || ('FORCED-' + tier.toUpperCase());
+    
+    ST.setObj('license_override', {
+      enabled: true,
+      tier: tier,
+      key: this.currentKey,
+      setAt: Date.now(),
+      setBy: 'super_admin'
+    });
+    
+    ST.setObj('license', {
+      key: this.currentKey,
+      tier: tier,
+      activatedAt: Date.now(),
+      verifiedBy: 'override'
+    });
+    
+    toast('🔧 บังคับ License เป็น ' + tier.toUpperCase(), 'warning');
+    
+    this.afterLicenseChange();
+  },
+  
+  // 🔥 เพิ่มฟังก์ชัน resetToFree
+  resetToFree: function() {
+    this.tier = 'free';
+    this.currentKey = null;
+    
+    ST.remove('license');
+    ST.remove('license_override');
+    
+    localStorage.removeItem('current_session');
+    if (typeof APP !== 'undefined') {
+      APP.currentStaff = null;
+    }
+    
+    toast('🆓 รีเซ็ตเป็น Free Edition', 'info');
+    
+    this.afterLicenseChange();
+  },
+  
+  // 🔥 เพิ่มฟังก์ชัน afterLicenseChange (ถ้ายังไม่มี)
+  afterLicenseChange: function() {
+    console.log('[LicenseManager] License changed to:', this.tier);
+    
+    if (typeof FeatureManager !== 'undefined') {
+      FeatureManager.clearOverrides();
+      FeatureManager.applyToUI();
+    }
+    
+    if (typeof updateSidebarByStaffPermission === 'function') {
+      updateSidebarByStaffPermission();
+    }
+    if (typeof updateSidebarVisibility === 'function') {
+      updateSidebarVisibility();
+    }
+    
+    if (typeof APP !== 'undefined' && APP) {
+      if (APP.currentView === 'admin' && typeof renderAdminView === 'function') {
+        renderAdminView();
+      }
+      if (APP.currentView === 'pos' && typeof renderPOSView === 'function') {
+        renderPOSView();
+      }
+    }
+  }
+};
 
 /* ============================================
    SUPER ADMIN: LICENSE OVERRIDE
