@@ -184,7 +184,7 @@ function renderLicenseTab() {
   html += '<div class="pricing-header" style="padding:20px 16px;text-align:center;border-bottom:1px solid var(--border);">';
   html += '<div class="pricing-icon" style="font-size:40px;">📦</div>';
   html += '<div class="pricing-tier" style="font-size:20px;font-weight:800;margin-top:8px;">Standard</div>';
-  html += '<div class="pricing-price" style="font-size:28px;font-weight:800;color:var(--info);margin-top:8px;">--</div>';
+  html += '<div class="pricing-price" style="font-size:28px;font-weight:800;color:var(--info);margin-top:8px;">1,990</div>';
   html += '<div class="pricing-period" style="font-size:12px;color:var(--text-muted);">บาท / ครั้งเดียว</div>';
   html += '</div>';
   html += '<div class="pricing-body" style="padding:16px;">';
@@ -212,7 +212,7 @@ function renderLicenseTab() {
   html += '<div class="pricing-header" style="padding:20px 16px;text-align:center;border-bottom:1px solid var(--border);">';
   html += '<div class="pricing-icon" style="font-size:40px;">⭐</div>';
   html += '<div class="pricing-tier" style="font-size:20px;font-weight:800;margin-top:8px;color:var(--accent);">Pro</div>';
-  html += '<div class="pricing-price" style="font-size:28px;font-weight:800;color:var(--accent);margin-top:8px;">--</div>';
+  html += '<div class="pricing-price" style="font-size:28px;font-weight:800;color:var(--accent);margin-top:8px;">4,990</div>';
   html += '<div class="pricing-period" style="font-size:12px;color:var(--text-muted);">บาท / ปี</div>';
   html += '</div>';
   html += '<div class="pricing-body" style="padding:16px;">';
