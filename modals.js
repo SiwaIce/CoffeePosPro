@@ -2102,4 +2102,55 @@ function closeMForce() {
   }
   _modalOpen = false;
 }
+/* ============================================
+   MODAL TOUCH HANDLER - สำหรับ iPad/Mobile
+   ============================================ */
+
+function closeModalOnTouch(e) {
+  var overlay = document.getElementById('modalOverlay');
+  
+  // ตรวจสอบว่าคลิกที่ overlay และ modal เปิดอยู่
+  if (e.target === overlay && _modalOpen) {
+    e.preventDefault();
+    
+    // delay เล็กน้อยเพื่อให้ UI รู้สึก smooth
+    setTimeout(function() {
+      if (!_modalOpen) return;
+      
+      var modalBody = document.getElementById('modalBody');
+      var hasUnsavedData = false;
+      
+      if (modalBody) {
+        var inputs = modalBody.querySelectorAll('input:not([type=hidden]), select, textarea');
+        for (var i = 0; i < inputs.length; i++) {
+          if (inputs[i].value && inputs[i].value.trim() !== '') {
+            hasUnsavedData = true;
+            break;
+          }
+        }
+      }
+      
+      if (hasUnsavedData) {
+        if (confirm('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?')) {
+          closeMForce();
+        }
+      } else {
+        closeMForce();
+      }
+    }, 50);
+  }
+}
+
+/* เพิ่ม event listeners (ถ้ายังไม่มี) */
+(function() {
+  if (window._modalTouchListenerAdded) return;
+  window._modalTouchListenerAdded = true;
+  
+  // ทั้ง click และ touchstart
+  document.addEventListener('click', closeModalOnTouch);
+  document.addEventListener('touchstart', closeModalOnTouch);
+  
+  console.log('[Modal] Touch handlers added for iPad');
+})();
+
 console.log('[modals.js] loaded');

@@ -587,20 +587,137 @@ function registerSW() {
    SEED DATA CHECK
    ============================================ */
 function checkSeedData() {
-  if (!ST.hasSampleData()) {
-    /* First time — show welcome & seed */
-    var html = '';
-    html += '<div class="text-center">';
-    html += '<div style="font-size:64px;margin-bottom:16px;">☕</div>';
-    html += '<div class="fw-800 fs-xl mb-8">ยินดีต้อนรับ!</div>';
-    html += '<div class="text-muted mb-20">เริ่มต้นใช้งาน Coffee POS<br>ต้องการเพิ่มเมนูตัวอย่างไหม?</div>';
-    html += '</div>';
+  // 🔥 ถ้าไม่มีเมนูและไม่มีพนักงาน → แสดงหน้าตั้งค่าครั้งแรก
+  var hasMenu = ST.getMenu().length > 0;
+  var hasStaff = ST.getStaff().length > 0;
+  
+  if (!hasMenu && !hasStaff) {
+    showFirstTimeSetup();
+  }
+}
 
-    var footer = '';
-    footer += '<button class="btn btn-secondary" onclick="closeMForce(); nav(\'menu\');">ข้าม — เพิ่มเอง</button>';
-    footer += '<button class="btn btn-primary" onclick="doSeedData()">✅ เพิ่มเมนูตัวอย่าง</button>';
+function showFirstTimeSetup() {
+  var html = '';
+  html += '<div class="text-center mb-16">';
+  html += '<div style="font-size:64px;margin-bottom:16px;">☕</div>';
+  html += '<div class="fw-800 fs-xl mb-8">ยินดีต้อนรับ!</div>';
+  html += '<div class="text-muted mb-20">กรุณาตั้งค่าร้านค้าของคุณ</div>';
+  html += '</div>';
+  
+  html += '<div class="form-group">';
+  html += '<label class="form-label">ชื่อร้าน</label>';
+  html += '<input type="text" id="shopNameSetup" placeholder="เช่น ร้านกาแฟสมชาย" class="form-control">';
+  html += '</div>';
+  
+  html += '<div class="form-group">';
+  html += '<label class="form-label">ชื่อผู้ใช้ (แอดมิน)</label>';
+  html += '<input type="text" id="adminName" placeholder="เช่น สมชาย" class="form-control">';
+  html += '</div>';
+  
+  html += '<div class="form-group">';
+  html += '<label class="form-label">PIN 4 หลัก (สำหรับเข้าสู่ระบบ)</label>';
+  html += '<input type="password" id="adminPin" placeholder="0000" maxlength="4" class="form-control" style="font-size:24px;text-align:center;letter-spacing:8px;">';
+  html += '</div>';
+  
+  html += '<div class="form-group">';
+  html += '<label class="form-label">ยืนยัน PIN</label>';
+  html += '<input type="password" id="confirmPin" placeholder="0000" maxlength="4" class="form-control" style="font-size:24px;text-align:center;letter-spacing:8px;">';
+  html += '</div>';
+  
+  html += '<div class="form-group">';
+  html += '<label class="toggle-wrap" onclick="toggleToggle(this)">';
+  html += '<div class="toggle" id="seedSampleData"></div>';
+  html += '<span>เพิ่มเมนูตัวอย่าง (แนะนำสำหรับมือใหม่)</span>';
+  html += '</label>';
+  html += '</div>';
+  
+  var footer = '';
+  footer += '<button class="btn btn-primary btn-lg btn-block" onclick="completeFirstTimeSetup()">✅ เริ่มต้นใช้งาน</button>';
+  
+  openModal('🚀 ตั้งค่าร้านครั้งแรก', html, footer);
+}
 
-    openModal('🚀 เริ่มต้นใช้งาน', html, footer);
+function completeFirstTimeSetup() {
+  var shopName = ($('shopNameSetup') || {}).value.trim();
+  var adminName = ($('adminName') || {}).value.trim();
+  var adminPin = ($('adminPin') || {}).value.trim();
+  var confirmPin = ($('confirmPin') || {}).value.trim();
+  var seedSample = hasClass($('seedSampleData'), 'on');
+  
+  if (!shopName) {
+    toast('กรุณาใส่ชื่อร้าน', 'error');
+    return;
+  }
+  
+  if (!adminName) {
+    toast('กรุณาใส่ชื่อผู้ใช้', 'error');
+    return;
+  }
+  
+  if (!adminPin || adminPin.length !== 4) {
+    toast('PIN ต้อง 4 หลัก', 'error');
+    return;
+  }
+  
+  if (adminPin !== confirmPin) {
+    toast('PIN ไม่ตรงกัน', 'error');
+    return;
+  }
+  
+  // 1. บันทึกชื่อร้าน
+  var cfg = ST.getConfig();
+  cfg.shopName = shopName;
+  ST.saveConfig(cfg);
+  applyShopName();
+  
+  // 2. สร้างพนักงานคนแรก (Admin)
+  ST.addStaff({
+    id: genId('staff'),
+    name: adminName,
+    pin: adminPin,
+    role: 'manager',
+    active: true,
+    isDefault: true
+  });
+  
+  // 3. เพิ่มเมนูตัวอย่าง (ถ้าเลือก)
+  if (seedSample) {
+    ST.seedSampleData();
+  } else {
+    // ถ้าไม่เลือก ให้สร้างหมวดหมู่พื้นฐาน
+    ensureBasicCategories();
+  }
+  
+  closeMForce();
+  
+  toast('✅ ตั้งค่าร้านสำเร็จ! กรุณาเข้าสู่ระบบ', 'success');
+  
+  // แสดงหน้า Login
+  setTimeout(function() {
+    showPinLogin();
+  }, 500);
+}
+
+function ensureBasicCategories() {
+  // สร้างหมวดหมู่พื้นฐาน
+  var cats = ST.getCategories();
+  if (!cats || cats.length === 0) {
+    ST.saveCategories(ST._defaultCategories());
+  }
+  
+  var sizes = ST.getSizes();
+  if (!sizes || sizes.length === 0) {
+    ST.saveSizes(ST._defaultSizes());
+  }
+  
+  var drinkTypes = ST.getDrinkTypes();
+  if (!drinkTypes || drinkTypes.length === 0) {
+    ST.saveDrinkTypes(ST._defaultDrinkTypes());
+  }
+  
+  var sweetLevels = ST.getSweetLevels();
+  if (!sweetLevels || sweetLevels.length === 0) {
+    ST.saveSweetLevels(ST._defaultSweetLevels());
   }
 }
 

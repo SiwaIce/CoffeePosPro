@@ -755,6 +755,7 @@ function showPinLogin() {
   openModal('🔐 เข้าสู่ระบบ', html, '<button class="btn btn-secondary" onclick="closeMForce()">ปิด</button>');
 }
 
+// ปรับปรุง pinInput ให้ทำงานกับ Touch
 function pinInput(num) {
   var el = $('pinValue');
   if (!el || el.value.length >= 4) return;
@@ -762,6 +763,15 @@ function pinInput(num) {
   updatePinDots(el.value.length);
   vibrate(20);
   if (el.value.length === 4) setTimeout(pinSubmit, 200);
+}
+
+// เพิ่ม visual feedback สำหรับ Touch
+function pinKeyTouch(el, num) {
+  el.style.transform = 'scale(0.92)';
+  setTimeout(function() {
+    el.style.transform = '';
+  }, 100);
+  pinInput(num);
 }
 
 function pinClear() {

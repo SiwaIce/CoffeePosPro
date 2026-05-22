@@ -2353,3 +2353,90 @@ input:focus, select:focus, textarea:focus {
     flex: none;
   }
 }
+/* ============================================
+   iPad / Tablet ปรับปรุง
+   ============================================ */
+
+/* iPad และ Tablet ทั่วไป */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* ปรับขนาดปุ่ม PIN */
+  .pin-key {
+    height: 70px;
+    font-size: 28px;
+  }
+  
+  /* ปรับขนาดปุ่มทั่วไป */
+  .btn {
+    padding: 12px 20px;
+    font-size: 16px;
+  }
+  
+  /* ปรับขนาดเมนู */
+  .menu-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  
+  /* ปรับขนาด modal */
+  .modal-box {
+    width: 90%;
+    max-width: 500px;
+  }
+}
+
+/* iPad แนวตั้ง */
+@media (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .pos-cart {
+    width: 300px;
+  }
+}
+
+/* iPad แนวนอน */
+@media (min-width: 1024px) and (max-width: 1194px) and (orientation: landscape) {
+  .menu-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* สำหรับอุปกรณ์ที่ใช้ทัช (iPad, มือถือ) */
+@media (hover: none) and (pointer: coarse) {
+  /* ลบ hover effect ที่อาจค้าง */
+  .btn:hover, .menu-item:hover, .nav-item:hover {
+    transform: none;
+  }
+  
+  /* เพิ่ม active state แทน */
+  .btn:active, .menu-item:active, .nav-item:active {
+    transform: scale(0.96);
+    transition: transform 0.05s ease;
+  }
+  
+  /* ปรับขนาดพื้นที่แตะให้ใหญ่ขึ้น */
+  .nav-item, .bnav-item, .cat-tab, .menu-item, .btn, .pin-key {
+    min-height: 48px;
+  }
+  
+  /* ป้องกัน highlight ตอนแตะ */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* ป้องกัน keyboard เด้งขึ้นบัง */
+input, select, textarea {
+  font-size: 16px !important; /* ป้องกัน zoom บน iOS */
+}
+
+/* ปรับ PIN Pad สำหรับมือถือ/แท็บเล็ต */
+.pin-pad {
+  gap: 12px;
+}
+
+.pin-key {
+  min-width: 70px;
+  min-height: 70px;
+}
