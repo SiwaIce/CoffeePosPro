@@ -107,14 +107,16 @@ async function loadUserLicense(email) {
       const license = doc.data();
       
       // 🔥 อัปเดต usedCount +1
-      const newUsedCount = (license.usedCount || 0) + 1;
+      const currentCount = license.usedCount || 0;
+      const newCount = currentCount + 1;
+      
       await doc.ref.update({
-        usedCount: newUsedCount,
+        usedCount: newCount,
         lastUsedAt: new Date().toISOString(),
         lastUsedBy: window.location.hostname
       });
       
-      console.log(`[Firebase] License used count: ${newUsedCount}`);
+      console.log(`[License] Used count: ${currentCount} → ${newCount}`);
       
       localStorage.setItem('v1_coffee_license', JSON.stringify({
         key: license.key,
@@ -129,6 +131,7 @@ async function loadUserLicense(email) {
         LicenseManager.afterLicenseChange();
       }
       
+      // ไม่ต้อง toast ซ้ำ
       console.log('[Firebase] License loaded:', license.tier);
       
     } else {
@@ -147,7 +150,6 @@ async function loadUserLicense(email) {
     console.log('[Firebase] loadUserLicense error:', e);
   }
 }
-
 async function loadUserData() {
   if (!window.userDb) return;
   
