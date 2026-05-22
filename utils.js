@@ -849,5 +849,41 @@ function getStockUsageByDate(logs, date, type) {
   if (type === 'receive') return receive;
   return { usage: usage, receive: receive };
 }
+// เพิ่ม ripple effect ให้กับ element
+function addRippleEffect(el) {
+  if (!el) return;
+  el.classList.add('ripple');
+  
+  el.addEventListener('click', function(e) {
+    var ripple = this.querySelector('.ripple-effect');
+    if (!ripple) {
+      ripple = document.createElement('span');
+      ripple.classList.add('ripple-effect');
+      this.appendChild(ripple);
+    }
+    
+    var rect = this.getBoundingClientRect();
+    var size = Math.max(rect.width, rect.height);
+    var x = e.clientX - rect.left - size / 2;
+    var y = e.clientY - rect.top - size / 2;
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    ripple.classList.add('active');
+    
+    setTimeout(function() {
+      ripple.classList.remove('active');
+    }, 600);
+  });
+}
+
+// เรียกใช้กับปุ่มทั้งหมด
+document.addEventListener('DOMContentLoaded', function() {
+  var buttons = document.querySelectorAll('.btn, .nav-item, .bnav-item, .cat-tab, .menu-item, .pin-key');
+  buttons.forEach(function(btn) {
+    addRippleEffect(btn);
+  });
+});
 
 console.log('[utils.js] loaded');

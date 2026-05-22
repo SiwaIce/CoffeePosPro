@@ -17,8 +17,20 @@ var STKVIEW = {
 };
 
 /* ============================================
-   RENDER STOCK VIEW
+   RENDER STOCK VIEW (with Skeleton Loading)
    ============================================ */
+
+// ฟังก์ชันแสดง skeleton loading
+function renderStockSkeleton() {
+  var html = '<div class="stock-grid stagger">';
+  for (var i = 0; i < 6; i++) {
+    html += '<div class="stock-card skeleton" style="height: 180px;"></div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ฟังก์ชันหลัก (แสดง skeleton แล้วค่อยโหลดข้อมูลจริง)
 function renderStockView() {
   var main = $('mainContent');
   if (!main) return;
@@ -44,24 +56,52 @@ function renderStockView() {
   html += stkSubTab('logs', '📋 ประวัติ');
   html += '</div>';
 
-  /* Content */
+  /* Content - แสดง skeleton ก่อน */
   html += '<div id="stkContent">';
-  html += renderStockContent();
+  html += renderStockSkeleton();
   html += '</div>';
 
   html += '</div>';
   main.innerHTML = html;
+
+  /* โหลดข้อมูลจริงหลังจาก 100ms */
+  setTimeout(function() {
+    loadStockDataReal();
+  }, 100);
 }
 
+// ฟังก์ชันโหลดข้อมูลจริง
+function loadStockDataReal() {
+  var content = renderStockContent();
+  setHTML('stkContent', content);
+}
+
+// ฟังก์ชัน renderStockContent (ไม่เปลี่ยน)
+function renderStockContent() {
+  switch (STKVIEW.tab) {
+    case 'stock': return renderStockList();
+    case 'logs': return renderStockLogs();
+    default: return '';
+  }
+}
+
+// ฟังก์ชัน stkSubTab (ไม่เปลี่ยน)
 function stkSubTab(key, label) {
   var active = STKVIEW.tab === key ? ' active' : '';
   return '<button class="cat-tab' + active + '" onclick="switchStkTab(\'' + key + '\')">' + label + '</button>';
 }
 
+// ฟังก์ชัน switchStkTab (ปรับปรุงเล็กน้อย)
 function switchStkTab(tab) {
   STKVIEW.tab = tab;
   vibrate(20);
-  setHTML('stkContent', renderStockContent());
+  
+  // แสดง skeleton ขณะโหลด
+  setHTML('stkContent', renderStockSkeleton());
+  
+  setTimeout(function() {
+    setHTML('stkContent', renderStockContent());
+  }, 100);
 
   var tabs = qsa('.cat-tabs .cat-tab');
   for (var i = 0; i < tabs.length; i++) {
@@ -71,14 +111,6 @@ function switchStkTab(tab) {
     } else {
       removeClass(tabs[i], 'active');
     }
-  }
-}
-
-function renderStockContent() {
-  switch (STKVIEW.tab) {
-    case 'stock': return renderStockList();
-    case 'logs': return renderStockLogs();
-    default: return '';
   }
 }
 

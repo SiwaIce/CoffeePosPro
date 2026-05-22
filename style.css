@@ -2462,3 +2462,263 @@ input, select, textarea {
   background: var(--accent);
   transform: scale(1.05);
 }
+
+/* ============================================
+   STOCK PAGE IMPROVEMENTS
+   ============================================ */
+
+/* Stock Summary Cards - ปรับขนาดให้เล็กลง */
+.stock-summary-bar {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+.stock-summary-bar .flex {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.stock-summary-bar .flex > div {
+  text-align: center;
+  flex: 1;
+  min-width: 80px;
+}
+
+.stock-summary-bar .flex > div .fw-700 {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stock-summary-bar .flex > div .text-muted {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+/* Stock Grid - ลดขนาดการ์ด */
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* Stock Card - เล็กลง */
+.stock-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.stock-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.stock-card:active {
+  transform: scale(0.98);
+  transition: transform 0.05s ease;
+}
+
+/* Stock Name */
+.stock-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.stock-name-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.stock-name-icon {
+  font-size: 20px;
+}
+
+/* Stock Quantity */
+.stock-qty-wrapper {
+  margin-bottom: 8px;
+}
+
+.stock-qty-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.stock-qty-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.stock-qty-total {
+  font-size: 11px;
+  color: var(--accent2);
+  margin-left: 6px;
+}
+
+.stock-qty-min {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+/* Progress Bar */
+.stock-progress {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.stock-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Stock Footer */
+.stock-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.stock-footer .amount {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Stock Actions */
+.stock-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.stock-actions .btn {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+/* Ripple Effect */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.ripple:active:after {
+  width: 200%;
+  height: 200%;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, var(--glass) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .stock-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .stock-summary-bar .flex {
+    gap: 12px;
+  }
+  
+  .stock-summary-bar .flex > div .fw-700 {
+    font-size: 22px;
+  }
+  
+  .stock-card {
+    padding: 10px;
+  }
+  
+  .stock-qty-number {
+    font-size: 24px;
+  }
+}
+/* Ripple Effect */
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(0);
+  animation: ripple-animation 0.6s linear;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes ripple-animation {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.btn, .nav-item, .bnav-item, .cat-tab, .menu-item, .pin-key {
+  position: relative;
+  overflow: hidden;
+}
