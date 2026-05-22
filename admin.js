@@ -991,6 +991,9 @@ function updateLoginUI() {
    RENDER ABOUT PAGE
    ============================================ */
 function renderAboutPage() {
+  var isLoggedIn = !!(window.currentUser);
+  var userEmail = window.currentUser ? window.currentUser.email : 'ยังไม่ได้เข้าสู่ระบบ';
+  
   var html = '';
 
   html += '<div class="card text-center p-20 mb-16">';
@@ -1024,17 +1027,26 @@ function renderAboutPage() {
 
   html += '<div class="card">';
   html += '<div class="card-header"><div class="card-title">🔗 Cloud</div></div>';
-  if (typeof _fbUser !== 'undefined' && _fbUser) {
-    html += '<div class="p-16"><span class="badge badge-success">🟢 Connected</span> ' + sanitize(_fbUser.email || '') + '</div>';
+  html += '<div class="p-16">';
+  
+  if (isLoggedIn) {
+    html += '<div class="flex-between">';
+    html += '<span><span class="badge badge-success">🟢 Connected</span></span>';
+    html += '<span>' + sanitize(userEmail) + '</span>';
+    html += '</div>';
+    html += '<div class="text-muted fs-sm mt-8">✅ กำลังซิงค์ข้อมูลกับ Cloud</div>';
   } else {
-    html += '<div class="p-16 text-center"><div class="text-muted mb-12">ยังไม่ได้เชื่อมต่อ</div>';
-    html += '<button class="btn btn-primary" onclick="handleAuth()">🔐 Login Google</button></div>';
+    html += '<div class="text-center">';
+    html += '<div class="text-muted mb-12">🔴 ยังไม่ได้เชื่อมต่อ</div>';
+    html += '<button class="btn btn-primary" onclick="handleAuth()">🔐 Login Google เพื่อซิงค์ข้อมูล</button>';
+    html += '</div>';
   }
+  
+  html += '</div>';
   html += '</div>';
 
   return html;
 }
-
 function aboutRow(label, value) {
   return '<div class="about-row"><span class="fw-600">' + sanitize(label) + '</span><span class="text-muted">' + sanitize(value) + '</span></div>';
 }

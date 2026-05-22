@@ -532,15 +532,19 @@ function showSync() {
    ============================================ */
 // แทนที่ฟังก์ชัน handleAuth เดิม
 function handleAuth() {
-  if (currentUser) {
-    // มี user อยู่แล้ว → logout
+  // ป้องกัน popup ซ้อน
+  if (window.authPopupOpening) return;
+  
+  if (window.currentUser) {
     logoutFromFirebase();
   } else {
-    // ยังไม่มี user → login
+    window.authPopupOpening = true;
     loginWithGoogle();
+    setTimeout(() => {
+      window.authPopupOpening = false;
+    }, 3000);
   }
 }
-
 // ฟังก์ชัน login
 function loginWithGoogle() {
   if (typeof firebase === 'undefined') {
