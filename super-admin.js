@@ -532,4 +532,18 @@ if (document.readyState === 'loading') {
   document.head.appendChild(style);
 })();
 
+// ใน showAdminPanel()
+html += '<div class="card mb-16">';
+html += '<div class="card-header">';
+html += '<div class="card-title">🔧 License Override (ทดสอบ)</div>';
+html += '</div>';
+html += '<div class="flex gap-8 flex-wrap">';
+html += '<button class="btn btn-sm btn-secondary" onclick="LicenseManager.forceTier(\'free\')">🆓 Free</button>';
+html += '<button class="btn btn-sm btn-info" onclick="LicenseManager.forceTier(\'standard\')">📦 Standard</button>';
+html += '<button class="btn btn-sm btn-primary" onclick="LicenseManager.forceTier(\'pro\')">⭐ Pro</button>';
+html += '<button class="btn btn-sm btn-danger" onclick="LicenseManager.resetToFree()">🔄 รีเซ็ต</button>';
+html += '</div>';
+html += '<div class="text-warning fs-sm mt-8">⚠️ ใช้สำหรับทดสอบเท่านั้น</div>';
+html += '</div>';
+
 console.log('[super-admin.js] loaded');
