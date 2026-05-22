@@ -1,8 +1,7 @@
 /* ============================================
-   FIREBASE SYNC - Multi-tenant
+   FIREBASE SYNC - Multi-tenant (แบบ B)
    ============================================ */
 
-// เปลี่ยนจาก let เป็น var (ป้องกัน error ซ้ำ)
 var isStaffLoggedIn = false;
 
 if (typeof window.currentUser === 'undefined') {
@@ -36,61 +35,41 @@ function initFirebase() {
   window.auth = firebase.auth();
   const db = firebase.firestore();
 
-  // 🔥 เพิ่มส่วนนี้: ตรวจสอบว่ายังไม่ Login ให้เคลียร์ License
-  const currentUser = firebase.auth().currentUser;
-  if (!currentUser) {
-    console.log('[Firebase] No user logged in, clearing license...');
-    localStorage.removeItem('v1_coffee_license');
-    localStorage.removeItem('v1_coffee_license_override');
-    
-    if (typeof LicenseManager !== 'undefined') {
-      LicenseManager.tier = 'free';
-      LicenseManager.currentKey = null;
-      if (typeof LicenseManager.afterLicenseChange === 'function') {
-        LicenseManager.afterLicenseChange();
+  window.auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      window.currentUser = user;
+      window.userDb = db.collection('users').doc(user.uid);
+      console.log('[Firebase] Logged in:', user.email);
+      
+      // 🔥 โหลด License จาก Firestore ทุกครั้งที่ Login
+      await loadUserLicense(user.email);
+      
+      await loadUserData();
+      updateUIForLogin(user);
+      
+      if (isStaffLoggedIn) {
+        applyLicenseFromStorage();
       }
-    }
-  }
-  
-  // 🔥 วาง auth.onAuthStateChanged ตรงนี้ (แทนที่อันเดิม)
-window.auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    window.currentUser = user;
-    window.userDb = db.collection('users').doc(user.uid);
-    console.log('[Firebase] Logged in:', user.email);
-    
-    // โหลด License
-    await loadUserLicense(user.email);
-    
-    await loadUserData();
-    updateUIForLogin(user);
-    
-    // ถ้ามี staff login อยู่แล้ว ให้ใช้ license ที่โหลดมา
-    if (isStaffLoggedIn) {
-      applyLicenseFromStorage();
-    }
-    
-  } else {
-    window.currentUser = null;
-    window.userDb = null;
-    isStaffLoggedIn = false;
-    
-    // logout email → กลับเป็น Free
-    if (typeof LicenseManager !== 'undefined') {
-      LicenseManager.tier = 'free';
-      LicenseManager.currentKey = null;
-      localStorage.removeItem('v1_coffee_license');
-      if (typeof LicenseManager.afterLicenseChange === 'function') {
-        LicenseManager.afterLicenseChange();
+      
+    } else {
+      window.currentUser = null;
+      window.userDb = null;
+      isStaffLoggedIn = false;
+      
+      // 🔥 logout email → กลับเป็น Free (แต่ไม่ล้าง localStorage)
+      if (typeof LicenseManager !== 'undefined') {
+        LicenseManager.tier = 'free';
+        LicenseManager.currentKey = null;
+        if (typeof LicenseManager.afterLicenseChange === 'function') {
+          LicenseManager.afterLicenseChange();
+        }
       }
+      
+      updateUIForLogout();
     }
-    
-    updateUIForLogout();
-  }
-});
+  });
 }
 
-// 🔥 วางฟังก์ชัน applyLicenseFromStorage ไว้ด้านล่าง (หลัง loadUserLicense)
 function applyLicenseFromStorage() {
   var savedLicense = localStorage.getItem('v1_coffee_license');
   if (savedLicense) {
@@ -105,16 +84,6 @@ function applyLicenseFromStorage() {
           }
         }
         console.log('[Firebase] Applied license from storage:', license.tier);
-      } else {
-        // license เป็น free → เคลียร์
-        localStorage.removeItem('v1_coffee_license');
-        if (typeof LicenseManager !== 'undefined') {
-          LicenseManager.tier = 'free';
-          LicenseManager.currentKey = null;
-          if (typeof LicenseManager.afterLicenseChange === 'function') {
-            LicenseManager.afterLicenseChange();
-          }
-        }
       }
     } catch(e) {
       console.log('[Firebase] applyLicenseFromStorage error:', e);
@@ -136,18 +105,18 @@ async function loadUserLicense(email) {
     if (!licenseQuery.empty) {
       const license = licenseQuery.docs[0].data();
       
-      // 🔥 บันทึกลง localStorage ก่อน
+      // บันทึกลง localStorage
       localStorage.setItem('v1_coffee_license', JSON.stringify({
         key: license.key,
         tier: license.tier,
         activatedAt: Date.now()
       }));
       
-      // 🔥 อัปเดต LicenseManager
+      // อัปเดต LicenseManager
       LicenseManager.tier = license.tier;
       LicenseManager.currentKey = license.key;
       
-      // 🔥 อัปเดต UI
+      // อัปเดต UI
       if (typeof LicenseManager.afterLicenseChange === 'function') {
         LicenseManager.afterLicenseChange();
       }
@@ -225,20 +194,11 @@ function updateUIForLogin(user) {
   const authLabel = document.getElementById('authLabel');
   const sidebarUser = document.getElementById('sidebarUser');
   
-  // 🔥 ซ่อนปุ่ม Login (รูปกุญแจ)
   if (loginBtn) loginBtn.style.display = 'none';
-  
-  // 🔥 แสดงปุ่ม Logout
   if (logoutBtn) logoutBtn.style.display = '';
-  
-  // 🔥 เปลี่ยนปุ่ม Auth ใน Sidebar
   if (btnAuth) btnAuth.style.display = '';
   if (authLabel) authLabel.textContent = 'Logout';
-  
-  // 🔥 แสดงชื่อใน Sidebar
   if (sidebarUser) sidebarUser.innerHTML = '<div class="fs-sm truncate">🟢 ' + (user.displayName || user.email) + '</div>';
-  
-  // 🔥 แสดงชื่อที่ Top Bar
   if (topStaff) {
     topStaff.innerHTML = '👤 ' + (user.displayName || user.email);
     topStaff.style.display = '';
@@ -255,20 +215,11 @@ function updateUIForLogout() {
   const authLabel = document.getElementById('authLabel');
   const sidebarUser = document.getElementById('sidebarUser');
   
-  // 🔥 แสดงปุ่ม Login (รูปกุญแจ)
   if (loginBtn) loginBtn.style.display = '';
-  
-  // 🔥 ซ่อนปุ่ม Logout
   if (logoutBtn) logoutBtn.style.display = 'none';
-  
-  // 🔥 เปลี่ยนปุ่ม Auth ใน Sidebar
   if (btnAuth) btnAuth.style.display = '';
   if (authLabel) authLabel.textContent = 'Login';
-  
-  // 🔥 ล้างชื่อใน Sidebar
   if (sidebarUser) sidebarUser.innerHTML = '';
-  
-  // 🔥 ล้างชื่อที่ Top Bar
   if (topStaff) {
     topStaff.innerHTML = '';
     topStaff.style.display = 'none';
@@ -288,23 +239,14 @@ function loginWithGoogle() {
 }
 
 function logoutFromFirebase() {
+  // 🔥 ล้างเฉพาะ session ไม่ล้าง license
   const keysToClear = [
-    'v1_coffee_license',
-    'v1_coffee_license_override',
     'current_session',
     'firebase_first_sync_done'
   ];
   
   for (let i = 0; i < keysToClear.length; i++) {
     localStorage.removeItem(keysToClear[i]);
-  }
-  
-  if (typeof LicenseManager !== 'undefined') {
-    LicenseManager.tier = 'free';
-    LicenseManager.currentKey = null;
-    if (typeof LicenseManager.afterLicenseChange === 'function') {
-      LicenseManager.afterLicenseChange();
-    }
   }
   
   if (typeof APP !== 'undefined') {
