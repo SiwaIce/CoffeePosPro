@@ -103,7 +103,18 @@ async function loadUserLicense(email) {
       .get();
     
     if (!licenseQuery.empty) {
-      const license = licenseQuery.docs[0].data();
+      const doc = licenseQuery.docs[0];
+      const license = doc.data();
+      
+      // 🔥 อัปเดต usedCount +1
+      const newUsedCount = (license.usedCount || 0) + 1;
+      await doc.ref.update({
+        usedCount: newUsedCount,
+        lastUsedAt: new Date().toISOString(),
+        lastUsedBy: window.location.hostname
+      });
+      
+      console.log(`[Firebase] License used count: ${newUsedCount}`);
       
       localStorage.setItem('v1_coffee_license', JSON.stringify({
         key: license.key,
@@ -118,8 +129,6 @@ async function loadUserLicense(email) {
         LicenseManager.afterLicenseChange();
       }
       
-      // 🔥 ลบ toast ออก หรือใช้แค่ console.log
-      // toast(`✅ License ${license.tier.toUpperCase()} ใช้งานได้`, 'success');
       console.log('[Firebase] License loaded:', license.tier);
       
     } else {
@@ -131,7 +140,6 @@ async function loadUserLicense(email) {
         LicenseManager.afterLicenseChange();
       }
       
-      // toast('🆓 ใช้เวอร์ชัน Free', 'info');
       console.log('[Firebase] No license found, set to free');
     }
     
