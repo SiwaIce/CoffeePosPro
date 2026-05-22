@@ -1,10 +1,8 @@
 /* ============================================
    COFFEE POS — SUPER ADMIN SYSTEM
-   เข้าถึง: กดโลโก้ 5 ครั้ง / Console / ค้นหา "admin"
    Version: 2.0 (Full Feature Management)
    ============================================ */
 
-/* Ensure ST exists */
 if (typeof ST === 'undefined') {
   var ST = {
     getObj: function(key, fallback) { return fallback; },
@@ -21,14 +19,9 @@ var SuperAdmin = {
   logoClickCount: 0,
   logoClickTimer: null,
 
-  /* ============================================
-     INIT
-     ============================================ */
   init: function() {
-    /* Load from storage */
     var saved = ST.getObj('super_admin', null);
     if (!saved) {
-      /* First time setup */
       ST.setObj('super_admin', {
         password: this.defaultPassword,
         isSetup: true,
@@ -39,18 +32,13 @@ var SuperAdmin = {
       this.currentPassword = saved.password;
     }
     
-    /* Setup logo click listener */
     this.setupLogoListener();
-    
-    /* Setup search listener */
     this.setupSearchListener();
     
-    /* Expose to console */
     window.openSuperAdmin = function() {
       SuperAdmin.showLoginModal();
     };
     
-    /* Expose feature manager to console */
     window.FeatureManager = FeatureManager;
     
     console.log('[SuperAdmin] ready — 3 ways to access:');
@@ -59,9 +47,6 @@ var SuperAdmin = {
     console.log('  3. พิมพ์ "admin" ในช่องค้นหาเมนู');
   },
 
-  /* ============================================
-     1. LOGO CLICK DETECTION
-     ============================================ */
   setupLogoListener: function() {
     var self = this;
     
@@ -94,9 +79,6 @@ var SuperAdmin = {
     }
   },
 
-  /* ============================================
-     2. SEARCH "admin" DETECTION
-     ============================================ */
   setupSearchListener: function() {
     var self = this;
     
@@ -111,9 +93,6 @@ var SuperAdmin = {
     });
   },
 
-  /* ============================================
-     LOGIN MODAL
-     ============================================ */
   showLoginModal: function() {
     var html = '';
     html += '<div class="text-center mb-16">';
@@ -138,16 +117,13 @@ var SuperAdmin = {
     openModal('👑 Super Admin', html, footer);
     
     setTimeout(function() {
-      var input = $('saPassword');
+      var input = document.getElementById('saPassword');
       if (input) input.focus();
     }, 100);
   },
 
-  /* ============================================
-     VERIFY PASSWORD
-     ============================================ */
   verifyLogin: function() {
-    var input = $('saPassword');
+    var input = document.getElementById('saPassword');
     if (!input) return;
     
     var enteredPass = input.value;
@@ -172,9 +148,6 @@ var SuperAdmin = {
     }
   },
 
-  /* ============================================
-     LOCKOUT
-     ============================================ */
   lockout: function() {
     var self = this;
     toast('🔒 หมดโอกาสลองใหม่ รอ 5 นาที', 'error');
@@ -184,9 +157,6 @@ var SuperAdmin = {
     }, 300000);
   },
 
-  /* ============================================
-     CHANGE PASSWORD
-     ============================================ */
   changePassword: function(oldPass, newPass) {
     if (oldPass !== this.currentPassword) {
       toast('รหัสเดิมไม่ถูกต้อง', 'error');
@@ -204,16 +174,13 @@ var SuperAdmin = {
     return true;
   },
 
-/* ============================================
-     SHOW ADMIN PANEL (Full Feature Management)
-     ============================================ */
-showAdminPanel: function() {
-  var features = FeatureManager.getAllGrouped();
-  var licenseTier = FeatureManager.getLicenseTier();
-  var licenseKey = (typeof LicenseManager !== 'undefined' && LicenseManager) ? LicenseManager.getCurrentKey() : null;
-  var currentTierName = FeatureManager.getCurrentTierName();
-  
-  var html = '';
+  showAdminPanel: function() {
+    var features = FeatureManager.getAllGrouped();
+    var licenseTier = FeatureManager.getLicenseTier();
+    var licenseKey = (typeof LicenseManager !== 'undefined' && LicenseManager) ? LicenseManager.getCurrentKey() : null;
+    var currentTierName = FeatureManager.getCurrentTierName();
+    
+    var html = '';
     
     /* Header */
     html += '<div class="text-center mb-16">';
@@ -250,7 +217,7 @@ showAdminPanel: function() {
     html += '</div>';
     html += '</div>';
     
-    /* Preset Section - 3 ปุ่มใหญ่ */
+    /* Preset Section */
     html += '<div class="card mb-16">';
     html += '<div class="card-header">';
     html += '<div class="card-title">📦 Preset การตั้งค่า</div>';
@@ -258,21 +225,18 @@ showAdminPanel: function() {
     html += '</div>';
     html += '<div class="preset-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">';
     
-    /* Free Preset */
     html += '<div class="preset-card" onclick="SuperAdmin.applyPresetWithConfirm(\'free\')" style="cursor:pointer;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:all var(--transition);">';
     html += '<div style="font-size:32px;">🆓</div>';
     html += '<div class="fw-700 mt-4">Free</div>';
     html += '<div class="text-muted fs-sm">ฟีเจอร์พื้นฐาน</div>';
     html += '</div>';
     
-    /* Standard Preset */
     html += '<div class="preset-card" onclick="SuperAdmin.applyPresetWithConfirm(\'standard\')" style="cursor:pointer;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:all var(--transition);">';
     html += '<div style="font-size:32px;">📦</div>';
     html += '<div class="fw-700 mt-4">Standard</div>';
     html += '<div class="text-muted fs-sm">ฟีเจอร์ทั่วไป</div>';
     html += '</div>';
     
-    /* Pro Preset */
     var proDisabled = (licenseTier !== 'pro') ? ' style="opacity:0.5;cursor:not-allowed;"' : '';
     html += '<div class="preset-card" onclick="' + (licenseTier === 'pro' ? 'SuperAdmin.applyPresetWithConfirm(\'pro\')' : '') + '"' + proDisabled + ' style="cursor:pointer;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:all var(--transition);">';
     html += '<div style="font-size:32px;">⭐</div>';
@@ -286,21 +250,21 @@ showAdminPanel: function() {
     html += '</div>';
     html += '</div>';
 
-/* License Override Section */
-html += '<div class="card mb-16">';
-html += '<div class="card-header">';
-html += '<div class="card-title">🔑 บังคับ License (สำหรับทดสอบ)</div>';
-html += '<div class="text-muted fs-sm">⚠️ ใช้สำหรับทดสอบเท่านั้น</div>';
-html += '</div>';
-html += '<div class="flex gap-8 flex-wrap">';
-html += '<button class="btn btn-sm ' + (licenseTier === 'free' ? 'btn-primary' : 'btn-secondary') + '" onclick="LicenseManager.forceTier(\'free\')">🆓 Free</button>';
-html += '<button class="btn btn-sm ' + (licenseTier === 'standard' ? 'btn-primary' : 'btn-secondary') + '" onclick="LicenseManager.forceTier(\'standard\')">📦 Standard</button>';
-html += '<button class="btn btn-sm ' + (licenseTier === 'pro' ? 'btn-primary' : 'btn-secondary') + '" onclick="LicenseManager.forceTier(\'pro\')">⭐ Pro</button>';
-html += '<button class="btn btn-sm btn-danger" onclick="LicenseManager.resetToFree()">🔄 รีเซ็ตเป็น Free</button>';
-html += '</div>';
-html += '</div>';
+    /* License Override Section */
+    html += '<div class="card mb-16">';
+    html += '<div class="card-header">';
+    html += '<div class="card-title">🔧 License Override (ทดสอบ)</div>';
+    html += '<div class="text-muted fs-sm">⚠️ ใช้สำหรับทดสอบเท่านั้น</div>';
+    html += '</div>';
+    html += '<div class="flex gap-8 flex-wrap">';
+    html += '<button class="btn btn-sm ' + (licenseTier === 'free' ? 'btn-primary' : 'btn-secondary') + '" onclick="LicenseManager.forceTier(\'free\')">🆓 Free</button>';
+    html += '<button class="btn btn-sm ' + (licenseTier === 'standard' ? 'btn-primary' : 'btn-secondary') + '" onclick="LicenseManager.forceTier(\'standard\')">📦 Standard</button>';
+    html += '<button class="btn btn-sm ' + (licenseTier === 'pro' ? 'btn-primary' : 'btn-secondary') + '" onclick="LicenseManager.forceTier(\'pro\')">⭐ Pro</button>';
+    html += '<button class="btn btn-sm btn-danger" onclick="LicenseManager.resetToFree()">🔄 รีเซ็ต</button>';
+    html += '</div>';
+    html += '</div>';
     
-    /* Feature Toggles - Core (อ่านอย่างเดียว) */
+    /* Feature Toggles - Core */
     if (features.core.length > 0) {
       html += '<div class="card mb-16">';
       html += '<div class="card-header"><div class="card-title">📌 CORE (เปิดตลอด - เปลี่ยนไม่ได้)</div></div>';
@@ -317,7 +281,7 @@ html += '</div>';
       html += '</div>';
     }
     
-    /* Feature Toggles - Standard (Toggle ได้) */
+    /* Feature Toggles - Standard */
     if (features.standard.length > 0) {
       html += '<div class="card mb-16">';
       html += '<div class="card-header">';
@@ -344,7 +308,7 @@ html += '</div>';
       html += '</div>';
     }
     
-    /* Feature Toggles - Pro (Toggle ได้ ถ้ามี Pro License) */
+    /* Feature Toggles - Pro */
     if (features.pro.length > 0) {
       var canEditPro = (licenseTier === 'pro');
       
@@ -388,30 +352,12 @@ html += '</div>';
     html += '<button class="btn btn-secondary" onclick="SuperAdmin.resetFeaturesConfirm()" style="flex:1;">🔄 รีเซ็ตทั้งหมด</button>';
     html += '<button class="btn btn-danger" onclick="SuperAdmin.logout()" style="flex:1;">🚪 ออกจากระบบ</button>';
     html += '</div>';
-// เพิ่มส่วน License Override (ต่อท้ายก่อน footer)
-html += '<div class="card mb-16">';
-html += '<div class="card-header">';
-html += '<div class="card-title">🔧 License Override (ทดสอบ)</div>';
-html += '</div>';
-html += '<div class="flex gap-8 flex-wrap">';
-html += '<button class="btn btn-sm btn-secondary" onclick="LicenseManager.forceTier(\'free\')">🆓 Free</button>';
-html += '<button class="btn btn-sm btn-info" onclick="LicenseManager.forceTier(\'standard\')">📦 Standard</button>';
-html += '<button class="btn btn-sm btn-primary" onclick="LicenseManager.forceTier(\'pro\')">⭐ Pro</button>';
-html += '<button class="btn btn-sm btn-danger" onclick="LicenseManager.resetToFree()">🔄 รีเซ็ต</button>';
-html += '</div>';
-html += '<div class="text-warning fs-sm mt-8">⚠️ ใช้สำหรับทดสอบเท่านั้น</div>';
-html += '</div>';
-
-// แล้วตามด้วย footer และ openModal
     
     var footer = '<button class="btn btn-primary" onclick="closeMForce()">ปิด</button>';
     
     openModal('👑 Super Admin', html, footer, { wide: true });
   },
 
-  /* ============================================
-     NEW: Toggle Feature แบบรวดเร็ว (ไม่ต้อง confirm)
-     ============================================ */
   toggleFeatureQuick: function(featureId) {
     var feature = FEATURE_REGISTRY[featureId];
     if (!feature) return;
@@ -420,19 +366,16 @@ html += '</div>';
     var newState = !currentState;
     
     FeatureManager.toggleFeature(featureId, newState);
-    this.showAdminPanel(); // Refresh panel
+    this.showAdminPanel();
   },
 
-  /* ============================================
-     PANEL ACTIONS
-     ============================================ */
   changePasswordFromModal: function() {
-    var oldPass = ($('saOldPass') || {}).value;
-    var newPass = ($('saNewPass') || {}).value;
+    var oldPass = (document.getElementById('saOldPass') || {}).value;
+    var newPass = (document.getElementById('saNewPass') || {}).value;
     
     if (this.changePassword(oldPass, newPass)) {
-      $('saOldPass').value = '';
-      $('saNewPass').value = '';
+      document.getElementById('saOldPass').value = '';
+      document.getElementById('saNewPass').value = '';
       toast('เปลี่ยนรหัสผ่านเรียบร้อย', 'success');
       this.showAdminPanel();
     }
@@ -462,18 +405,15 @@ html += '</div>';
     });
   },
   
-  /* Free Preset (ปิดทุกอย่างยกเว้น core) */
   applyFreePreset: function() {
     var overrides = {};
     
-    /* ปิด Standard Features ทั้งหมด */
     var stdFeatures = ['std_stock', 'std_staff', 'std_line', 'std_promptpay', 
                        'std_channels', 'std_favorites', 'std_recent', 'std_sound', 'std_report'];
     for (var i = 0; i < stdFeatures.length; i++) {
       overrides[stdFeatures[i]] = false;
     }
     
-    /* ปิด Pro Features ทั้งหมด */
     var proFeatures = ['pro_members', 'pro_recipe', 'pro_autostock', 'pro_kds', 
                        'pro_realtime', 'pro_advanced_report'];
     for (var j = 0; j < proFeatures.length; j++) {
@@ -499,7 +439,6 @@ html += '</div>';
   }
 };
 
-/* Auto init */
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {
     SuperAdmin.init();
@@ -524,41 +463,5 @@ if (document.readyState === 'loading') {
   style.textContent = css;
   document.head.appendChild(style);
 })();
-
-/* ============================================
-   SUPER ADMIN JS
-   (โค้ดทั้งหมดข้างบน)
-   ============================================ */
-
-/* Super Admin Panel CSS */
-(function() {
-  var styleId = 'superAdminStyle';
-  if (document.getElementById(styleId)) return;
-  
-  var css = '';
-  css += '.preset-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}';
-  css += '.feature-toggle-item:hover{background:var(--glass);}';
-  css += '.feature-toggle-item.enabled .fw-600{color:var(--success);}';
-  css += '.toggle-switch{transition:all 0.2s;}';
-  
-  var style = document.createElement('style');
-  style.id = styleId;
-  style.textContent = css;
-  document.head.appendChild(style);
-})();
-
-// ใน showAdminPanel()
-html += '<div class="card mb-16">';
-html += '<div class="card-header">';
-html += '<div class="card-title">🔧 License Override (ทดสอบ)</div>';
-html += '</div>';
-html += '<div class="flex gap-8 flex-wrap">';
-html += '<button class="btn btn-sm btn-secondary" onclick="LicenseManager.forceTier(\'free\')">🆓 Free</button>';
-html += '<button class="btn btn-sm btn-info" onclick="LicenseManager.forceTier(\'standard\')">📦 Standard</button>';
-html += '<button class="btn btn-sm btn-primary" onclick="LicenseManager.forceTier(\'pro\')">⭐ Pro</button>';
-html += '<button class="btn btn-sm btn-danger" onclick="LicenseManager.resetToFree()">🔄 รีเซ็ต</button>';
-html += '</div>';
-html += '<div class="text-warning fs-sm mt-8">⚠️ ใช้สำหรับทดสอบเท่านั้น</div>';
-html += '</div>';
 
 console.log('[super-admin.js] loaded');
