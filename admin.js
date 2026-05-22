@@ -369,18 +369,26 @@ function renderShopSettings() {
   html += '</div>';
   html += '</div>';
 
-  html += '<div class="card mb-16">';
-  html += '<div class="card-header"><div class="card-title">💬 LINE Notify</div></div>';
-  html += '<div class="form-group">';
-  html += '<label class="form-label">LINE Notify Token</label>';
-  html += '<input type="text" id="cfgLineToken" value="' + sanitize(cfg.lineNotifyToken || '') + '">';
-  html += '</div>';
-  html += '<div class="flex gap-8 flex-wrap">';
-  html += '<button class="btn btn-secondary btn-sm" onclick="testLineNotify()">🔔 ทดสอบส่ง</button>';
-  html += '<button class="btn btn-primary btn-sm" onclick="sendDailySummaryLine()">📊 ส่งสรุปวันนี้</button>';
-  html += '<button class="btn btn-secondary btn-sm" onclick="copyDailySummary()">📋 Copy สรุป</button>';
-  html += '</div>';
-  html += '</div>';
+  /* === LINE Notify === */
+html += '<div class="card mb-16">';
+html += '<div class="card-header">';
+html += '<div class="card-title">💬 LINE Notify';
+html += '<button class="help-icon-btn" onclick="showLineNotifyGuide()" title="วิธีตั้งค่า">ⓘ</button>';
+html += '</div>';
+html += '</div>';
+
+html += '<div class="form-group">';
+html += '<label class="form-label">LINE Notify Token</label>';
+html += '<input type="text" id="cfgLineToken" value="' + sanitize(cfg.lineNotifyToken || '') + '" placeholder="xxxxxxxxxxxxxxx">';
+html += '</div>';
+
+html += '<div class="flex gap-8 flex-wrap">';
+html += '<button class="btn btn-secondary btn-sm" onclick="testLineNotify()">🔔 ทดสอบส่ง</button>';
+html += '<button class="btn btn-primary btn-sm" onclick="sendDailySummaryLine()">📊 ส่งสรุปวันนี้</button>';
+html += '<button class="btn btn-secondary btn-sm" onclick="copyDailySummary()">📋 Copy สรุป</button>';
+html += '</div>';
+
+html += '</div>';
 
   html += '<div class="card mb-16">';
   html += '<div class="card-header"><div class="card-title">🎨 ธีม</div></div>';
@@ -928,6 +936,57 @@ function updateLoginUI() {
   }
 }
 
+/* ============================================
+   RENDER ABOUT PAGE
+   ============================================ */
+function renderAboutPage() {
+  var html = '';
+
+  html += '<div class="card text-center p-20 mb-16">';
+  html += '<div style="font-size:64px;margin-bottom:12px;">☕</div>';
+  html += '<div class="fw-800 fs-xl mb-4">Coffee POS</div>';
+  html += '<div class="text-muted mb-4">Version 1.2</div>';
+  html += '<div class="text-muted fs-sm">ระบบ POS สำหรับร้านกาแฟ</div>';
+  html += '</div>';
+
+  html += '<div class="card mb-16">';
+  html += '<div class="card-header"><div class="card-title">📱 เทคโนโลยี</div></div>';
+  html += '<div class="about-tech">';
+  html += aboutRow('Frontend', 'HTML + CSS + JS (ES5)');
+  html += aboutRow('Storage', 'localStorage + Firebase');
+  html += aboutRow('Auth', 'Google Auth + PIN');
+  html += aboutRow('Hosting', 'GitHub Pages');
+  html += aboutRow('PWA', 'Service Worker + Offline');
+  html += aboutRow('Theme', 'Dark / Light');
+  html += aboutRow('Payment', 'Cash / Transfer / PromptPay QR');
+  html += aboutRow('Channels', 'Walk-in / Grab / LINE MAN / Custom');
+  html += '</div></div>';
+
+  html += '<div class="card mb-16">';
+  html += '<div class="card-header"><div class="card-title">⌨️ Shortcuts</div></div>';
+  html += '<div class="about-tech">';
+  html += aboutRow('F1', 'POS');
+  html += aboutRow('F2', 'Orders');
+  html += aboutRow('F3', 'Report');
+  html += aboutRow('Esc', 'ปิด Modal');
+  html += '</div></div>';
+
+  html += '<div class="card">';
+  html += '<div class="card-header"><div class="card-title">🔗 Cloud</div></div>';
+  if (typeof _fbUser !== 'undefined' && _fbUser) {
+    html += '<div class="p-16"><span class="badge badge-success">🟢 Connected</span> ' + sanitize(_fbUser.email || '') + '</div>';
+  } else {
+    html += '<div class="p-16 text-center"><div class="text-muted mb-12">ยังไม่ได้เชื่อมต่อ</div>';
+    html += '<button class="btn btn-primary" onclick="handleAuth()">🔐 Login Google</button></div>';
+  }
+  html += '</div>';
+
+  return html;
+}
+
+function aboutRow(label, value) {
+  return '<div class="about-row"><span class="fw-600">' + sanitize(label) + '</span><span class="text-muted">' + sanitize(value) + '</span></div>';
+}
 /* ============================================
    TAB: DATA MANAGEMENT
    ============================================ */
@@ -1582,6 +1641,36 @@ function submitManagerVerify(callbackStr) {
   } else {
     toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
   }
+}
+function showLineNotifyGuide() {
+  var html = '';
+  html += '<div class="text-center mb-16">';
+  html += '<div style="font-size:48px;">💬</div>';
+  html += '<div class="fw-700 fs-lg mb-4">วิธีตั้งค่า LINE Notify</div>';
+  html += '</div>';
+  
+  html += '<div class="card-glass p-16" style="text-align:left; line-height:1.8;">';
+  html += '<div class="fw-600 mb-8">📌 ขั้นตอน:</div>';
+  html += '1. เข้าไปที่ <a href="https://notify-bot.line.me" target="_blank">notify-bot.line.me</a><br>';
+  html += '2. Login ด้วยบัญชี LINE<br>';
+  html += '3. คลิก "Generate Token"<br>';
+  html += '4. ตั้งชื่อ Token เช่น "Coffee POS Alert"<br>';
+  html += '5. เลือกห้องแชทที่ต้องการรับแจ้งเตือน<br>';
+  html += '6. คลิก "Generate"<br>';
+  html += '7. <span class="text-accent fw-600">คัดลอก Token</span> ที่ได้<br>';
+  html += '8. นำ Token มาวางในช่องด้านบน<br>';
+  html += '9. กด "🔔 ทดสอบส่ง" เพื่อตรวจสอบ<br>';
+  html += '</div>';
+  
+  html += '<div class="card-glass p-16 mt-16" style="background:rgba(249,115,22,0.1);">';
+  html += '<div class="fw-600 mb-4">💡 ข้อควรรู้:</div>';
+  html += '• LINE Notify ใช้ฟรี ไม่มีค่าใช้จ่าย<br>';
+  html += '• ส่งได้สูงสุด 1000 ครั้ง/วัน<br>';
+  html += '• Token จะอยู่จนกว่าจะ Revoke<br>';
+  html += '• สามารถส่งเข้าแชทกลุ่มได้';
+  html += '</div>';
+  
+  openModal('💬 วิธีตั้งค่า LINE Notify', html, '<button class="btn btn-primary" onclick="closeMForce()">เข้าใจแล้ว</button>');
 }
 
 console.log('[admin.js] loaded');
