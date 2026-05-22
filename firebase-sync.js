@@ -2,8 +2,8 @@
    FIREBASE SYNC - Multi-tenant
    ============================================ */
 
-// 🔥 วางตัวแปรไว้ที่จุดเริ่มต้น (หลัง comment header)
-let isStaffLoggedIn = false;
+// เปลี่ยนจาก let เป็น var (ป้องกัน error ซ้ำ)
+var isStaffLoggedIn = false;
 
 if (typeof window.currentUser === 'undefined') {
   window.currentUser = null;
