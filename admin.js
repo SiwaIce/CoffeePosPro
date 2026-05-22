@@ -63,6 +63,24 @@ function switchAdmTab(tab) {
    RENDER ABOUT PAGE
    ============================================ */
 function renderAboutPage() {
+  // 🔥 ตรวจสอบจาก Firebase โดยตรง
+  var isLoggedIn = false;
+  var userEmail = '';
+  
+  if (typeof firebase !== 'undefined' && firebase.auth) {
+    var currentUser = firebase.auth().currentUser;
+    if (currentUser) {
+      isLoggedIn = true;
+      userEmail = currentUser.email;
+    }
+  }
+  
+  // ถ้าไม่มี ให้ตรวจสอบจาก window.currentUser อีกที
+  if (!isLoggedIn && typeof window.currentUser !== 'undefined' && window.currentUser) {
+    isLoggedIn = true;
+    userEmail = window.currentUser.email;
+  }
+  
   var html = '';
 
   html += '<div class="card text-center p-20 mb-16">';
@@ -96,12 +114,22 @@ function renderAboutPage() {
 
   html += '<div class="card">';
   html += '<div class="card-header"><div class="card-title">🔗 Cloud</div></div>';
-  if (typeof _fbUser !== 'undefined' && _fbUser) {
-    html += '<div class="p-16"><span class="badge badge-success">🟢 Connected</span> ' + sanitize(_fbUser.email || '') + '</div>';
+  html += '<div class="p-16">';
+  
+  if (isLoggedIn) {
+    html += '<div class="flex-between">';
+    html += '<span><span class="badge badge-success">🟢 Connected</span></span>';
+    html += '<span>' + sanitize(userEmail) + '</span>';
+    html += '</div>';
+    html += '<div class="text-muted fs-sm mt-8">✅ กำลังซิงค์ข้อมูลกับ Cloud</div>';
   } else {
-    html += '<div class="p-16 text-center"><div class="text-muted mb-12">ยังไม่ได้เชื่อมต่อ</div>';
-    html += '<button class="btn btn-primary" onclick="handleAuth()">🔐 Login Google</button></div>';
+    html += '<div class="text-center">';
+    html += '<div class="text-muted mb-12">🔴 ยังไม่ได้เชื่อมต่อ</div>';
+    html += '<button class="btn btn-primary" onclick="handleAuth()">🔐 Login Google</button>';
+    html += '</div>';
   }
+  
+  html += '</div>';
   html += '</div>';
 
   return html;
