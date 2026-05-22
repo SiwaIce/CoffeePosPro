@@ -32,6 +32,22 @@ function initFirebase() {
   
   window.auth = firebase.auth();
   const db = firebase.firestore();
+
+  // 🔥 เพิ่มส่วนนี้: ตรวจสอบว่ายังไม่ Login ให้เคลียร์ License
+  const currentUser = firebase.auth().currentUser;
+  if (!currentUser) {
+    console.log('[Firebase] No user logged in, clearing license...');
+    localStorage.removeItem('v1_coffee_license');
+    localStorage.removeItem('v1_coffee_license_override');
+    
+    if (typeof LicenseManager !== 'undefined') {
+      LicenseManager.tier = 'free';
+      LicenseManager.currentKey = null;
+      if (typeof LicenseManager.afterLicenseChange === 'function') {
+        LicenseManager.afterLicenseChange();
+      }
+    }
+  }
   
   window.auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -153,15 +169,26 @@ function updateUIForLogin(user) {
   const authLabel = document.getElementById('authLabel');
   const sidebarUser = document.getElementById('sidebarUser');
   
+  // 🔥 ซ่อนปุ่ม Login (รูปกุญแจ)
   if (loginBtn) loginBtn.style.display = 'none';
+  
+  // 🔥 แสดงปุ่ม Logout
   if (logoutBtn) logoutBtn.style.display = '';
+  
+  // 🔥 เปลี่ยนปุ่ม Auth ใน Sidebar
   if (btnAuth) btnAuth.style.display = '';
   if (authLabel) authLabel.textContent = 'Logout';
+  
+  // 🔥 แสดงชื่อใน Sidebar
   if (sidebarUser) sidebarUser.innerHTML = '<div class="fs-sm truncate">🟢 ' + (user.displayName || user.email) + '</div>';
+  
+  // 🔥 แสดงชื่อที่ Top Bar
   if (topStaff) {
     topStaff.innerHTML = '👤 ' + (user.displayName || user.email);
     topStaff.style.display = '';
   }
+  
+  console.log('[Firebase] UI updated for login:', user.email);
 }
 
 function updateUIForLogout() {
@@ -172,15 +199,26 @@ function updateUIForLogout() {
   const authLabel = document.getElementById('authLabel');
   const sidebarUser = document.getElementById('sidebarUser');
   
+  // 🔥 แสดงปุ่ม Login (รูปกุญแจ)
   if (loginBtn) loginBtn.style.display = '';
+  
+  // 🔥 ซ่อนปุ่ม Logout
   if (logoutBtn) logoutBtn.style.display = 'none';
+  
+  // 🔥 เปลี่ยนปุ่ม Auth ใน Sidebar
   if (btnAuth) btnAuth.style.display = '';
   if (authLabel) authLabel.textContent = 'Login';
+  
+  // 🔥 ล้างชื่อใน Sidebar
   if (sidebarUser) sidebarUser.innerHTML = '';
+  
+  // 🔥 ล้างชื่อที่ Top Bar
   if (topStaff) {
     topStaff.innerHTML = '';
     topStaff.style.display = 'none';
   }
+  
+  console.log('[Firebase] UI updated for logout');
 }
 
 function loginWithGoogle() {
