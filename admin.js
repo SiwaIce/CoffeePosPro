@@ -521,20 +521,36 @@ function deleteChFromModal() {
 function renderStaffSettings() {
   var staffList = ST.getStaff();
   var shifts = ST.getShifts();
-
+  var licenseTier = 'free';
+  if (typeof LicenseManager !== 'undefined') {
+    licenseTier = LicenseManager.getTier();
+  }
+  
   var html = '';
+
+  // 🔥 ถ้าเป็น Free Edition แสดงเฉพาะผู้จัดการ (ไม่ให้เพิ่ม/แก้ไข)
+  if (licenseTier === 'free') {
+    html += '<div class="card p-20 text-center">';
+    html += '<div style="font-size:48px;margin-bottom:12px;">🔒</div>';
+    html += '<div class="fw-700 fs-lg mb-4">👥 ระบบพนักงาน</div>';
+    html += '<div class="text-muted mb-16">ฟีเจอร์นี้ต้องมี Standard License หรือ Pro License</div>';
+    html += '<button class="btn btn-primary" onclick="LicenseManager.showLicenseModal()">🔑 อัปเกรด</button>';
+    html += '</div>';
+    return html;
+  }
 
   html += '<div class="flex-between mb-16">';
   html += '<div class="text-muted">พนักงานทั้งหมด ' + staffList.length + ' คน</div>';
-  html += '<button class="btn btn-primary btn-sm" onclick="modalEditStaff(null)">➕ เพิ่มพนักงาน</button>';
+  
+  // 🔥 ต้องยืนยัน PIN ผู้จัดการก่อนเพิ่มพนักงาน
+  html += '<button class="btn btn-primary btn-sm" onclick="verifyManagerBeforeAction(function() { modalEditStaff(null) })">➕ เพิ่มพนักงาน</button>';
   html += '</div>';
 
   if (staffList.length === 0) {
     html += '<div class="card p-20 text-center mb-16">';
     html += '<div style="font-size:48px;">👥</div>';
     html += '<div class="fw-600 mb-8">ยังไม่มีพนักงาน</div>';
-    html += '<div class="text-muted fs-sm mb-16">เพิ่มพนักงานเพื่อบันทึกยอดขายแต่ละคน</div>';
-    html += '<button class="btn btn-primary" onclick="modalEditStaff(null)">➕ เพิ่มพนักงาน</button>';
+    html += '<button class="btn btn-primary" onclick="verifyManagerBeforeAction(function() { modalEditStaff(null) })">➕ เพิ่มพนักงาน</button>';
     html += '</div>';
   } else {
     html += '<div class="staff-grid stagger">';
@@ -544,8 +560,9 @@ function renderStaffSettings() {
     html += '</div>';
   }
 
+  // ผู้ใช้ปัจจุบัน
   html += '<div class="card mt-16">';
-  html += '<div class="card-header"><div class="card-title">👤 พนักงานปัจจุบัน</div></div>';
+  html += '<div class="card-header"><div class="card-title">👤 ผู้ใช้ปัจจุบัน</div></div>';
   if (APP.currentStaff) {
     html += '<div class="flex-between p-16">';
     html += '<div>';
@@ -562,32 +579,53 @@ function renderStaffSettings() {
   }
   html += '</div>';
 
-  var todayShifts = getTodayShifts(shifts, staffList);
-  if (todayShifts.length > 0) {
-    html += '<div class="card mt-16">';
-    html += '<div class="card-header"><div class="card-title">📋 กะวันนี้</div></div>';
-    html += '<div class="table-wrap"></table>';
-    html += '<thead><tr><th>พนักงาน</th><th>เข้า</th><th>ออก</th><th>ชม.</th></tr></thead>';
-    html += '<tbody>';
-    for (var t = 0; t < todayShifts.length; t++) {
-      var sh = todayShifts[t];
-      var hrs = calcShiftHours(sh);
-      html += '<tr>';
-      html += '<td class="fw-600">' + sanitize(sh.staffName) + '</td>';
-      html += '<td class="text-center">' + sanitize(sh.clockIn) + '</td>';
-      html += '<td class="text-center">' + (sh.clockOut ? sanitize(sh.clockOut) : '<span class="badge badge-success">ทำงาน</span>') + '</td>';
-      html += '<td class="text-right">' + (hrs ? hrs + 'h' : '-') + '</td>';
-      html += '</tr>';
-    }
-    html += '</tbody>';
-    html += '</table>';
-    html += '</div>';
-    html += '</div>';
-  }
-
   return html;
 }
 
+// 🔥 ฟังก์ชันยืนยัน PIN ผู้จัดการก่อนทำรายการสำคัญ
+function verifyManagerBeforeAction(callback) {
+  var html = '';
+  html += '<div class="text-center mb-16">';
+  html += '<div style="font-size:48px;margin-bottom:8px;">👑</div>';
+  html += '<div class="fw-700 fs-lg mb-4">ยืนยันสิทธิ์ผู้จัดการ</div>';
+  html += '<div class="text-muted fs-sm mb-8">กรุณาใส่ PIN ผู้จัดการ</div>';
+  html += '</div>';
+  
+  html += '<div class="form-group">';
+  html += '<label class="form-label">PIN ผู้จัดการ</label>';
+  html += '<input type="password" id="managerPinInput" placeholder="****" maxlength="4" inputmode="numeric" style="font-size:24px;text-align:center;letter-spacing:8px;">';
+  html += '</div>';
+  
+  var footer = '';
+  footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
+  footer += '<button class="btn btn-primary" onclick="submitManagerVerify(\'' + callback.toString() + '\')">ยืนยัน</button>';
+  
+  openModal('🔐 ยืนยันสิทธิ์', html, footer);
+}
+
+function submitManagerVerify(callbackStr) {
+  var pin = ($('managerPinInput') || {}).value;
+  if (!pin || pin.length !== 4) {
+    toast('PIN ต้อง 4 หลัก', 'error');
+    return;
+  }
+  
+  var staffList = ST.getStaff();
+  var isManager = false;
+  for (var i = 0; i < staffList.length; i++) {
+    if (staffList[i].pin === pin && staffList[i].role === 'manager') {
+      isManager = true;
+      break;
+    }
+  }
+  
+  if (isManager) {
+    closeMForce();
+    eval(callbackStr);
+  } else {
+    toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
+  }
+}
 function renderStaffCard(staff, allShifts) {
   var isActive = staff.active !== false;
   var activeShift = ST.getActiveShift(staff.id);

@@ -587,11 +587,11 @@ function registerSW() {
    SEED DATA CHECK
    ============================================ */
 function checkSeedData() {
-  // 🔥 ถ้าไม่มีเมนูและไม่มีพนักงาน → แสดงหน้าตั้งค่าครั้งแรก
   var hasMenu = ST.getMenu().length > 0;
   var hasStaff = ST.getStaff().length > 0;
   
-  if (!hasMenu && !hasStaff) {
+  // ถ้ายังไม่มีพนักงานและไม่มีเมนู → แสดงหน้าตั้งค่าร้านครั้งแรก
+  if (!hasStaff && !hasMenu) {
     showFirstTimeSetup();
   }
 }
@@ -610,18 +610,19 @@ function showFirstTimeSetup() {
   html += '</div>';
   
   html += '<div class="form-group">';
-  html += '<label class="form-label">ชื่อผู้ใช้ (แอดมิน)</label>';
+  html += '<label class="form-label">ชื่อผู้ใช้ (ผู้จัดการ)</label>';
   html += '<input type="text" id="adminName" placeholder="เช่น สมชาย" class="form-control">';
   html += '</div>';
   
+  html += '<div class="form-row">';
   html += '<div class="form-group">';
-  html += '<label class="form-label">PIN 4 หลัก (สำหรับเข้าสู่ระบบ)</label>';
-  html += '<input type="password" id="adminPin" placeholder="0000" maxlength="4" class="form-control" style="font-size:24px;text-align:center;letter-spacing:8px;">';
+  html += '<label class="form-label">PIN 4 หลัก</label>';
+  html += '<input type="password" id="adminPin" placeholder="0000" maxlength="4" class="form-control" style="font-size:24px;text-align:center;letter-spacing:8px;" inputmode="numeric">';
   html += '</div>';
-  
   html += '<div class="form-group">';
   html += '<label class="form-label">ยืนยัน PIN</label>';
-  html += '<input type="password" id="confirmPin" placeholder="0000" maxlength="4" class="form-control" style="font-size:24px;text-align:center;letter-spacing:8px;">';
+  html += '<input type="password" id="confirmPin" placeholder="0000" maxlength="4" class="form-control" style="font-size:24px;text-align:center;letter-spacing:8px;" inputmode="numeric">';
+  html += '</div>';
   html += '</div>';
   
   html += '<div class="form-group">';
@@ -664,27 +665,25 @@ function completeFirstTimeSetup() {
     return;
   }
   
-  // 1. บันทึกชื่อร้าน
+  // บันทึกชื่อร้าน
   var cfg = ST.getConfig();
   cfg.shopName = shopName;
   ST.saveConfig(cfg);
   applyShopName();
   
-  // 2. สร้างพนักงานคนแรก (Admin)
+  // สร้างพนักงานผู้จัดการคนแรก
   ST.addStaff({
     id: genId('staff'),
     name: adminName,
     pin: adminPin,
     role: 'manager',
-    active: true,
-    isDefault: true
+    active: true
   });
   
-  // 3. เพิ่มเมนูตัวอย่าง (ถ้าเลือก)
+  // เพิ่มเมนูตัวอย่าง
   if (seedSample) {
     ST.seedSampleData();
   } else {
-    // ถ้าไม่เลือก ให้สร้างหมวดหมู่พื้นฐาน
     ensureBasicCategories();
   }
   
@@ -692,39 +691,42 @@ function completeFirstTimeSetup() {
   
   toast('✅ ตั้งค่าร้านสำเร็จ! กรุณาเข้าสู่ระบบ', 'success');
   
-  // แสดงหน้า Login
   setTimeout(function() {
     showPinLogin();
   }, 500);
 }
 
 function ensureBasicCategories() {
-  // สร้างหมวดหมู่พื้นฐาน
   var cats = ST.getCategories();
   if (!cats || cats.length === 0) {
     ST.saveCategories(ST._defaultCategories());
   }
-  
   var sizes = ST.getSizes();
   if (!sizes || sizes.length === 0) {
     ST.saveSizes(ST._defaultSizes());
   }
-  
-  var drinkTypes = ST.getDrinkTypes();
-  if (!drinkTypes || drinkTypes.length === 0) {
-    ST.saveDrinkTypes(ST._defaultDrinkTypes());
-  }
-  
-  var sweetLevels = ST.getSweetLevels();
-  if (!sweetLevels || sweetLevels.length === 0) {
-    ST.saveSweetLevels(ST._defaultSweetLevels());
-  }
 }
 
 function doSeedData() {
-  ST.seedSampleData();
-  closeMForce();
-  nav('pos');
+  // ตรวจสอบว่ามีพนักงานแล้วหรือยัง
+  var hasStaff = ST.getStaff().length > 0;
+  var hasMenu = ST.getMenu().length > 0;
+  
+  if (hasStaff && hasMenu) {
+    // มีข้อมูลแล้ว ให้ถามก่อนเพิ่ม
+    confirmDialog('มีข้อมูลอยู่แล้ว ต้องการเพิ่มข้อมูลตัวอย่างเพิ่มเติมหรือไม่?', function() {
+      ST.seedSampleData();
+      closeMForce();
+      nav('pos');
+      toast('เพิ่มข้อมูลตัวอย่างแล้ว', 'success');
+    });
+  } else {
+    // ยังไม่มีข้อมูล → เพิ่มเลย
+    ST.seedSampleData();
+    closeMForce();
+    nav('pos');
+    toast('เพิ่มข้อมูลตัวอย่างแล้ว', 'success');
+  }
 }
 
 /* ============================================
@@ -1005,8 +1007,13 @@ if (document.readyState === 'loading') {
 }
 
 function showStaffMenu() {
-  if (!APP.currentStaff) return;
+  // 🔥 ถ้ายังไม่มี staff login → แสดงหน้า Login
+  if (!APP.currentStaff) {
+    showPinLogin();
+    return;
+  }
   
+  // มี staff login → แสดงเมนู
   var html = '';
   html += '<div class="text-center mb-16">';
   html += '<div style="font-size:48px;">👤</div>';
@@ -1032,6 +1039,7 @@ function showStaffMenu() {
   
   openModal('👤 บัญชีของฉัน', html);
 }
+
 /* ============================================
    RESTORE LOGIN SESSION AFTER REFRESH
    ============================================ */
