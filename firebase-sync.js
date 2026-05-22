@@ -53,38 +53,41 @@ function initFirebase() {
   }
   
   // 🔥 วาง auth.onAuthStateChanged ตรงนี้ (แทนที่อันเดิม)
-  window.auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      window.currentUser = user;
-      window.userDb = db.collection('users').doc(user.uid);
-      console.log('[Firebase] Logged in:', user.email);
-      
-      await loadUserLicense(user.email);
-      await loadUserData();
-      updateUIForLogin(user);
-      
-      if (isStaffLoggedIn) {
-        applyLicenseFromStorage();
-      }
-      
-    } else {
-      window.currentUser = null;
-      window.userDb = null;
-      isStaffLoggedIn = false;
-      
-      if (typeof LicenseManager !== 'undefined') {
-        LicenseManager.tier = 'free';
-        LicenseManager.currentKey = null;
-        localStorage.removeItem('v1_coffee_license');
-        if (typeof LicenseManager.afterLicenseChange === 'function') {
-          LicenseManager.afterLicenseChange();
-        }
-      }
-      
-      updateUIForLogout();
+window.auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    window.currentUser = user;
+    window.userDb = db.collection('users').doc(user.uid);
+    console.log('[Firebase] Logged in:', user.email);
+    
+    // โหลด License
+    await loadUserLicense(user.email);
+    
+    await loadUserData();
+    updateUIForLogin(user);
+    
+    // ถ้ามี staff login อยู่แล้ว ให้ใช้ license ที่โหลดมา
+    if (isStaffLoggedIn) {
+      applyLicenseFromStorage();
     }
-  });
-}
+    
+  } else {
+    window.currentUser = null;
+    window.userDb = null;
+    isStaffLoggedIn = false;
+    
+    // logout email → กลับเป็น Free
+    if (typeof LicenseManager !== 'undefined') {
+      LicenseManager.tier = 'free';
+      LicenseManager.currentKey = null;
+      localStorage.removeItem('v1_coffee_license');
+      if (typeof LicenseManager.afterLicenseChange === 'function') {
+        LicenseManager.afterLicenseChange();
+      }
+    }
+    
+    updateUIForLogout();
+  }
+});
 
 // 🔥 วางฟังก์ชัน applyLicenseFromStorage ไว้ด้านล่าง (หลัง loadUserLicense)
 function applyLicenseFromStorage() {
@@ -101,8 +104,20 @@ function applyLicenseFromStorage() {
           }
         }
         console.log('[Firebase] Applied license from storage:', license.tier);
+      } else {
+        // license เป็น free → เคลียร์
+        localStorage.removeItem('v1_coffee_license');
+        if (typeof LicenseManager !== 'undefined') {
+          LicenseManager.tier = 'free';
+          LicenseManager.currentKey = null;
+          if (typeof LicenseManager.afterLicenseChange === 'function') {
+            LicenseManager.afterLicenseChange();
+          }
+        }
       }
-    } catch(e) {}
+    } catch(e) {
+      console.log('[Firebase] applyLicenseFromStorage error:', e);
+    }
   }
 }
 
@@ -120,14 +135,21 @@ async function loadUserLicense(email) {
     if (!licenseQuery.empty) {
       const license = licenseQuery.docs[0].data();
       
-      LicenseManager.tier = license.tier;
-      LicenseManager.currentKey = license.key;
-      
+      // 🔥 บันทึกลง localStorage ก่อน
       localStorage.setItem('v1_coffee_license', JSON.stringify({
         key: license.key,
         tier: license.tier,
         activatedAt: Date.now()
       }));
+      
+      // 🔥 อัปเดต LicenseManager
+      LicenseManager.tier = license.tier;
+      LicenseManager.currentKey = license.key;
+      
+      // 🔥 อัปเดต UI
+      if (typeof LicenseManager.afterLicenseChange === 'function') {
+        LicenseManager.afterLicenseChange();
+      }
       
       if (license.expiresAt && new Date(license.expiresAt) < new Date()) {
         if (typeof toast === 'function') {
@@ -138,18 +160,24 @@ async function loadUserLicense(email) {
           toast(`✅ License ${license.tier.toUpperCase()} ใช้งานได้`, 'success');
         }
       }
+      
+      console.log('[Firebase] License loaded:', license.tier);
+      
     } else {
+      // ไม่มี License → Free
+      localStorage.removeItem('v1_coffee_license');
       LicenseManager.tier = 'free';
       LicenseManager.currentKey = null;
-      localStorage.removeItem('v1_coffee_license');
+      
+      if (typeof LicenseManager.afterLicenseChange === 'function') {
+        LicenseManager.afterLicenseChange();
+      }
       
       if (typeof toast === 'function') {
         toast('🆓 ใช้เวอร์ชัน Free', 'info');
       }
-    }
-    
-    if (typeof LicenseManager.afterLicenseChange === 'function') {
-      LicenseManager.afterLicenseChange();
+      
+      console.log('[Firebase] No license found, set to free');
     }
     
   } catch(e) {
