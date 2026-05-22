@@ -207,13 +207,13 @@ var SuperAdmin = {
 /* ============================================
      SHOW ADMIN PANEL (Full Feature Management)
      ============================================ */
-  showAdminPanel: function() {
-    var features = FeatureManager.getAllGrouped();
-    var licenseTier = FeatureManager.getLicenseTier();
-    var licenseKey = (typeof LicenseManager !== 'undefined' && LicenseManager) ? LicenseManager.getCurrentKey() : null;
-    var currentTierName = FeatureManager.getCurrentTierName();
-    
-    var html = '';
+showAdminPanel: function() {
+  var features = FeatureManager.getAllGrouped();
+  var licenseTier = FeatureManager.getLicenseTier();
+  var licenseKey = (typeof LicenseManager !== 'undefined' && LicenseManager) ? LicenseManager.getCurrentKey() : null;
+  var currentTierName = FeatureManager.getCurrentTierName();
+  
+  var html = '';
     
     /* Header */
     html += '<div class="text-center mb-16">';
