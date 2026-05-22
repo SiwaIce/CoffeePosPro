@@ -59,6 +59,57 @@ function switchAdmTab(tab) {
   vibrate(20);
   renderAdminView();
 }
+/* ============================================
+   RENDER ABOUT PAGE
+   ============================================ */
+function renderAboutPage() {
+  var html = '';
+
+  html += '<div class="card text-center p-20 mb-16">';
+  html += '<div style="font-size:64px;margin-bottom:12px;">☕</div>';
+  html += '<div class="fw-800 fs-xl mb-4">Coffee POS</div>';
+  html += '<div class="text-muted mb-4">Version 1.2</div>';
+  html += '<div class="text-muted fs-sm">ระบบ POS สำหรับร้านกาแฟ</div>';
+  html += '</div>';
+
+  html += '<div class="card mb-16">';
+  html += '<div class="card-header"><div class="card-title">📱 เทคโนโลยี</div></div>';
+  html += '<div class="about-tech">';
+  html += aboutRow('Frontend', 'HTML + CSS + JS (ES5)');
+  html += aboutRow('Storage', 'localStorage + Firebase');
+  html += aboutRow('Auth', 'Google Auth + PIN');
+  html += aboutRow('Hosting', 'GitHub Pages');
+  html += aboutRow('PWA', 'Service Worker + Offline');
+  html += aboutRow('Theme', 'Dark / Light');
+  html += aboutRow('Payment', 'Cash / Transfer / PromptPay QR');
+  html += aboutRow('Channels', 'Walk-in / Grab / LINE MAN / Custom');
+  html += '</div></div>';
+
+  html += '<div class="card mb-16">';
+  html += '<div class="card-header"><div class="card-title">⌨️ Shortcuts</div></div>';
+  html += '<div class="about-tech">';
+  html += aboutRow('F1', 'POS');
+  html += aboutRow('F2', 'Orders');
+  html += aboutRow('F3', 'Report');
+  html += aboutRow('Esc', 'ปิด Modal');
+  html += '</div></div>';
+
+  html += '<div class="card">';
+  html += '<div class="card-header"><div class="card-title">🔗 Cloud</div></div>';
+  if (typeof _fbUser !== 'undefined' && _fbUser) {
+    html += '<div class="p-16"><span class="badge badge-success">🟢 Connected</span> ' + sanitize(_fbUser.email || '') + '</div>';
+  } else {
+    html += '<div class="p-16 text-center"><div class="text-muted mb-12">ยังไม่ได้เชื่อมต่อ</div>';
+    html += '<button class="btn btn-primary" onclick="handleAuth()">🔐 Login Google</button></div>';
+  }
+  html += '</div>';
+
+  return html;
+}
+
+function aboutRow(label, value) {
+  return '<div class="about-row"><span class="fw-600">' + sanitize(label) + '</span><span class="text-muted">' + sanitize(value) + '</span></div>';
+}
 
 function renderAdmContent() {
   switch (ADMVIEW.tab) {
