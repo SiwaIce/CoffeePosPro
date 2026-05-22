@@ -2,6 +2,9 @@
    FIREBASE SYNC - Multi-tenant
    ============================================ */
 
+// 🔥 วางตัวแปรไว้ที่จุดเริ่มต้น (หลัง comment header)
+let isStaffLoggedIn = false;
+
 if (typeof window.currentUser === 'undefined') {
   window.currentUser = null;
 }
@@ -49,6 +52,7 @@ function initFirebase() {
     }
   }
   
+  // 🔥 วาง auth.onAuthStateChanged ตรงนี้ (แทนที่อันเดิม)
   window.auth.onAuthStateChanged(async (user) => {
     if (user) {
       window.currentUser = user;
@@ -59,16 +63,19 @@ function initFirebase() {
       await loadUserData();
       updateUIForLogin(user);
       
-      if (typeof toast === 'function') {
-        toast('✅ เข้าสู่ระบบสำเร็จ', 'success');
+      if (isStaffLoggedIn) {
+        applyLicenseFromStorage();
       }
+      
     } else {
       window.currentUser = null;
       window.userDb = null;
+      isStaffLoggedIn = false;
       
       if (typeof LicenseManager !== 'undefined') {
         LicenseManager.tier = 'free';
         LicenseManager.currentKey = null;
+        localStorage.removeItem('v1_coffee_license');
         if (typeof LicenseManager.afterLicenseChange === 'function') {
           LicenseManager.afterLicenseChange();
         }
@@ -77,6 +84,26 @@ function initFirebase() {
       updateUIForLogout();
     }
   });
+}
+
+// 🔥 วางฟังก์ชัน applyLicenseFromStorage ไว้ด้านล่าง (หลัง loadUserLicense)
+function applyLicenseFromStorage() {
+  var savedLicense = localStorage.getItem('v1_coffee_license');
+  if (savedLicense) {
+    try {
+      var license = JSON.parse(savedLicense);
+      if (license && license.tier && license.tier !== 'free') {
+        if (typeof LicenseManager !== 'undefined') {
+          LicenseManager.tier = license.tier;
+          LicenseManager.currentKey = license.key;
+          if (typeof LicenseManager.afterLicenseChange === 'function') {
+            LicenseManager.afterLicenseChange();
+          }
+        }
+        console.log('[Firebase] Applied license from storage:', license.tier);
+      }
+    } catch(e) {}
+  }
 }
 
 async function loadUserLicense(email) {

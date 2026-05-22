@@ -157,6 +157,11 @@ function pinSubmit() {
   if (staff) {
     APP.currentStaff = staff;
     
+    // 🔥 ตั้งค่า isStaffLoggedIn
+    if (typeof window !== 'undefined') {
+      window.isStaffLoggedIn = true;
+    }
+    
     ST.setObj('current_session', {
       staffId: staff.id,
       loginTime: Date.now(),
@@ -186,6 +191,15 @@ function pinSubmit() {
       updateSidebarByStaffPermission();
     }
     
+    // 🔥 ถ้ามี Email Login อยู่แล้ว ให้ดึง License มาใช้
+    if (typeof window !== 'undefined' && window.currentUser) {
+      // มี Email Login → ใช้ License ที่โหลดไว้
+      if (typeof LicenseManager !== 'undefined' && LicenseManager.tier !== 'free') {
+        // License มีอยู่แล้ว ไม่ต้องทำอะไร
+        console.log('[PIN] Using existing license:', LicenseManager.tier);
+      }
+    }
+    
     nav('pos');
   } else {
     setText('pinError', '❌ PIN ไม่ถูกต้อง');
@@ -205,22 +219,26 @@ function logoutStaff() {
     var name = APP.currentStaff.name;
     APP.currentStaff = null;
     
+    // 🔥 ตั้งค่า isStaffLoggedIn เป็น false
+    if (typeof window !== 'undefined') {
+      window.isStaffLoggedIn = false;
+    }
+    
     ST.remove('current_session');
     
-    // 🔥 เพิ่ม: เคลียร์ License ด้วย
-    localStorage.removeItem('v1_coffee_license');
-    localStorage.removeItem('v1_coffee_license_override');
-    
-    if (typeof LicenseManager !== 'undefined') {
-      LicenseManager.tier = 'free';
-      LicenseManager.currentKey = null;
-      if (typeof LicenseManager.afterLicenseChange === 'function') {
-        LicenseManager.afterLicenseChange();
-      }
-    }
+    // 🔥 อย่าลบ license! เพราะ Email ยัง Login อยู่
+    // localStorage.removeItem('v1_coffee_license');  // ← อย่าใช้
     
     updateLoginUI();
     updateSidebarByStaffPermission();
+    
+    // 🔥 ถ้ามี Email Login ให้ดึง License กลับมา
+    if (typeof window !== 'undefined' && window.currentUser) {
+      // มี Email Login → เรียกใช้ license จาก storage
+      if (typeof window.applyLicenseFromStorage === 'function') {
+        window.applyLicenseFromStorage();
+      }
+    }
     
     nav('pos');
     
@@ -228,7 +246,7 @@ function logoutStaff() {
       renderPOSView();
     }
     
-    toast(name + ' ออกจากระบบแล้ว (กลับสู่ Free Edition)', 'info');
+    toast(name + ' ออกจากระบบแล้ว', 'info');
   });
 }
 
