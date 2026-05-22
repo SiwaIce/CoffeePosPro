@@ -728,7 +728,40 @@ function doSeedData() {
     toast('เพิ่มข้อมูลตัวอย่างแล้ว', 'success');
   }
 }
-
+/* ============================================
+   SHOW STAFF MENU (กดชื่อผู้ใช้)
+   ============================================ */
+function showStaffMenu() {
+  if (!APP.currentStaff) {
+    showPinLogin();
+    return;
+  }
+  
+  var html = '';
+  html += '<div class="text-center mb-16">';
+  html += '<div style="font-size:48px;">👤</div>';
+  html += '<div class="fw-800 fs-lg mt-2">' + sanitize(APP.currentStaff.name) + '</div>';
+  html += '<div class="text-muted">' + getRoleName(APP.currentStaff.role) + '</div>';
+  html += '</div>';
+  
+  html += '<div class="card-glass p-16 mb-16">';
+  html += '<div class="flex-between mb-8">';
+  html += '<span>ตำแหน่ง</span>';
+  html += '<span>' + getRoleName(APP.currentStaff.role) + '</span>';
+  html += '</div>';
+  html += '<div class="flex-between">';
+  html += '<span>สถานะ</span>';
+  html += '<span class="badge badge-success">กำลังทำงาน</span>';
+  html += '</div>';
+  html += '</div>';
+  
+  html += '<div class="flex gap-8">';
+  html += '<button class="btn btn-secondary" onclick="closeMForce()">ปิด</button>';
+  html += '<button class="btn btn-danger" onclick="closeMForce(); logoutStaff()">🚪 ออกจากระบบ</button>';
+  html += '</div>';
+  
+  openModal('👤 บัญชีของฉัน', html);
+}
 /* ============================================
    KEYBOARD SHORTCUTS
    ============================================ */
@@ -1007,7 +1040,7 @@ if (document.readyState === 'loading') {
 }
 
 function showStaffMenu() {
-  // 🔥 ถ้ายังไม่มี staff login → แสดงหน้า Login
+  // 🔥 ถ้ายังไม่มี staff login → แสดงหน้า Login ทันที
   if (!APP.currentStaff) {
     showPinLogin();
     return;

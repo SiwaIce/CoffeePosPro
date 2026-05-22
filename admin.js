@@ -1536,4 +1536,52 @@ function createFirstStaff() {
   document.head.appendChild(style);
 })();
 
+// ============================================
+// เพิ่มฟังก์ชันยืนยัน PIN ผู้จัดการ (ใส่หลังฟังก์ชัน renderStaffSettings)
+// ============================================
+
+function verifyManagerBeforeAction(callback) {
+  var html = '';
+  html += '<div class="text-center mb-16">';
+  html += '<div style="font-size:48px;margin-bottom:8px;">👑</div>';
+  html += '<div class="fw-700 fs-lg mb-4">ยืนยันสิทธิ์ผู้จัดการ</div>';
+  html += '<div class="text-muted fs-sm mb-8">กรุณาใส่ PIN ผู้จัดการ</div>';
+  html += '</div>';
+  
+  html += '<div class="form-group">';
+  html += '<label class="form-label">PIN ผู้จัดการ</label>';
+  html += '<input type="password" id="managerPinInput" placeholder="****" maxlength="4" inputmode="numeric" style="font-size:24px;text-align:center;letter-spacing:8px;">';
+  html += '</div>';
+  
+  var footer = '';
+  footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
+  footer += '<button class="btn btn-primary" onclick="submitManagerVerify(\'' + callback.toString() + '\')">ยืนยัน</button>';
+  
+  openModal('🔐 ยืนยันสิทธิ์', html, footer);
+}
+
+function submitManagerVerify(callbackStr) {
+  var pin = ($('managerPinInput') || {}).value;
+  if (!pin || pin.length !== 4) {
+    toast('PIN ต้อง 4 หลัก', 'error');
+    return;
+  }
+  
+  var staffList = ST.getStaff();
+  var isManager = false;
+  for (var i = 0; i < staffList.length; i++) {
+    if (staffList[i].pin === pin && staffList[i].role === 'manager') {
+      isManager = true;
+      break;
+    }
+  }
+  
+  if (isManager) {
+    closeMForce();
+    eval(callbackStr);
+  } else {
+    toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
+  }
+}
+
 console.log('[admin.js] loaded');
