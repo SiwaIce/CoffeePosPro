@@ -88,6 +88,7 @@ window.auth.onAuthStateChanged(async (user) => {
     updateUIForLogout();
   }
 });
+}
 
 // 🔥 วางฟังก์ชัน applyLicenseFromStorage ไว้ด้านล่าง (หลัง loadUserLicense)
 function applyLicenseFromStorage() {
