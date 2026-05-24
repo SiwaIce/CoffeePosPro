@@ -517,10 +517,4 @@ function renderFeatureLockedMembers() {
   document.head.appendChild(style);
 })();
 
-// ใน views-members.js ตอนต้น renderMembersView()
-if (typeof window !== 'undefined' && window.location && window.location.hash === '#admin') {
-  html = '<div class="page-pad">' +
-    '<button class="btn btn-secondary btn-sm mb-16" onclick="backToAdmin()">← กลับไปตั้งค่า</button>' +
-    html;
-}
 console.log('[views-members.js] loaded');

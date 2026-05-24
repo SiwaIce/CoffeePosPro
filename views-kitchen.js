@@ -11,21 +11,22 @@ var KitchenDisplay = {
   isOpen: false,
   
   /* Initialize BroadcastChannel */
-  init: function() {
-    /* Check if Pro feature enabled */
-    if (typeof FeatureManager !== 'undefined' && !FeatureManager.isEnabled('pro_kds')) {
-      console.log('[KDS] Pro feature disabled');
-      return;
-    }
-    
-    /* Create broadcast channel for cross-tab communication */
-    this.channel = new BroadcastChannel('kitchen_display');
-    
-    /* Listen for messages */
-    var self = this;
-    this.channel.onmessage = function(event) {
-      self.handleMessage(event.data);
-    };
+ init: function() {
+  var self = this;  // ← เก็บ this ไว้ก่อน
+  
+  if (typeof FeatureManager !== 'undefined' && !FeatureManager.isEnabled('pro_kds')) {
+    console.log('[KDS] Pro feature disabled');
+    return;
+  }
+  if (typeof BroadcastChannel === 'undefined') {
+    console.warn('[KDS] BroadcastChannel not supported in this browser');
+    return;
+  }
+  this.channel = new BroadcastChannel('kitchen_display');
+  
+  this.channel.onmessage = function(event) {
+    self.handleMessage(event.data);  // ← ใช้ self แทน this
+  };
     
     /* Load existing orders */
     this.loadOrders();

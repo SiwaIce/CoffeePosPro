@@ -1407,7 +1407,8 @@ function completeHoldOrderPayment(orderData) {
   refreshCartUI();
   refreshHoldOrdersStrip();
   window._currentPayHoldId = null;
-  toast('✅ ชำระเงินสำเร็จ ออเดอร์ #' + (saved.number || '') + '', 'success');
+  var orderNumber = saved.number || (saved.orderNumber) || '';
+toast('✅ ชำระเงินสำเร็จ ออเดอร์ #' + orderNumber, 'success');
   setTimeout(function() { modalReceipt(saved); }, 500);
 }
 

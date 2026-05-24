@@ -1,5 +1,6 @@
 /* ============================================
    FIREBASE SYNC - Multi-tenant (แบบ B)
+   Version: 2.0 (Full Sync)
    ============================================ */
 
 var isStaffLoggedIn = false;
@@ -41,14 +42,21 @@ function initFirebase() {
       window.userDb = db.collection('users').doc(user.uid);
       console.log('[Firebase] Logged in:', user.email);
       
-      // 🔥 โหลด License จาก Firestore ทุกครั้งที่ Login
       await loadUserLicense(user.email);
-      
+      await loadAllFromFirebase();  // 🔥 โหลดข้อมูลจาก Cloud
       await loadUserData();
       updateUIForLogin(user);
       
+      setupAutoSync();    // 🔥 ตั้ง auto sync
+      startPeriodicSync(); // 🔥 sync ทุก 5 นาที
+      
       if (isStaffLoggedIn) {
         applyLicenseFromStorage();
+      }
+      
+      // รีเฟรชหน้า
+      if (typeof APP !== 'undefined' && APP && APP.currentView && typeof renderView === 'function') {
+        renderView(APP.currentView);
       }
       
     } else {
@@ -56,7 +64,8 @@ function initFirebase() {
       window.userDb = null;
       isStaffLoggedIn = false;
       
-      // 🔥 logout email → กลับเป็น Free (แต่ไม่ล้าง localStorage)
+      if (periodicSyncInterval) clearInterval(periodicSyncInterval);
+      
       if (typeof LicenseManager !== 'undefined') {
         LicenseManager.tier = 'free';
         LicenseManager.currentKey = null;
@@ -68,6 +77,135 @@ function initFirebase() {
       updateUIForLogout();
     }
   });
+}
+
+// ============================================
+// 🔥 ฟังก์ชัน SYNC ใหม่ทั้งหมด
+// ============================================
+
+var periodicSyncInterval = null;
+
+async function syncAllToFirebase() {
+  if (!window.currentUser) return false;
+  if (!window.userDb) return false;
+  
+  try {
+    var dataToSync = {
+      menu: ST.getMenu(),
+      categories: ST.getCategories(),
+      orders: ST.getOrders(),
+      stock: ST.getStock(),
+      stockLogs: ST.getStockLogs(),
+      staff: ST.getStaff(),
+      shifts: ST.getShifts(),
+      toppings: ST.getToppings(),
+      sizes: ST.getSizes(),
+      sweetLevels: ST.getSweetLevels(),
+      drinkTypes: ST.getDrinkTypes(),
+      channels: ST.getChannels(),
+      recipes: ST.getRecipes(),
+      members: ST.getMembers(),
+      memberTransactions: ST.getMemberTransactions(),
+      config: ST.getConfig(),
+      lastSyncAt: Date.now(),
+      lastSyncBy: window.location.hostname
+    };
+    
+    await window.userDb.set(dataToSync, { merge: true });
+    localStorage.setItem('v1_coffee_last_sync', Date.now().toString());
+    console.log('[Sync] All data saved to Firebase');
+    return true;
+  } catch(e) {
+    console.error('[Sync] Error saving:', e);
+    return false;
+  }
+}
+
+async function loadAllFromFirebase() {
+  if (!window.currentUser) return false;
+  if (!window.userDb) return false;
+  
+  try {
+    var doc = await window.userDb.get();
+    if (!doc.exists) {
+      console.log('[Sync] No existing data, will create on first sync');
+      return false;
+    }
+    
+    var cloudData = doc.data();
+    var lastLocalSync = parseInt(localStorage.getItem('v1_coffee_last_sync') || '0');
+    var lastCloudSync = cloudData.lastSyncAt || 0;
+    
+    if (lastCloudSync > lastLocalSync) {
+      if (cloudData.menu) ST.saveMenu(cloudData.menu);
+      if (cloudData.categories) ST.saveCategories(cloudData.categories);
+      if (cloudData.orders) ST.saveOrders(cloudData.orders);
+      if (cloudData.stock) ST.saveStock(cloudData.stock);
+      if (cloudData.stockLogs) ST.saveStockLogs(cloudData.stockLogs);
+      if (cloudData.staff) ST.saveStaff(cloudData.staff);
+      if (cloudData.shifts) ST.saveShifts(cloudData.shifts);
+      if (cloudData.toppings) ST.saveToppings(cloudData.toppings);
+      if (cloudData.sizes) ST.saveSizes(cloudData.sizes);
+      if (cloudData.sweetLevels) ST.saveSweetLevels(cloudData.sweetLevels);
+      if (cloudData.drinkTypes) ST.saveDrinkTypes(cloudData.drinkTypes);
+      if (cloudData.channels) ST.saveChannels(cloudData.channels);
+      if (cloudData.recipes) ST.saveRecipes(cloudData.recipes);
+      if (cloudData.members) ST.saveMembers(cloudData.members);
+      if (cloudData.memberTransactions) ST.saveMemberTransactions(cloudData.memberTransactions);
+      if (cloudData.config) ST.saveConfig(cloudData.config);
+      
+      localStorage.setItem('v1_coffee_last_sync', lastCloudSync.toString());
+      console.log('[Sync] Loaded data from Firebase (newer)');
+      if (typeof toast === 'function') {
+        toast('📡 ซิงค์ข้อมูลจาก Cloud แล้ว', 'success', 2000);
+      }
+      return true;
+    }
+    
+    console.log('[Sync] Local data is up to date');
+    return false;
+  } catch(e) {
+    console.error('[Sync] Error loading:', e);
+    return false;
+  }
+}
+
+function setupAutoSync() {
+  var syncDebounceTimer = null;
+  
+  ST._onSet = function(key, val) {
+    if (!window.currentUser) return;
+    
+    if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+    syncDebounceTimer = setTimeout(function() {
+      syncAllToFirebase();
+    }, 2000);
+  };
+}
+
+function startPeriodicSync() {
+  if (periodicSyncInterval) clearInterval(periodicSyncInterval);
+  
+  periodicSyncInterval = setInterval(function() {
+    if (window.currentUser) {
+      syncAllToFirebase();
+    }
+  }, 5 * 60 * 1000);
+}
+
+async function manualSync() {
+  if (typeof toast === 'function') {
+    toast('🔄 กำลังซิงค์ข้อมูล...', 'info', 1000);
+  }
+  await syncAllToFirebase();
+  await loadAllFromFirebase();
+  
+  if (typeof renderView === 'function' && typeof APP !== 'undefined' && APP && APP.currentView) {
+    renderView(APP.currentView);
+  }
+  if (typeof toast === 'function') {
+    toast('✅ ซิงค์ข้อมูลเสร็จสมบูรณ์', 'success', 2000);
+  }
 }
 
 function applyLicenseFromStorage() {
@@ -106,7 +244,6 @@ async function loadUserLicense(email) {
       const doc = licenseQuery.docs[0];
       const license = doc.data();
       
-      // 🔥 อัปเดต usedCount +1
       const currentCount = license.usedCount || 0;
       const newCount = currentCount + 1;
       
@@ -131,7 +268,6 @@ async function loadUserLicense(email) {
         LicenseManager.afterLicenseChange();
       }
       
-      // ไม่ต้อง toast ซ้ำ
       console.log('[Firebase] License loaded:', license.tier);
       
     } else {
@@ -150,6 +286,7 @@ async function loadUserLicense(email) {
     console.log('[Firebase] loadUserLicense error:', e);
   }
 }
+
 async function loadUserData() {
   if (!window.userDb) return;
   
@@ -234,7 +371,6 @@ function loginWithGoogle() {
 }
 
 function logoutFromFirebase() {
-  // 🔥 ล้างเฉพาะ session ไม่ล้าง license
   const keysToClear = [
     'current_session',
     'firebase_first_sync_done'

@@ -81,7 +81,7 @@ function renderWorkHistoryModal(staff, month, year) {
       html += '<tr>';
       html += '<td>' + relativeDay(shift.date) + '<br><span class="text-muted fs-sm">' + shift.date + '</span></td>';
       html += '<td>' + shift.clockIn + '</td>';
-      html += '<td>' + (shift.clockOut || statusBadge) . '</td>';
+      html += '<td>' + (shift.clockOut || statusBadge) + '</td>';
       html += '<td class="text-right fw-600">' + (hours !== '-' ? hours + ' ชม.' : '-') . '</td>';
       html += '</tr>';
     }

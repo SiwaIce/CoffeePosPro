@@ -122,7 +122,7 @@ function renderRecipeView() {
 function renderRecipeEditor(menuItems) {
   var selectedMenu = findById(menuItems, RECIPE_VIEW.selectedMenuId);
   var recipe = ST.getRecipe(RECIPE_VIEW.selectedMenuId, RECIPE_VIEW.selectedSize);
-  var stockItems = ST.getStock();  // ดึงข้อมูล Stock
+  var stockItems = ST.getStock() || [];
   
   var html = '';
   
@@ -155,11 +155,11 @@ function renderRecipeEditor(menuItems) {
     html += '<thead><tr><th>วัตถุดิบ</th><th class="text-right">ปริมาณ</th><th class="text-right">ต้นทุน/หน่วย</th><th class="text-right">ต้นทุนรวม</th><th class="text-center"></th></thead>';
     html += '<tbody>';
     
-    for (var i = 0; i < recipe.ingredients.length; i++) {
-      var ing = recipe.ingredients[i];
-      var stockItem = findById(stockItems, ing.stockId);
-      var unitCost = stockItem ? stockItem.costPerUnit : ing.unitCost;
-      var lineCost = (ing.qty || 0) * (unitCost || 0);
+   for (var i = 0; i < recipe.ingredients.length; i++) {
+  var ing = recipe.ingredients[i];
+  var stockItem = findById(stockItems, ing.stockId);
+  var unitCost = (stockItem && stockItem.costPerUnit) ? stockItem.costPerUnit : (ing.unitCost || 0);
+  var lineCost = (ing.qty || 0) * (unitCost || 0);
       
       html += '<tr>';
       html += '<td class="fw-600">' + sanitize(ing.stockName) + '</td>';
