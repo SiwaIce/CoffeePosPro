@@ -671,16 +671,18 @@ select { -webkit-appearance: none; appearance: none; }
   object-fit: cover;
 }
 .menu-item-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.3;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 2;  /* แสดง 2 บรรทัด */
   -webkit-box-orient: vertical;
   max-width: 100%;
+  word-break: break-word;  /* เพิ่มตัดคำ */
+  min-height: 32px;  /* ความสูงขั้นต่ำ */
 }
 .menu-item-price {
   font-size: 15px;
@@ -2182,6 +2184,19 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+/* ใน @media (max-width: 768px) */
+@media (max-width: 768px) {
+  .menu-item-name {
+    font-size: 11px;
+    -webkit-line-clamp: 2;
+    min-height: 28px;
+  }
+  .menu-item {
+    padding: 10px 4px 8px;
+    min-height: 90px;
+  }
+}
+
 /* PIN Pad Styles */
 .pin-display {
   display: flex;
@@ -2248,9 +2263,12 @@ input:focus, select:focus, textarea:focus {
   background: #16a34a;
 }
 
-/* ปรับปรุงหน้า POS สำหรับมือถือ */
+/* ============================================
+   ปรับปรุงหน้า POS สำหรับมือถือ
+   ============================================ */
+
 @media (max-width: 768px) {
-  /* ปรับขนาดการ์ดเมนู */
+  /* ปรับขนาดการ์ดเมนู - ให้แสดงชื่อเต็ม */
   .menu-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
@@ -2259,25 +2277,78 @@ input:focus, select:focus, textarea:focus {
   
   .menu-item {
     padding: 12px 6px 10px;
-    min-height: 100px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
   
   .menu-item-emoji {
     font-size: 28px;
+    margin-bottom: 4px;
   }
   
   .menu-item-name {
     font-size: 12px;
+    line-height: 1.3;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    min-height: 32px;
+    text-align: center;
   }
   
   .menu-item-price {
     font-size: 13px;
+    margin-top: 4px;
+    padding: 2px 6px;
+  }
+  
+  .menu-item-badge {
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+  
+  /* ปรับ fav-row สำหรับมือถือ */
+  .fav-item {
+    padding: 6px 10px;
+  }
+  
+  .fav-name {
+    font-size: 11px;
+  }
+  
+  /* ปรับ recent orders */
+  .recent-card {
+    min-width: 170px;
+    max-width: 200px;
+    padding: 8px 10px;
   }
   
   /* ปรับขนาด KPI Cards */
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
+  }
+  
+  .kpi-card {
+    padding: 10px;
+  }
+  
+  .kpi-value {
+    font-size: 20px;
+  }
+  
+  .kpi-label {
+    font-size: 10px;
   }
   
   /* ปรับหน้า Stock */
@@ -2327,19 +2398,48 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-/* สำหรับมือถือขนาดเล็ก */
+/* ============================================
+   สำหรับมือถือขนาดเล็กมาก (iPhone SE, 5, 6)
+   ============================================ */
+
 @media (max-width: 480px) {
   .menu-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    padding: 6px 8px 80px;
+  }
+  
+  .menu-item {
+    padding: 8px 4px;
+    min-height: 95px;
+  }
+  
+  .menu-item-emoji {
+    font-size: 24px;
+  }
+  
+  .menu-item-name {
+    font-size: 10px;
+    -webkit-line-clamp: 2;
+    min-height: 26px;
+  }
+  
+  .menu-item-price {
+    font-size: 11px;
   }
   
   .kpi-grid {
     grid-template-columns: 1fr;
+    gap: 6px;
   }
   
   .section-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+  
+  .section-title {
+    font-size: 18px;
   }
   
   .cat-tabs {
@@ -2351,8 +2451,22 @@ input:focus, select:focus, textarea:focus {
   .cat-tab {
     display: inline-block;
     flex: none;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  
+  /* ปรับปุ่มในตะกร้ามือถือ */
+  .cart-action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .cart-action-buttons .btn-secondary,
+  .cart-action-buttons .btn-pay {
+    width: 100%;
   }
 }
+
 /* ============================================
    iPad / Tablet ปรับปรุง
    ============================================ */
@@ -2375,6 +2489,10 @@ input:focus, select:focus, textarea:focus {
   .menu-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
+  }
+  
+  .menu-item-name {
+    font-size: 13px;
   }
   
   /* ปรับขนาด modal */
@@ -2402,7 +2520,10 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-/* สำหรับอุปกรณ์ที่ใช้ทัช (iPad, มือถือ) */
+/* ============================================
+   สำหรับอุปกรณ์ที่ใช้ทัช (iPad, มือถือ)
+   ============================================ */
+
 @media (hover: none) and (pointer: coarse) {
   /* ลบ hover effect ที่อาจค้าง */
   .btn:hover, .menu-item:hover, .nav-item:hover {
@@ -2426,12 +2547,18 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-/* ป้องกัน keyboard เด้งขึ้นบัง */
+/* ============================================
+   ป้องกัน keyboard เด้งขึ้นบัง
+   ============================================ */
+
 input, select, textarea {
   font-size: 16px !important; /* ป้องกัน zoom บน iOS */
 }
 
-/* ปรับ PIN Pad สำหรับมือถือ/แท็บเล็ต */
+/* ============================================
+   ปรับ PIN Pad สำหรับมือถือ/แท็บเล็ต
+   ============================================ */
+
 .pin-pad {
   gap: 12px;
 }
@@ -2440,7 +2567,11 @@ input, select, textarea {
   min-width: 70px;
   min-height: 70px;
 }
-/* Help Icon */
+
+/* ============================================
+   Help Icon
+   ============================================ */
+
 .help-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -2462,7 +2593,6 @@ input, select, textarea {
   background: var(--accent);
   transform: scale(1.05);
 }
-
 /* ============================================
    STOCK PAGE IMPROVEMENTS
    ============================================ */

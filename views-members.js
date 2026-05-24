@@ -1,7 +1,7 @@
 /* ============================================
    COFFEE POS — VIEWS-MEMBERS.JS
    จัดการสมาชิก + ระบบแต้มสะสม
-   Version: 1.0
+   Version: 2.0 (Fixed: Permission + Quick Points)
    ============================================ */
 
 var MEMBER_VIEW = {
@@ -207,13 +207,13 @@ function renderMemberTransactions() {
   html += '<div class="card-header"><div class="card-title">📋 ประวัติการใช้แต้ม</div></div>';
   html += '<div class="table-wrap">';
   html += '<table>';
-  html += '<thead><tr>';
+  html += '<thead><table>';
   html += '<th>วันที่</th>';
   html += '<th>สมาชิก</th>';
   html += '<th>รายการ</th>';
   html += '<th class="text-right">แต้ม</th>';
   html += '<th class="text-right">ประเภท</th>';
-  html += '</tr></thead>';
+  html += '</thead>';
   html += '<tbody>';
   
   for (var i = 0; i < transactions.length && i < 100; i++) {
@@ -277,10 +277,19 @@ function saveMemberSettings() {
 }
 
 /* ============================================
-   MODAL: EDIT MEMBER
+   MODAL: EDIT MEMBER (พร้อมตรวจสอบสิทธิ์)
    ============================================ */
 function modalEditMember(member) {
   var isNew = !member;
+  var isManager = (APP.currentStaff && APP.currentStaff.role === 'manager');
+  var isCashier = (APP.currentStaff && (APP.currentStaff.role === 'cashier' || APP.currentStaff.role === 'barista'));
+  
+  // แคชเชียร์เพิ่มสมาชิกใหม่ได้ แต่แก้ไขสมาชิกเดิมไม่ได้
+  if (!isManager && !isNew && !isCashier) {
+    toast('ไม่มีสิทธิ์แก้ไขสมาชิก', 'error');
+    return;
+  }
+  
   var m = member || {};
   
   var html = '';
@@ -303,18 +312,22 @@ function modalEditMember(member) {
   html += '<div class="form-row">';
   html += '<div class="form-group">';
   html += '<label class="form-label">แต้มเริ่มต้น</label>';
-  html += '<input type="number" id="fMemberPoints" value="' + (m.points || 0) + '" placeholder="0">';
+  html += '<input type="number" id="fMemberPoints" value="' + (m.points || 0) + '" placeholder="0" ' + (!isManager ? 'disabled' : '') + '>';
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">ยอดซื้อรวม</label>';
-  html += '<input type="number" id="fMemberSpent" value="' + (m.totalSpent || 0) + '" placeholder="0">';
+  html += '<input type="number" id="fMemberSpent" value="' + (m.totalSpent || 0) + '" placeholder="0" ' + (!isManager ? 'disabled' : '') + '>';
   html += '</div>';
   html += '</div>';
+  
+  if (!isManager && !isNew) {
+    html += '<div class="text-muted fs-sm mt-4 mb-4">⚠️ เฉพาะผู้จัดการเท่านั้นที่แก้ไขแต้มและยอดซื้อได้</div>';
+  }
   
   html += '<input type="hidden" id="fMemberId" value="' + sanitize(m.id || '') + '">';
   
   var footer = '';
-  if (!isNew) footer += '<button class="btn btn-danger btn-sm" onclick="deleteMemberFromModal()">🗑 ลบ</button>';
+  if (!isNew && isManager) footer += '<button class="btn btn-danger btn-sm" onclick="deleteMemberFromModal()">🗑 ลบ</button>';
   footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
   footer += '<button class="btn btn-primary" onclick="saveMemberFromModal()">' + (isNew ? '➕ เพิ่ม' : '💾 บันทึก') + '</button>';
   
@@ -325,6 +338,14 @@ function saveMemberFromModal() {
   var id = ($('fMemberId') || {}).value;
   var name = ($('fMemberName') || {}).value.trim();
   if (!name) { toast('กรุณาใส่ชื่อสมาชิก', 'error'); return; }
+  
+  var isManager = (APP.currentStaff && APP.currentStaff.role === 'manager');
+  
+  // ถ้าแก้ไขสมาชิกที่มีอยู่แล้ว และไม่ใช่ manager → ไม่อนุญาต
+  if (id && !isManager) {
+    toast('เฉพาะผู้จัดการเท่านั้นที่แก้ไขสมาชิกได้', 'error');
+    return;
+  }
   
   var member = {
     name: name,
@@ -358,7 +379,7 @@ function deleteMemberFromModal() {
 }
 
 /* ============================================
-   MODAL: MEMBER DETAIL + USE POINTS
+   MODAL: MEMBER DETAIL + USE POINTS (พร้อมเลือกแต้มเอง)
    ============================================ */
 function modalMemberDetail(memberId) {
   var member = ST.getMemberById(memberId);
@@ -367,6 +388,7 @@ function modalMemberDetail(memberId) {
   var cfg = ST.getConfig();
   var pointValue = cfg.pointValue || 1;
   var pointWorth = (member.points || 0) * pointValue;
+  var maxPoints = member.points || 0;
   
   var html = '';
   html += '<div class="text-center mb-16">';
@@ -397,25 +419,48 @@ function modalMemberDetail(memberId) {
   
   html += '<div class="form-group">';
   html += '<label class="form-label">ใช้แต้มลด (1 แต้ม = ' + formatMoneySign(pointValue) + ')</label>';
-  html += '<input type="number" id="usePoints" placeholder="0" max="' + (member.points || 0) + '" value="0" oninput="updateMemberPointDiscount()">';
-  html += '<div class="form-hint">สูงสุด ' + formatNumber(member.points || 0) + ' แต้ม (มูลค่า ' + formatMoneySign(pointWorth) + ')</div>';
+  html += '<input type="number" id="usePoints" placeholder="0" max="' + maxPoints + '" value="0" oninput="updateMemberPointDiscount()" style="font-size:20px;text-align:center;">';
+  html += '<div class="form-hint">สูงสุด ' + formatNumber(maxPoints) + ' แต้ม (มูลค่า ' + formatMoneySign(pointWorth) + ')</div>';
+  html += '</div>';
+  
+  // ปุ่มเลือกแต้มแบบเร็ว
+  html += '<div class="flex gap-4 mt-4 mb-12 flex-wrap" style="justify-content:center;">';
+  var quickPoints = [10, 20, 50, 100, 200];
+  for (var qp = 0; qp < quickPoints.length; qp++) {
+    if (quickPoints[qp] <= maxPoints) {
+      html += '<button class="btn btn-sm btn-outline" onclick="setQuickPoints(' + quickPoints[qp] + ')">' + quickPoints[qp] + ' แต้ม</button>';
+    }
+  }
+  if (maxPoints > 0) {
+    html += '<button class="btn btn-sm btn-primary" onclick="setQuickPoints(' + maxPoints + ')">ใช้ทั้งหมด (' + maxPoints + ')</button>';
+  }
   html += '</div>';
   
   html += '<div class="card-glass p-16">';
   html += '<div class="flex-between">';
   html += '<span class="fw-700">ส่วนลดจากแต้ม</span>';
-  html += '<span id="pointDiscountDisplay" class="fw-800 text-success">' + formatMoneySign(0) + '</span>';
+  html += '<span id="pointDiscountDisplay" class="fw-800 text-success" style="font-size:20px;">' + formatMoneySign(0) + '</span>';
   html += '</div>';
   html += '</div>';
   
   var footer = '';
   footer += '<button class="btn btn-secondary" onclick="closeMForce()">ปิด</button>';
-  footer += '<button class="btn btn-primary" onclick="useMemberPoints(\'' + memberId + '\')">✅ ใช้แต้ม</button>';
+  footer += '<button class="btn btn-primary" onclick="useMemberPointsFromDetail(\'' + memberId + '\')">✅ ใช้แต้ม</button>';
   
   openModal('👤 รายละเอียดสมาชิก', html, footer);
   
   window._currentMemberPoints = member.points;
   window._currentMemberPointValue = pointValue;
+  window._currentMemberId = memberId;
+}
+
+function setQuickPoints(points) {
+  var input = $('usePoints');
+  if (input) {
+    input.value = points;
+    updateMemberPointDiscount();
+  }
+  vibrate(20);
 }
 
 function updateMemberPointDiscount() {
@@ -423,16 +468,23 @@ function updateMemberPointDiscount() {
   var maxPoints = window._currentMemberPoints || 0;
   if (points > maxPoints) {
     points = maxPoints;
-    $('usePoints').value = points;
+    var input = $('usePoints');
+    if (input) input.value = points;
   }
   var discount = points * window._currentMemberPointValue;
   setText('pointDiscountDisplay', formatMoneySign(discount));
 }
 
-function useMemberPoints(memberId) {
+function useMemberPointsFromDetail(memberId) {
   var points = parseInt(($('usePoints') || {}).value) || 0;
   if (points <= 0) {
     toast('กรุณาระบุจำนวนแต้ม', 'error');
+    return;
+  }
+  
+  var maxPoints = window._currentMemberPoints || 0;
+  if (points > maxPoints) {
+    toast('แต้มไม่เพียงพอ', 'error');
     return;
   }
   
@@ -452,7 +504,10 @@ function useMemberPoints(memberId) {
 function onMemberSearch(val) {
   MEMBER_VIEW.searchQuery = val;
   MEMBER_VIEW.page = 1;
-  setHTML('memberContent', renderMemberList());
+  var content = renderMemberList();
+  var container = $('memberContent');
+  if (container) container.innerHTML = content;
+  else setHTML('memberContent', content);
 }
 
 function onMemberSortChange() {
@@ -460,7 +515,10 @@ function onMemberSortChange() {
   if (select) {
     MEMBER_VIEW.sortBy = select.value;
     MEMBER_VIEW.page = 1;
-    setHTML('memberContent', renderMemberList());
+    var content = renderMemberList();
+    var container = $('memberContent');
+    if (container) container.innerHTML = content;
+    else setHTML('memberContent', content);
   }
 }
 
@@ -475,7 +533,13 @@ function renderMemberPagination(totalPages) {
 
 function memberGoPage(page) {
   MEMBER_VIEW.page = page;
-  setHTML('memberContent', renderMemberList());
+  var content = renderMemberList();
+  var container = $('memberContent');
+  if (container) container.innerHTML = content;
+  else setHTML('memberContent', content);
+  
+  var main = $('mainContent');
+  if (main) main.scrollTop = 0;
 }
 
 function renderFeatureLockedMembers() {
