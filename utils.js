@@ -885,5 +885,10 @@ document.addEventListener('DOMContentLoaded', function() {
     addRippleEffect(btn);
   });
 });
-
+// Safe roundTo function
+function roundTo(num, decimals) {
+  if (num === null || num === undefined || isNaN(num)) return 0;
+  var factor = Math.pow(10, decimals || 0);
+  return Math.round(num * factor) / factor;
+}
 console.log('[utils.js] loaded');

@@ -13,6 +13,13 @@ var RECIPE_VIEW = {
    RENDER RECIPE MANAGEMENT PAGE
    ============================================ */
 function renderRecipeView() {
+ // ป้องกัน error ถ้า ST ยังไม่โหลด
+  if (typeof ST === 'undefined' || !ST.getActiveMenu) {
+    console.log('[RecipeView] Waiting for ST to load...');
+    setTimeout(renderRecipeView, 100);
+    return;
+  }
+  
   var main = $('mainContent');
   if (!main) return;
 

@@ -1153,6 +1153,13 @@ function initApp() {
       }
     }, 500);
 
+// ตรวจสอบว่าทุกอย่างโหลดเรียบร้อย
+if (typeof ST === 'undefined' || !ST.getConfig) {
+  console.log('[App] Waiting for modules...');
+  setTimeout(initApp, 100);
+  return;
+}
+
     /* 13. Render default view */
     nav('pos');
 
