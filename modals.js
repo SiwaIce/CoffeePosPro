@@ -1121,6 +1121,38 @@ function goToRecipeForMenu(menuId) {
     nav('recipe');
   }
 }
+/* ============================================
+   modals.js — เพิ่มส่วนนี้ในฟังก์ชัน modalEditMenu
+   แทนที่โค้ดส่วนรูปเมนูเดิม (ประมาณบรรทัด 1100-1120)
+   ============================================ */
+
+/* รูปเมนู (เฉพาะ Super Admin เท่านั้น) */
+var isSuperAdmin = (typeof SuperAdmin !== 'undefined' && SuperAdmin.isLoggedIn);
+
+if (typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image') && isSuperAdmin) {
+  html += '<div class="form-group">';
+  html += '<label class="form-label">🖼️ รูปเมนู (URL)</label>';
+  html += '<input type="text" id="fMenuImage" value="' + sanitize(m.image || '') + '" placeholder="https://...">';
+  html += '<div class="form-hint">ใส่ลิงก์รูป (แนะนำ 200x200px) ถ้าไม่มีจะใช้ Emoji แทน</div>';
+  html += '<div id="imagePreview" style="margin-top:8px;"></div>';
+  html += '</div>';
+  
+  // เพิ่ม script preview รูป
+  html += '<script>';
+  html += 'function previewMenuImage() {';
+  html += '  var url = document.getElementById("fMenuImage").value;';
+  html += '  var preview = document.getElementById("imagePreview");';
+  html += '  if (preview && url) {';
+  html += '    preview.innerHTML = "<img src=\\"" + url + "\\" style=\\"max-width:80px;max-height:80px;border-radius:8px;margin-top:8px;\\" onerror=\\"this.style.display=\'none\'\\">";';
+  html += '  } else if (preview) {';
+  html += '    preview.innerHTML = "";';
+  html += '  }';
+  html += '}';
+  html += 'setTimeout(function(){ previewMenuImage(); }, 100);';
+  html += 'var imgInput = document.getElementById("fMenuImage");';
+  html += 'if (imgInput) imgInput.oninput = previewMenuImage;';
+  html += '</script>';
+}
 
 function toggleSizePrice(checkbox) {
   var sizeName = checkbox.getAttribute('data-size');

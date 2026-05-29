@@ -130,6 +130,7 @@ function exportCSVMenu() {
       m.name || '',
       catName,
       m.emoji || '',
+            m.image || '',
       m.active !== false ? 'Yes' : 'No'
     ];
 

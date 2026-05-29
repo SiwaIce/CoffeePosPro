@@ -173,11 +173,15 @@ function renderMenuManageCard(item, cats) {
 
   /* Emoji / Image */
   html += '<div class="menu-manage-icon">';
-  if (item.image) {
-    html += '<img src="' + item.image + '" style="width:48px;height:48px;border-radius:8px;object-fit:cover;">';
+ var isSuperAdmin = (typeof SuperAdmin !== 'undefined' && SuperAdmin.isLoggedIn);
+  var showImage = isSuperAdmin && item.image;
+  
+  if (showImage) {
+    html += '<img src="' + item.image + '" style="width:48px;height:48px;border-radius:8px;object-fit:cover;" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<span style=\\\'font-size:36px;\\\'>' + (item.emoji || '☕') + '</span>\'">';
   } else {
     html += '<span style="font-size:36px;">' + (item.emoji || '☕') + '</span>';
   }
+
   html += '</div>';
 
   /* Info */

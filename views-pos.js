@@ -406,15 +406,27 @@ function renderMenuItems() {
     var it = items[m];
     var basePrice = ST.getMenuBasePrice(it);
     var cartQty = getCartQtyForMenu(it.id);
-    var showImage = (typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image')) && it.image && it.image.trim() !== '';
+    var showImage = false;
+    if (typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image')) {
+      var licenseTier = 'free';
+      if (typeof LicenseManager !== 'undefined') {
+        licenseTier = LicenseManager.getTier();
+      }
+      if (licenseTier === 'pro' && it.image && it.image.trim() !== '') {
+        showImage = true;
+      }
+    }
+    
     html += '<div class="menu-item anim-fadeUp" onclick="onMenuItemClick(\'' + sanitize(it.id) + '\')">';
     if (cartQty > 0) html += '<div class="menu-item-badge">' + cartQty + '</div>';
+    
     if (showImage) {
       html += '<img class="menu-item-img" src="' + it.image + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
       html += '<div class="menu-item-emoji" style="display:none;">' + (it.emoji || '☕') + '</div>';
     } else {
       html += '<div class="menu-item-emoji">' + (it.emoji || '☕') + '</div>';
     }
+
     html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
     html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
     var isFav = ST.isFavorite(it.id);

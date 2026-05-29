@@ -34,7 +34,15 @@ var FEATURE_REGISTRY = {
   pro_kds: { id: 'pro_kds', name: '🍳 Kitchen Display', tier: 'pro', canToggle: true, defaultValue: false, description: 'จอครัวแยก', requiresLicense: true },
   pro_realtime: { id: 'pro_realtime', name: '🔄 Real-time Dashboard', tier: 'pro', canToggle: true, defaultValue: false, description: 'อัปเดตข้อมูลอัตโนมัติ', requiresLicense: true },
   pro_advanced_report: { id: 'pro_advanced_report', name: '📈 รายงานขั้นสูง', tier: 'pro', canToggle: true, defaultValue: false, description: 'COGS, กำไรสุทธิ, วิเคราะห์', requiresLicense: true, dependsOn: 'pro_recipe' },
-  pro_menu_image: { id: 'pro_menu_image', name: '🖼️ รูปเมนู', tier: 'pro', canToggle: true, defaultValue: false, description: 'เพิ่มรูปภาพให้เมนู (เฉพาะ Pro)', requiresLicense: true }
+pro_menu_image: { 
+  id: 'pro_menu_image', 
+  name: '🖼️ รูปเมนู', 
+  tier: 'pro', 
+  canToggle: true, 
+  defaultValue: true,   // ← แก้ไขตรงนี้
+  description: 'เพิ่มรูปภาพให้เมนู (เฉพาะ Pro)', 
+  requiresLicense: true 
+}
 };
 
 var FEATURE_PRESETS = {
