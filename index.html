@@ -250,4 +250,23 @@
 <script src="export.js?v=3"></script>
 <script src="firebase-sync.js?v=3"></script>
 <script src="app.js?v=3"></script>
+<script>
+  // บังคับซ่อน splash ทันทีหลังจาก app โหลด
+  (function() {
+    var checkInterval = setInterval(function() {
+      var splash = document.getElementById('splash');
+      var app = document.getElementById('app');
+      if (splash && splash.style.display !== 'none') {
+        splash.style.display = 'none';
+      }
+      if (app && app.style.display !== '') {
+        app.style.display = '';
+      }
+      // ถ้า splash หายแล้ว ให้หยุดตรวจสอบ
+      if (splash && splash.style.display === 'none') {
+        clearInterval(checkInterval);
+      }
+    }, 100);
+  })();
+</script>
 </html>

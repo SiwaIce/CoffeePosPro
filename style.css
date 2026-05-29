@@ -190,8 +190,8 @@ select { -webkit-appearance: none; appearance: none; }
   opacity: 0;
   transition: opacity 0.4s ease;
   pointer-events: none;
+  display: none !important;  /* ← เพิ่มบรรทัดนี้ */
 }
-
 /* ============================================
    APP LAYOUT
    ============================================ */
