@@ -103,12 +103,53 @@ ST.getConfig = function() {
     soundEnabled: true,
     promptPayId: '',
     promptPayName: '',
-    promptPayEnabled: false
+    promptPayEnabled: false,
+    
+    // ========== เพิ่มส่วนนี้ ========== //
+    // ดีไซน์การ์ดเมนู (POS)
+    menuCardDesign: {
+      // พื้นฐาน
+      showName: true,
+      showPrice: true,
+      showImage: true,
+      
+      // รูปแบบหลัก ('overlay' = แบบ A, 'classic' = แบบ B)
+      cardStyle: 'classic',
+      
+      // แบบ A (overlay) - ข้อความทับรูป
+      overlayNamePosition: 'left',
+      overlayPricePosition: 'right',
+      overlayTextBg: 'translucent',  // 'translucent', 'solid', 'none'
+      
+      // แบบ B (classic) - รูปบน + ข้อความล่าง
+      classicNamePosition: 'left',
+      classicPricePosition: 'right',
+      classicTextBg: 'none',
+      
+      // ขนาด
+      fontSize: 'medium',     // 'small', 'medium', 'large'
+      imageHeight: 160,       // px
+      cardRadius: 16,         // px
+      imageRadius: 12,        // px
+      
+      // เอฟเฟกต์
+      showShadow: true,
+      showBorder: false
+    }
+    // ========== จบส่วนที่เพิ่ม ========== //
   };
+  
   var cfg = ST.getObj('config', {});
   for (var k in defaults) {
     if (cfg[k] === undefined) cfg[k] = defaults[k];
   }
+  
+  // ========== เพิ่ม这部分 (เผื่อ menuCardDesign ไม่มี) ========== //
+  if (!cfg.menuCardDesign) {
+    cfg.menuCardDesign = defaults.menuCardDesign;
+  }
+  // ========== จบ ========== //
+  
   return cfg;
 };
 

@@ -3044,3 +3044,268 @@ html {
     height: 110px;
   }
 }
+/* ============================================
+   MENU CARD DESIGN - 2 STYLES
+   แบบ A: ข้อความทับรูป (overlay)
+   แบบ B: รูปบน + ข้อความล่าง (classic)
+   ============================================ */
+
+/* ----- ตัวแปรสำหรับการ์ด (ใช้ร่วมกัน) ----- */
+.menu-item {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: var(--card-radius, 16px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+}
+
+/* เงา */
+.menu-item[data-shadow="true"] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.menu-item[data-shadow="true"]:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+}
+
+/* ขอบ */
+.menu-item[data-border="true"] {
+  border: 2px solid var(--accent);
+}
+
+/* ปุ่มโปรด (⭐) */
+.menu-item .fav-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  z-index: 5;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.menu-item .fav-btn:hover {
+  transform: scale(1.1);
+}
+.menu-item .fav-btn.active {
+  color: var(--accent);
+}
+
+/* Badge จำนวนในตะกร้า */
+.menu-item-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, var(--accent), #ea580c);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== แบบ A: ข้อความทับรูป (overlay) ===== */
+.menu-item[data-style="overlay"] {
+  min-height: 180px;
+}
+
+.menu-item[data-style="overlay"] .menu-item-img {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.menu-item[data-style="overlay"] .menu-item-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  min-height: 180px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+}
+
+/* ข้อความทับรูป - แบบ A */
+.menu-item[data-style="overlay"] .menu-item-name,
+.menu-item[data-style="overlay"] .menu-item-price {
+  position: absolute;
+  bottom: 12px;
+  color: white;
+  font-weight: 700;
+  z-index: 3;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 14px;
+}
+
+/* พื้นหลังข้อความ - แบบ A */
+.menu-item[data-style="overlay"][data-text-bg="translucent"] .menu-item-name,
+.menu-item[data-style="overlay"][data-text-bg="translucent"] .menu-item-price {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+}
+
+.menu-item[data-style="overlay"][data-text-bg="solid"] .menu-item-name,
+.menu-item[data-style="overlay"][data-text-bg="solid"] .menu-item-price {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.menu-item[data-style="overlay"][data-text-bg="none"] .menu-item-name,
+.menu-item[data-style="overlay"][data-text-bg="none"] .menu-item-price {
+  background: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* ตำแหน่งชื่อ - แบบ A */
+.menu-item[data-style="overlay"][data-name-pos="left"] .menu-item-name { left: 12px; }
+.menu-item[data-style="overlay"][data-name-pos="center"] .menu-item-name { left: 50%; transform: translateX(-50%); }
+.menu-item[data-style="overlay"][data-name-pos="right"] .menu-item-name { right: 12px; left: auto; }
+
+/* ตำแหน่งราคา - แบบ A */
+.menu-item[data-style="overlay"][data-price-pos="left"] .menu-item-price { left: 12px; right: auto; }
+.menu-item[data-style="overlay"][data-price-pos="center"] .menu-item-price { left: 50%; transform: translateX(-50%); }
+.menu-item[data-style="overlay"][data-price-pos="right"] .menu-item-price { right: 12px; }
+
+/* จัดระเบียบถ้าชื่อกับราคาอยู่ตำแหน่งเดียวกัน */
+.menu-item[data-style="overlay"][data-name-pos="left"][data-price-pos="left"] .menu-item-name,
+.menu-item[data-style="overlay"][data-name-pos="right"][data-price-pos="right"] .menu-item-price {
+  bottom: 12px;
+}
+.menu-item[data-style="overlay"][data-name-pos="left"][data-price-pos="left"] .menu-item-price {
+  bottom: 48px;
+}
+.menu-item[data-style="overlay"][data-name-pos="right"][data-price-pos="right"] .menu-item-name {
+  bottom: 48px;
+}
+
+/* ===== แบบ B: รูปบน + ข้อความล่าง (classic) ===== */
+.menu-item[data-style="classic"] {
+  padding-bottom: 12px;
+}
+
+.menu-item[data-style="classic"] .menu-item-img {
+  width: 100%;
+  height: var(--image-height, 140px);
+  object-fit: cover;
+  display: block;
+  border-radius: var(--image-radius, 12px) var(--image-radius, 12px) 0 0;
+}
+
+.menu-item[data-style="classic"] .menu-item-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  height: var(--image-height, 140px);
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  border-radius: var(--image-radius, 12px) var(--image-radius, 12px) 0 0;
+}
+
+/* เนื้อหาด้านล่าง - แบบ B */
+.menu-item[data-style="classic"] .menu-item-info {
+  padding: 12px 12px 4px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.menu-item[data-style="classic"] .menu-item-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.menu-item[data-style="classic"] .menu-item-price {
+  font-weight: 800;
+  color: var(--accent);
+  font-size: 15px;
+}
+
+/* ตำแหน่งชื่อ/ราคา - แบบ B */
+.menu-item[data-style="classic"][data-name-pos="center"] .menu-item-info {
+  justify-content: center;
+}
+.menu-item[data-style="classic"][data-name-pos="right"] .menu-item-info {
+  flex-direction: row-reverse;
+}
+.menu-item[data-style="classic"][data-price-pos="left"] .menu-item-info {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+/* พื้นหลังข้อความ - แบบ B */
+.menu-item[data-style="classic"][data-text-bg="solid"] .menu-item-name,
+.menu-item[data-style="classic"][data-text-bg="solid"] .menu-item-price {
+  background: var(--bg-card-hover);
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+/* ===== ขนาดตัวอักษร ===== */
+.menu-item[data-font="small"] .menu-item-name { font-size: 12px; }
+.menu-item[data-font="small"] .menu-item-price { font-size: 13px; }
+.menu-item[data-font="medium"] .menu-item-name { font-size: 14px; }
+.menu-item[data-font="medium"] .menu-item-price { font-size: 15px; }
+.menu-item[data-font="large"] .menu-item-name { font-size: 16px; }
+.menu-item[data-font="large"] .menu-item-price { font-size: 17px; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .menu-item[data-style="overlay"] .menu-item-img,
+  .menu-item[data-style="overlay"] .menu-item-emoji {
+    min-height: 150px;
+  }
+  
+  .menu-item[data-style="classic"] .menu-item-img,
+  .menu-item[data-style="classic"] .menu-item-emoji {
+    height: 120px;
+  }
+  
+  .menu-item[data-style="overlay"] .menu-item-name,
+  .menu-item[data-style="overlay"] .menu-item-price {
+    font-size: 12px;
+    padding: 4px 10px;
+    bottom: 8px;
+  }
+  
+  .menu-item[data-font="small"] .menu-item-name { font-size: 11px; }
+  .menu-item[data-font="small"] .menu-item-price { font-size: 12px; }
+  .menu-item[data-font="medium"] .menu-item-name { font-size: 13px; }
+  .menu-item[data-font="medium"] .menu-item-price { font-size: 14px; }
+  .menu-item[data-font="large"] .menu-item-name { font-size: 15px; }
+  .menu-item[data-font="large"] .menu-item-price { font-size: 16px; }
+}
+
+@media (max-width: 480px) {
+  .menu-item[data-style="overlay"] .menu-item-img,
+  .menu-item[data-style="overlay"] .menu-item-emoji {
+    min-height: 130px;
+  }
+  
+  .menu-item[data-style="classic"] .menu-item-img,
+  .menu-item[data-style="classic"] .menu-item-emoji {
+    height: 100px;
+  }
+}
