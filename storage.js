@@ -26,7 +26,6 @@ ST._keys = [
   'channels',
   'promptpayAccounts',
   'feature_overrides',
-  'license',
   'super_admin',
   'recipes',
   'memberTransactions'

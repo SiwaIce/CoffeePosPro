@@ -966,100 +966,6 @@ function updateLoginUI() {
     }
   }
 }
-/* ============================================
-   INIT
-   ============================================ */
-function initApp() {
-  console.log('[app.js] initializing...');
-
-  /* 1. Check mobile */
-  checkMobile();
-
-  /* 2. Apply theme */
-  applyTheme();
-
-  /* 3. Apply shop name */
-  applyShopName();
-  
-  /* 4. Apply feature toggles */
-  if (typeof FeatureManager !== 'undefined' && FeatureManager.applyToUI) {
-    FeatureManager.applyToUI();
-  } else {
-    applyFeatureToggle();
-  }
-
-  /* 5. ตรวจสอบและสร้าง default admin ถ้ายังไม่มีพนักงาน */
-  if (typeof ST.ensureDefaultAdmin === 'function') {
-    ST.ensureDefaultAdmin();
-  }
-
-/* ใน function initApp() เพิ่ม */
-if (typeof ST.startStockMonitor === 'function') {
-  ST.startStockMonitor();
-}
-/* ใน function initApp() เพิ่ม */
-if (typeof ST.startAutoBackup === 'function') {
-  ST.startAutoBackup();
-}
-
-  /* 6. Start clock */
-  startClock();
-
-  /* 7. Register Service Worker */
-  registerSW();
-
-  /* 8. Init keyboard shortcuts */
-  initShortcuts();
-
-  /* 9. Window resize */
-  window.addEventListener('resize', debouncedResize);
-  
-  /* 10. Load sidebar state after DOM ready */
-  setTimeout(function() {
-    loadSidebarState();
-    updateSidebarVisibility(); 
-    restoreSession();
-    updateSidebarByStaffPermission(); 
-    updateLoginUI();
-  }, 100);
-
-  /* 11. Hide splash, show app */
-  setTimeout(function() {
-    var splash = $('splash');
-    var app = $('app');
-    if (splash) addClass(splash, 'hide');
-    if (app) app.style.display = '';
-
-    setTimeout(function() {
-      if (splash && splash.parentNode) {
-        splash.parentNode.removeChild(splash);
-      }
-    }, 500);
-
-    /* 12. Render default view */
-    nav('pos');
-
-    /* 13. Check seed data */
-    setTimeout(function() {
-      checkSeedData();
-    }, 300);
-
-    /* 14. Check low stock */
-    setTimeout(function() {
-      checkLowStock();
-    }, 2000);
-
-  }, 800);
-
-  console.log('[app.js] ready!');
-}
-
-/* === RUN ON LOAD === */
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp);
-} else {
-  initApp();
-}
 
 function showStaffMenu() {
   // 🔥 ถ้ายังไม่มี staff login → แสดงหน้า Login ทันที
@@ -1198,10 +1104,7 @@ function initApp() {
 
   /* 3. Apply shop name */
   applyShopName();
-  
-  /* 4. รีเซ็ต license ถ้าไม่มี key และไม่ใช่ trial/pro */
-  ensureCorrectLicenseState();
-  
+    
   /* 5. Apply feature toggles */
   if (typeof FeatureManager !== 'undefined' && FeatureManager.applyToUI) {
     FeatureManager.applyToUI();
@@ -1266,26 +1169,6 @@ function initApp() {
   }, 800);
 
   console.log('[app.js] ready!');
-}
-
-/* เพิ่มฟังก์ชัน ensureCorrectLicenseState */
-function ensureCorrectLicenseState() {
-  var savedLicense = ST.getObj('license', null);
-  
-  /* ถ้าไม่มี license หรือเป็น free */
-  if (!savedLicense || savedLicense.tier === 'free') {
-    /* ล้าง feature overrides */
-    if (typeof FeatureManager !== 'undefined') {
-      FeatureManager.saveOverrides({});
-    }
-    /* ตั้งค่าเป็น free */
-    if (typeof LicenseManager !== 'undefined') {
-      LicenseManager.tier = 'free';
-      LicenseManager.currentKey = null;
-      ST.remove('license');
-    }
-    console.log('[ensureCorrectLicenseState] Set to FREE');
-  }
 }
 
 /* เพิ่มฟังก์ชัน forceUpdateSidebarOnLoad */
