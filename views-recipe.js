@@ -144,7 +144,7 @@ function renderRecipeEditor(menuItems) {
     }
     var sellingPrice = selectedMenu.prices ? (selectedMenu.prices[RECIPE_VIEW.selectedSize] || 0) : 0;
     var profit = sellingPrice - totalCost;
-    var profitMargin = sellingPrice > 0 ? roundTo((profit / sellingPrice) * 100, 1) : 0;
+    var profitMargin = sellingPrice > 0 ? Math.round((profit / sellingPrice) * 100 * 10) / 10 : 0;
 
     html += '<div class="recipe-cost-summary mb-16">';
     html += '<div class="flex gap-12 flex-wrap">';
@@ -218,7 +218,7 @@ function renderRecipeSummary() {
     var totalCost = ST.calculateRecipeCost(r);
     var sellingPrice = menu.prices ? (menu.prices[r.size] || 0) : 0;
     var profit = sellingPrice - totalCost;
-    var profitMargin = sellingPrice > 0 ? roundTo((profit / sellingPrice) * 100, 1) : 0;
+    var profitMargin = sellingPrice > 0 ? Math.round((profit / sellingPrice) * 100 * 10) / 10 : 0;
     var marginClass = profitMargin >= 50 ? 'text-success' : (profitMargin >= 30 ? 'text-warning' : 'text-danger');
 
     html += '<tr style="cursor:pointer;" onclick="selectRecipeFromSummary(\'' + r.menuId + '\', \'' + r.size + '\')">';

@@ -1101,7 +1101,7 @@ ST.calculateRecipeCost = function(recipe) {
     }
   }
   
-  return roundTo(totalCost, 2);
+  return Math.round(totalCost * 100) / 100;
 };
 
 /* Auto deduct stock when order is placed */

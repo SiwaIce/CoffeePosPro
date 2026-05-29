@@ -1,3 +1,6 @@
+/* เพิ่มฟอนต์ภาษาไทย */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap');
+
 /* ============================================
    COFFEE POS — STYLE.CSS
    Theme: Dark (default) + Light
@@ -2127,8 +2130,6 @@ input:focus, select:focus, textarea:focus {
     transition: all 0.3s ease;
   }
 }
-/* เพิ่มฟอนต์ภาษาไทย */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap');
 
 :root {
   --font: 'Noto Sans Thai', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
