@@ -2854,3 +2854,193 @@ html {
   position: relative;
   overflow: hidden;
 }
+/* ============================================
+   MODERN MENU CARD - เต็มรูป + ข้อความทับ
+   ============================================ */
+
+/* การ์ดเมนูหลัก */
+.menu-item {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+}
+
+.menu-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  border-color: var(--accent);
+}
+
+.menu-item:active {
+  transform: scale(0.97);
+}
+
+/* ===== กรณีมีรูป ===== */
+.menu-item-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ซ่อน emoji เมื่อมีรูป */
+.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-emoji {
+  display: none;
+}
+
+/* ข้อความทับรูป (absolute position) */
+.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-name,
+.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-price {
+  position: absolute;
+  bottom: 12px;
+  color: white;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 30px;
+  z-index: 2;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-name {
+  left: 12px;
+}
+
+.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-price {
+  right: 12px;
+  background: rgba(249, 115, 22, 0.85);
+  backdrop-filter: blur(4px);
+  font-weight: 800;
+}
+
+/* ปุ่มโปรด (⭐) ปรับตำแหน่งเมื่อมีรูป */
+.menu-item:has(.menu-item-img[src]:not([src=""])) .fav-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+/* ===== กรณีไม่มีรูป (แสดง Emoji) ===== */
+.menu-item:not(:has(.menu-item-img[src]:not([src=""]))) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px 12px;
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-card-hover));
+}
+
+.menu-item:not(:has(.menu-item-img)) .menu-item-emoji {
+  font-size: 52px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.menu-item:not(:has(.menu-item-img)) .menu-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  line-height: 1.3;
+  display: block;
+  position: static;
+  background: none;
+  backdrop-filter: none;
+  padding: 0;
+}
+
+.menu-item:not(:has(.menu-item-img)) .menu-item-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--accent);
+  display: block;
+  position: static;
+  background: none;
+  backdrop-filter: none;
+  padding: 0;
+}
+
+/* ปุ่มโปรด (⭐) กรณีไม่มีรูป */
+.menu-item:not(:has(.menu-item-img)) .fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  left: auto;
+  background: var(--glass);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Badge จำนวนในตะกร้า */
+.menu-item-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, var(--accent), #ea580c);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive มือถือ */
+@media (max-width: 768px) {
+  .menu-item-img {
+    height: 130px;
+  }
+  
+  .menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-name,
+  .menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-price {
+    padding: 4px 10px;
+    font-size: 11px;
+    bottom: 8px;
+  }
+  
+  .menu-item:not(:has(.menu-item-img)) .menu-item-emoji {
+    font-size: 40px;
+  }
+  
+  .menu-item:not(:has(.menu-item-img)) .menu-item-name {
+    font-size: 12px;
+  }
+  
+  .menu-item:not(:has(.menu-item-img)) .menu-item-price {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-item-img {
+    height: 110px;
+  }
+}
