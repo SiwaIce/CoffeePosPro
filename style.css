@@ -138,6 +138,7 @@ select { -webkit-appearance: none; appearance: none; }
   position: fixed;
   inset: 0;
   z-index: 9999;
+    pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1108,7 +1109,7 @@ select { -webkit-appearance: none; appearance: none; }
   background: rgba(0,0,0,0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 500;
+  z-index: 10000;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -1126,7 +1127,7 @@ select { -webkit-appearance: none; appearance: none; }
   background: var(--bg-modal);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  z-index: 510;
+  z-index: 10001;
   display: flex;
   flex-direction: column;
   opacity: 0;
