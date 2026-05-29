@@ -1,30 +1,30 @@
 /* ============================================
-   LICENSE VERIFICATION - Local Only Version
+   LICENSE VERIFICATION - Firebase Cloud Version
+   ============================================
+   แก้ไขหลัก:
+   1. validate() → ยิง Firebase แทนการ pattern match อย่างเดียว
+   2. ผูก key ↔ email (1 key = 1 email เท่านั้น)
+   3. license tier sync กับ Firebase อัตโนมัติ (ข้ามเครื่อง)
    ============================================ */
 
 var LicenseManager = {
   currentKey: null,
   tier: 'free',
   trialExpiry: null,
-  
-  patterns: {
-    pro: /^PRO-[A-Z0-9]{4}-[A-Z0-9]{4}$/,
-    standard: /^STD-[A-Z0-9]{4}-[A-Z0-9]{4}$/,
-    trial: /^TRIAL-[A-Z0-9]{6}$/
-  },
-  
+
   init: function() {
+    // โหลดจาก localStorage เป็น fallback (จะถูก override โดย loadUserLicense จาก firebase-sync.js)
     var saved = ST.getObj('license', null);
     if (saved) {
       this.currentKey = saved.key;
       this.tier = saved.tier;
       this.trialExpiry = saved.trialExpiry || null;
-      
+
       var override = ST.getObj('license_override', null);
       if (override && override.enabled) {
         this.tier = override.tier;
       }
-      
+
       if (this.tier === 'trial' && this.trialExpiry) {
         if (Date.now() > this.trialExpiry) {
           this.tier = 'free';
@@ -34,45 +34,106 @@ var LicenseManager = {
       }
     }
   },
-  
-  validate: function(key) {
+
+  /* ============================================
+     🔥 VALIDATE - ตรวจสอบกับ Firebase
+     Flow:
+       1. ยิง Firestore หา doc ใน licenses collection ที่ key ตรง
+       2. ถ้าไม่เจอ → invalid
+       3. ถ้า status !== 'active' → invalid
+       4. ถ้า activatedEmail มีค่า และ ≠ email ปัจจุบัน → "key ถูกใช้แล้ว"
+       5. ถ้าผ่าน → บันทึก activatedEmail = currentUser.email, เซ็ต tier
+     ============================================ */
+  validate: async function(key) {
     var cleanKey = key.trim().toUpperCase();
-    
-    if (this.patterns.pro.test(cleanKey)) {
-      this.currentKey = cleanKey;
-      this.tier = 'pro';
-      this.trialExpiry = null;
-      ST.setObj('license', { key: cleanKey, tier: 'pro', activatedAt: Date.now() });
-      this.afterLicenseChange();
-      return { valid: true, tier: 'pro' };
+
+    // ต้อง login ก่อนถึงจะ validate ได้
+    if (!window.currentUser) {
+      return { valid: false, error: 'กรุณา Login ก่อนใส่ License Key' };
     }
-    
-    if (this.patterns.standard.test(cleanKey)) {
+
+    var userEmail = window.currentUser.email;
+
+    try {
+      var db = firebase.firestore();
+      var snap = await db.collection('licenses')
+        .where('key', '==', cleanKey)
+        .limit(1)
+        .get();
+
+      if (snap.empty) {
+        return { valid: false, error: 'ไม่พบ License Key นี้ในระบบ' };
+      }
+
+      var docRef = snap.docs[0].ref;
+      var license = snap.docs[0].data();
+
+      // ตรวจ status
+      if (license.status !== 'active') {
+        return { valid: false, error: 'License Key นี้ถูกระงับแล้ว' };
+      }
+
+      // 🔐 ตรวจ email binding: ถ้ามี activatedEmail อยู่แล้วและ ≠ email นี้ → ปฏิเสธ
+      if (license.activatedEmail && license.activatedEmail !== userEmail) {
+        return { valid: false, error: 'License Key นี้ถูกผูกกับ email อื่นแล้ว' };
+      }
+
+      var tier = license.tier;
+      var trialExpiry = null;
+
+      // ถ้ายังไม่มี activatedEmail → ผูก email ไว้เลย (ครั้งแรกที่ใช้)
+      var updateData = {
+        activatedEmail: userEmail,
+        activatedAt: license.activatedAt || new Date().toISOString(),
+        lastUsedAt: new Date().toISOString(),
+        lastUsedBy: window.location.hostname,
+        usedCount: (license.usedCount || 0) + 1
+      };
+
+      if (tier === 'trial') {
+        if (license.trialExpiry) {
+          trialExpiry = license.trialExpiry; // ใช้ค่าจาก Firebase
+        } else {
+          trialExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
+          updateData.trialExpiry = trialExpiry;
+        }
+
+        if (Date.now() > trialExpiry) {
+          return { valid: false, error: 'Trial หมดอายุแล้ว' };
+        }
+      }
+
+      await docRef.update(updateData);
+
+      // บันทึกลง localStorage + LicenseManager state
       this.currentKey = cleanKey;
-      this.tier = 'standard';
-      this.trialExpiry = null;
-      ST.setObj('license', { key: cleanKey, tier: 'standard', activatedAt: Date.now() });
+      this.tier = tier;
+      this.trialExpiry = trialExpiry;
+
+      var licenseObj = { key: cleanKey, tier: tier, activatedAt: Date.now() };
+      if (trialExpiry) licenseObj.trialExpiry = trialExpiry;
+
+      ST.setObj('license', licenseObj);
+      localStorage.setItem('v1_coffee_license', JSON.stringify(licenseObj));
+
       this.afterLicenseChange();
-      return { valid: true, tier: 'standard' };
+
+      var result = { valid: true, tier: tier };
+      if (tier === 'trial' && trialExpiry) {
+        result.daysLeft = Math.max(0, Math.ceil((trialExpiry - Date.now()) / (1000 * 60 * 60 * 24)));
+      }
+      return result;
+
+    } catch(e) {
+      console.error('[LicenseManager] validate error:', e);
+      return { valid: false, error: 'เกิดข้อผิดพลาด กรุณาลองใหม่' };
     }
-    
-    if (this.patterns.trial.test(cleanKey)) {
-      var expiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
-      this.currentKey = cleanKey;
-      this.tier = 'trial';
-      this.trialExpiry = expiry;
-      ST.setObj('license', { key: cleanKey, tier: 'trial', trialExpiry: expiry, activatedAt: Date.now() });
-      this.afterLicenseChange();
-      return { valid: true, tier: 'trial', daysLeft: 30 };
-    }
-    
-    return { valid: false, error: 'รูปแบบ License ไม่ถูกต้อง' };
   },
-  
+
   forceTier: function(tier, key) {
     this.tier = tier;
     this.currentKey = key || ('FORCED-' + tier.toUpperCase());
-    
+
     ST.setObj('license_override', {
       enabled: true,
       tier: tier,
@@ -80,31 +141,32 @@ var LicenseManager = {
       setAt: Date.now(),
       setBy: 'super_admin'
     });
-    
+
     ST.setObj('license', {
       key: this.currentKey,
       tier: tier,
       activatedAt: Date.now(),
       verifiedBy: 'override'
     });
-    
+
     toast('🔧 บังคับ License เป็น ' + tier.toUpperCase(), 'warning');
     this.afterLicenseChange();
   },
-  
+
   resetToFree: function() {
     this.tier = 'free';
     this.currentKey = null;
     ST.remove('license');
     ST.remove('license_override');
     localStorage.removeItem('current_session');
+    localStorage.removeItem('v1_coffee_license');
     if (typeof APP !== 'undefined') {
       APP.currentStaff = null;
     }
     toast('🆓 รีเซ็ตเป็น Free Edition', 'info');
     this.afterLicenseChange();
   },
-  
+
   removeLocalOverride: function() {
     ST.remove('license_override');
     var saved = ST.getObj('license', null);
@@ -118,7 +180,7 @@ var LicenseManager = {
     toast('🆓 ยกเลิก Override', 'info');
     this.afterLicenseChange();
   },
-  
+
   getTier: function() {
     var override = ST.getObj('license_override', null);
     if (override && override.enabled) {
@@ -133,12 +195,12 @@ var LicenseManager = {
     }
     return 'free';
   },
-  
+
   getCurrentKey: function() {
     var saved = ST.getObj('license', null);
     return saved ? saved.key : this.currentKey;
   },
-  
+
   getTrialDaysLeft: function() {
     var saved = ST.getObj('license', null);
     if (saved && saved.tier === 'trial' && saved.trialExpiry) {
@@ -147,33 +209,33 @@ var LicenseManager = {
     }
     return 0;
   },
-  
+
   setTier: function(tier) {
     this.tier = tier;
     this.afterLicenseChange();
   },
-  
+
   setKey: function(key) {
     this.currentKey = key;
   },
-  
+
   afterLicenseChange: function() {
     console.log('[LicenseManager] License changed to:', this.tier);
-    
+
     if (typeof FeatureManager !== 'undefined') {
       if (typeof FeatureManager.clearOverrides === 'function') {
         FeatureManager.clearOverrides();
       }
       FeatureManager.applyToUI();
     }
-    
+
     if (typeof updateSidebarByStaffPermission === 'function') {
       updateSidebarByStaffPermission();
     }
     if (typeof updateSidebarVisibility === 'function') {
       updateSidebarVisibility();
     }
-    
+
     if (typeof APP !== 'undefined' && APP) {
       if (APP.currentView === 'admin' && typeof renderAdminView === 'function') {
         renderAdminView();
@@ -183,12 +245,12 @@ var LicenseManager = {
       }
     }
   },
-  
+
   showLicenseModal: function() {
     var html = '';
     var currentTier = this.getTier();
     var daysLeft = this.getTrialDaysLeft();
-    
+
     html += '<div class="text-center mb-16">';
     html += '<div style="font-size:48px;">🔑</div>';
     html += '<div class="fw-800 fs-xl mb-2">License</div>';
@@ -199,28 +261,44 @@ var LicenseManager = {
     else html += '<span class="badge badge-secondary">🆓 Free</span>';
     html += '</div>';
     html += '</div>';
-    
+
+    if (!window.currentUser) {
+      html += '<div class="alert alert-warning">⚠️ กรุณา Login ด้วย Google ก่อนใส่ License Key</div>';
+    } else {
+      html += '<div class="text-muted fs-sm mb-8">📧 ' + window.currentUser.email + '</div>';
+    }
+
     html += '<div class="form-group">';
     html += '<label class="form-label">License Key</label>';
-    html += '<input type="text" id="licenseKey" placeholder="PRO-XXXX-XXXX" style="font-family:monospace;text-align:center;">';
+    html += '<input type="text" id="licenseKey" placeholder="PRO-XXXX-XXXX หรือ STD-XXXX-XXXX" style="font-family:monospace;text-align:center;">';
     html += '</div>';
-    
+    html += '<div id="licenseMsg" style="min-height:24px;"></div>';
+
     var footer = '';
     footer += '<button class="btn btn-secondary" onclick="closeMForce()">ปิด</button>';
-    footer += '<button class="btn btn-primary" onclick="LicenseManager.activateFromModal()">🔓 เปิดใช้งาน</button>';
-    
+    footer += '<button class="btn btn-primary" id="btnActivate" onclick="LicenseManager.activateFromModal()">🔓 เปิดใช้งาน</button>';
+
     openModal('🔑 License', html, footer);
   },
-  
-  activateFromModal: function() {
+
+  activateFromModal: async function() {
     var keyEl = document.getElementById('licenseKey');
+    var msgEl = document.getElementById('licenseMsg');
+    var btn = document.getElementById('btnActivate');
     if (!keyEl) return;
-    
-    var result = this.validate(keyEl.value.trim());
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ กำลังตรวจสอบ...'; }
+    if (msgEl) msgEl.innerHTML = '';
+
+    var result = await this.validate(keyEl.value.trim());
+
+    if (btn) { btn.disabled = false; btn.textContent = '🔓 เปิดใช้งาน'; }
+
     if (result.valid) {
       closeMForce();
       toast('✅ เปิดใช้งาน ' + result.tier.toUpperCase() + ' สำเร็จ!', 'success');
     } else {
+      if (msgEl) msgEl.innerHTML = '<div class="text-danger fs-sm">❌ ' + result.error + '</div>';
       toast('❌ ' + result.error, 'error');
     }
   }
