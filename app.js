@@ -1096,6 +1096,18 @@ function refreshPage() {
 function initApp() {
   console.log('[app.js] initializing...');
 
+  // 🔥 ป้องกันการเรียกซ้ำ
+  if (window._appInitializing) return;
+  window._appInitializing = true;
+
+  // ตรวจสอบว่า ST โหลดแล้ว
+  if (typeof ST === 'undefined' || !ST.getConfig) {
+    console.log('[App] Waiting for ST...');
+    window._appInitializing = false;
+    setTimeout(initApp, 200);
+    return;
+  }
+
   /* 1. Check mobile */
   checkMobile();
 
@@ -1136,7 +1148,6 @@ function initApp() {
     restoreSession();
     updateSidebarByStaffPermission(); 
     updateLoginUI();
-    /* บังคับอัปเดต sidebar อีกครั้ง */
     forceUpdateSidebarOnLoad();
   }, 100);
 
@@ -1152,13 +1163,6 @@ function initApp() {
         splash.parentNode.removeChild(splash);
       }
     }, 500);
-
-// ตรวจสอบว่าทุกอย่างโหลดเรียบร้อย
-if (typeof ST === 'undefined' || !ST.getConfig) {
-  console.log('[App] Waiting for modules...');
-  setTimeout(initApp, 100);
-  return;
-}
 
     /* 13. Render default view */
     nav('pos');
@@ -1177,7 +1181,6 @@ if (typeof ST === 'undefined' || !ST.getConfig) {
 
   console.log('[app.js] ready!');
 }
-
 /* เพิ่มฟังก์ชัน forceUpdateSidebarOnLoad */
 function forceUpdateSidebarOnLoad() {
   var licenseTier = 'free';
@@ -1297,18 +1300,22 @@ function restoreSession() {
     }
   }
   
-  /* 🔥 ถ้าไม่มี session แต่มีพนักงานในระบบ ให้แสดง login */
+  // 🔥 Auto-login with first staff (no PIN required on first load)
   var staffList = ST.getStaff();
   if (staffList.length > 0 && !APP.currentStaff) {
-    console.log('[Session] No session but staff exists, showing login');
-    setTimeout(function() {
-      if (typeof showPinLogin === 'function') {
-        showPinLogin();
-      }
-    }, 500);
+    console.log('[Session] Auto-login with first staff:', staffList[0].name);
+    APP.currentStaff = staffList[0];
+    ST.setObj('current_session', {
+      staffId: APP.currentStaff.id,
+      loginTime: Date.now(),
+      staffName: APP.currentStaff.name,
+      role: APP.currentStaff.role
+    });
+    updateLoginUI();
+    updateSidebarByStaffPermission();
+    return true;
   }
   
   return false;
 }
-
 console.log('[app.js] loaded');
