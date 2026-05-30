@@ -107,40 +107,42 @@ ST.getConfig = function() {
     
     // ========== เพิ่มส่วนนี้ ========== //
     // ดีไซน์การ์ดเมนู (POS)
-    menuCardDesign: {
-      // พื้นฐาน
-      showName: true,
-      showPrice: true,
-      showImage: true,
-      
-      // รูปแบบหลัก ('overlay' = แบบ A, 'classic' = แบบ B)
-      cardStyle: 'classic',
-      
-      // แบบ A (overlay) - ข้อความทับรูป
-      overlayNamePosition: 'left',
-      overlayPricePosition: 'right',
-      overlayTextBg: 'translucent',  // 'translucent', 'solid', 'none'
-      
-      // แบบ B (classic) - รูปบน + ข้อความล่าง
-      classicNamePosition: 'left',
-      classicPricePosition: 'right',
-      classicTextBg: 'none',
-      
-      // ขนาด
-      fontSize: 'medium',     // 'small', 'medium', 'large'
-      imageHeight: 160,       // px
-      cardRadius: 16,         // px
-      imageRadius: 12,        // px
-      
-     // เอฟเฟกต์
+menuCardDesign: {
+  // พื้นฐาน
+  showName: true,
+  showPrice: true,
+  showImage: true,
+  
+  // รูปแบบหลัก
+  cardStyle: 'classic',
+  
+  // แบบ A (overlay)
+  overlayNamePosition: 'left',
+  overlayPricePosition: 'right',
+  overlayTextBg: 'translucent',
+  
+  // แบบ B (classic)
+  classicNamePosition: 'left',
+  classicPricePosition: 'right',
+  classicTextBg: 'none',
+  
+  // ขนาด
+  fontSize: 'medium',
+  imageHeight: 160,
+  cardRadius: 16,
+  imageRadius: 12,
+  
+  // เอฟเฟกต์
   showShadow: true,
   showBorder: false,
   
-  // พื้นหลัง Emoji (เพิ่มตรงนี้)
-  emojiBg: 'circle'   // ← เพิ่มบรรทัดนี้
-
-    }
-    // ========== จบส่วนที่เพิ่ม ========== //
+  // ===== 新增: หน้า Manage Menu =====
+  manageImageSize: 70,        // ขนาดรูป/Emoji (px)
+  manageCardGap: 12,          // ระยะห่างรูป-ข้อความ (px)
+  manageVerticalGap: 4,       // ระยะห่างระหว่างบรรทัด (px)
+  managePaddingRight: 8,      // ระยะขอบขวา (px)
+  manageNameAlign: 'right'    // ตำแหน่งชื่อ ('left' หรือ 'right')
+}    // ========== จบส่วนที่เพิ่ม ========== //
   };
   
   var cfg = ST.getObj('config', {});

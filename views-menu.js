@@ -165,31 +165,42 @@ function renderMenuManageCard(item, cats) {
   var isActive = item.active !== false;
   var hasImage = item.image && item.image.trim() !== '';
   
-  // อ่าน config สำหรับพื้นหลัง Emoji
+  // อ่านค่า config สำหรับหน้า Manage Menu
   var cfg = ST.getConfig();
-  var emojiBg = (cfg.menuCardDesign && cfg.menuCardDesign.emojiBg) ? cfg.menuCardDesign.emojiBg : 'circle';
+  var design = cfg.menuCardDesign || {};
+  var imageSize = design.manageImageSize || 70;
+  var cardGap = design.manageCardGap || 12;
+  var verticalGap = design.manageVerticalGap || 4;
+  var paddingRight = design.managePaddingRight || 8;
+  var nameAlign = design.manageNameAlign || 'right';
+  
+  // กำหนด CSS inline
+  var cardStyle = 'gap:' + cardGap + 'px;';
+  var infoStyle = 'gap:' + verticalGap + 'px; padding-right:' + paddingRight + 'px;';
+  var nameStyle = 'text-align:' + nameAlign + ';';
+  var mediaStyle = 'width:' + imageSize + 'px; height:' + imageSize + 'px;';
   
   var html = '';
-  html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
+  html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" style="' + cardStyle + '" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
   
   /* รูปหรือ Emoji ด้านซ้าย */
   if (hasImage) {
-    html += '<img class="menu-manage-img" src="' + item.image + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
-    html += '<div class="menu-manage-emoji" style="display:none;" data-emoji-bg="' + emojiBg + '">' + (item.emoji || '☕') + '</div>';
+    html += '<img class="menu-manage-img" src="' + item.image + '" alt="" loading="lazy" style="' + mediaStyle + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+    html += '<div class="menu-manage-emoji" style="display:none; ' + mediaStyle + '">' + (item.emoji || '☕') + '</div>';
   } else {
-    html += '<div class="menu-manage-emoji" data-emoji-bg="' + emojiBg + '">' + (item.emoji || '☕') + '</div>';
+    html += '<div class="menu-manage-emoji" style="' + mediaStyle + '">' + (item.emoji || '☕') + '</div>';
   }
   
   /* ข้อมูลด้านขวา */
-  html += '<div class="menu-manage-info">';
-  html += '<div class="menu-manage-name">';
+  html += '<div class="menu-manage-info" style="' + infoStyle + '">';
+  html += '<div class="menu-manage-name" style="' + nameStyle + '">';
   html += sanitize(item.name);
   html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
   html += '</div>';
-  html += '<div class="menu-manage-cat">' + catName + '</div>';
+  html += '<div class="menu-manage-cat" style="' + nameStyle + '">' + catName + '</div>';
   
   /* ราคาแต่ละขนาด */
-  html += '<div class="menu-manage-prices">';
+  html += '<div class="menu-manage-prices" style="' + nameStyle + '">';
   for (var s = 0; s < sizes.length; s++) {
     var p = item.prices ? item.prices[sizes[s].name] : null;
     if (p && p > 0) {
@@ -203,7 +214,7 @@ function renderMenuManageCard(item, cats) {
   var cost = item.cost || 0;
   if (cost > 0) {
     var profit = basePrice - cost;
-    html += '<div class="menu-manage-cost">💰 ต้นทุน ' + formatMoneySign(cost) + ' | กำไร ' + formatMoneySign(profit) + '</div>';
+    html += '<div class="menu-manage-cost" style="' + nameStyle + '">💰 ต้นทุน ' + formatMoneySign(cost) + ' | กำไร ' + formatMoneySign(profit) + '</div>';
   }
   
   html += '</div>'; // end menu-manage-info

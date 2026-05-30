@@ -3648,3 +3648,51 @@ html {
     font-size: 9px;
   }
 }
+/* ============================================
+   EMOJI STYLES - ไม่มีพื้นหลัง (โปร่งใส)
+   ============================================ */
+
+/* POS Menu - Emoji ไม่มีพื้นหลัง (กรณีไม่มีรูป) */
+.menu-item .menu-item-emoji {
+  background: transparent !important;
+  color: var(--text-primary);
+  font-size: 48px;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: none;
+}
+
+/* Manage Menu - Emoji มีพื้นหลังอ่อน (แต่ไม่มีสีส้ม) */
+.menu-manage-emoji {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.menu-manage-emoji:hover {
+  border-color: var(--accent);
+  transform: scale(1.02);
+}
+
+/* Responsive POS Emoji */
+@media (max-width: 768px) {
+  .menu-item .menu-item-emoji {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-item .menu-item-emoji {
+    font-size: 36px;
+  }
+}

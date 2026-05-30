@@ -555,6 +555,7 @@ html += '<option value="none"' + (design.emojiBg === 'none' ? ' selected' : '') 
 html += '</select>';
 html += '</div>';
 
+
 // เอฟเฟกต์
 html += '<div class="form-group">';
 html += '<label class="form-label">เอฟเฟกต์</label>';
@@ -621,6 +622,44 @@ html += '</div>';
 html += '</div>';
 html += '</div>';
 html += '</div>';
+
+// ========== เพิ่มส่วนปรับแต่งหน้า Manage Menu (ใส่หลังส่วนดีไซน์การ์ด POS) ==========
+html += '<div class="card mb-16">';
+html += '<div class="card-header"><div class="card-title">📋 หน้า Manage Menu (รายการเมนู)</div></div>';
+html += '<div class="p-16">';
+
+html += '<div class="form-row">';
+html += '<div class="form-group">';
+html += '<label class="form-label">ขนาดรูป/Emoji (px)</label>';
+html += '<input type="number" id="manageImageSize" value="' + (design.manageImageSize || 70) + '" step="5" min="40" max="120">';
+html += '</div>';
+html += '<div class="form-group">';
+html += '<label class="form-label">ระยะห่างรูป-ข้อความ (px)</label>';
+html += '<input type="number" id="manageCardGap" value="' + (design.manageCardGap || 12) + '" step="2" min="4" max="24">';
+html += '</div>';
+html += '</div>';
+
+html += '<div class="form-row">';
+html += '<div class="form-group">';
+html += '<label class="form-label">ระยะห่างระหว่างบรรทัด (px)</label>';
+html += '<input type="number" id="manageVerticalGap" value="' + (design.manageVerticalGap || 4) + '" step="1" min="0" max="12">';
+html += '</div>';
+html += '<div class="form-group">';
+html += '<label class="form-label">ระยะขอบขวา (px)</label>';
+html += '<input type="number" id="managePaddingRight" value="' + (design.managePaddingRight || 8) + '" step="2" min="0" max="20">';
+html += '</div>';
+html += '</div>';
+
+html += '<div class="form-group">';
+html += '<label class="form-label">ตำแหน่งชื่อเมนู</label>';
+html += '<select id="manageNameAlign">';
+html += '<option value="left"' + (design.manageNameAlign === 'left' ? ' selected' : '') + '>ชิดซ้าย</option>';
+html += '<option value="right"' + (design.manageNameAlign === 'right' ? ' selected' : '') + '>ชิดขวา</option>';
+html += '</select>';
+html += '</div>';
+
+html += '</div></div>';
+// ========== จบส่วนปรับแต่ง Manage Menu ==========
 
 html += '<button class="btn btn-primary btn-sm" onclick="saveMenuCardDesign()" style="margin-top:8px;">💾 บันทึกดีไซน์การ์ด</button>';
 html += '</div>';
@@ -1923,8 +1962,14 @@ function saveMenuCardDesign() {
     cardRadius: parseInt(document.getElementById('designCardRadius').value) || 16,
     imageRadius: parseInt(document.getElementById('designImageRadius').value) || 12,
     showShadow: document.getElementById('designShowShadow').checked,
-       showBorder: document.getElementById('designShowBorder').checked,
-        emojiBg: document.getElementById('designEmojiBg').value
+    showBorder: document.getElementById('designShowBorder').checked,
+    
+    // ===== ค่าใหม่สำหรับ Manage Menu =====
+    manageImageSize: parseInt(document.getElementById('manageImageSize').value) || 70,
+    manageCardGap: parseInt(document.getElementById('manageCardGap').value) || 12,
+    manageVerticalGap: parseInt(document.getElementById('manageVerticalGap').value) || 4,
+    managePaddingRight: parseInt(document.getElementById('managePaddingRight').value) || 8,
+    manageNameAlign: document.getElementById('manageNameAlign').value
   };
   
   cfg.menuCardDesign = design;
@@ -1932,12 +1977,14 @@ function saveMenuCardDesign() {
   
   toast('บันทึกดีไซน์การ์ดเมนูแล้ว', 'success');
   
-  // รีเฟรชหน้า POS ถ้าอยู่หน้า POS
+  // รีเฟรชหน้า POS และ Manage Menu
   if (typeof APP !== 'undefined' && APP.currentView === 'pos' && typeof renderPOSView === 'function') {
     renderPOSView();
   }
+  if (typeof APP !== 'undefined' && APP.currentView === 'menu' && typeof renderMenuView === 'function') {
+    renderMenuView();
+  }
 }
-
 // เพิ่ม event listener สำหรับเปลี่ยนการแสดง option ตามรูปแบบการ์ด
 function initDesignOptionsListener() {
   var radios = document.querySelectorAll('input[name="cardStyle"]');
