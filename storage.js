@@ -105,64 +105,63 @@ ST.getConfig = function() {
     promptPayName: '',
     promptPayEnabled: false,
     
-    // ========== เพิ่มส่วนนี้ ========== //
-// ดีไซน์การ์ดเมนู (POS)
-menuCardDesign: {
-  // พื้นฐาน
-  showName: true,
-  showPrice: true,
-  showImage: true,
+    // ===== ดีไซน์การ์ดเมนู (POS) =====
+    menuCardDesign: {
+      // พื้นฐาน
+      showName: true,
+      showPrice: true,
+      showImage: true,
+      
+      // รูปแบบหลัก
+      cardStyle: 'classic',
+      
+      // แบบ A (overlay)
+      overlayNamePosition: 'left',
+      overlayPricePosition: 'right',
+      overlayTextBg: 'translucent',
+      
+      // แบบ B (classic)
+      classicNamePosition: 'left',
+      classicPricePosition: 'right',
+      classicTextBg: 'none',
+      
+      // ขนาด
+      fontSize: 'medium',
+      imageHeight: 160,
+      cardRadius: 16,
+      imageRadius: 12,
+      
+      // เอฟเฟกต์
+      showShadow: true,
+      showBorder: false,
+      
+      // ===== หน้า Manage Menu =====
+      manageCard: {
+        cardLayout: 'B',
+        imageSize: 70,
+        cardGap: 16,
+        verticalGap: 6,
+        paddingRight: 12,
+        showImageBorder: false,
+        nameFontSize: 15,
+        nameFontWeight: 600,
+        nameMarginLeft: 0,
+        nameMarginRight: 0,
+        nameAlign: 'left',
+        statusPosition: 'inline'
+      }
+    }
+  };
   
-  // รูปแบบหลัก
-  cardStyle: 'classic',
-  
-  // แบบ A (overlay)
-  overlayNamePosition: 'left',
-  overlayPricePosition: 'right',
-  overlayTextBg: 'translucent',
-  
-  // แบบ B (classic)
-  classicNamePosition: 'left',
-  classicPricePosition: 'right',
-  classicTextBg: 'none',
-  
-  // ขนาด
-  fontSize: 'medium',
-  imageHeight: 160,
-  cardRadius: 16,
-  imageRadius: 12,
-  
-  // เอฟเฟกต์
-  showShadow: true,
-  showBorder: false,
-  
-  // ===== หน้า Manage Menu =====
-  manageCard: {
-    cardLayout: 'B',              // 'A' = แนวตั้ง, 'B' = แนวนอน
-    imageSize: 70,               // ขนาดรูป/Emoji (px)
-    cardGap: 16,                 // ระยะห่างรูป-ข้อความ (px)
-    verticalGap: 6,              // ระยะห่างระหว่างบรรทัด (px)
-    paddingRight: 12,            // ระยะขอบขวา (px)
-    showImageBorder: false,      // แสดงขอบกรอบรูป (false = ไม่มีขอบ)
-    nameFontSize: 15,            // ขนาดตัวอักษรชื่อ (px)
-    nameFontWeight: 600,         // ความหนาตัวอักษร (400-800)
-    nameMarginLeft: 0,           // ระยะขอบซ้ายชื่อ (px)
-    nameMarginRight: 0,          // ระยะขอบขวาชื่อ (px)
-    nameAlign: 'left',           // ตำแหน่งชื่อ ('left' หรือ 'right')
-    statusPosition: 'inline'     // 'inline' (ข้างชื่อ) หรือ 'newline' (ขึ้นบรรทัดใหม่)
+  var cfg = ST.getObj('config', {});
+  for (var k in defaults) {
+    if (cfg[k] === undefined) cfg[k] = defaults[k];
   }
-}   // ← ไม่ต้องมี semicolon ตรงนี้
-
-var cfg = ST.getObj('config', {});
-for (var k in defaults) {
-  if (cfg[k] === undefined) cfg[k] = defaults[k];
-}
-
-// ========== เพิ่ม这部分 (เผื่อ menuCardDesign ไม่มี) ========== //
-if (!cfg.menuCardDesign) {
-  cfg.menuCardDesign = defaults.menuCardDesign;
-}
-  // ========== จบ ========== //
+  
+  // เผื่อ menuCardDesign ไม่มี
+  if (!cfg.menuCardDesign) {
+    cfg.menuCardDesign = defaults.menuCardDesign;
+  }
   
   return cfg;
 };
