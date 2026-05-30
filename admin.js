@@ -623,11 +623,21 @@ html += '</div>';
 html += '</div>';
 html += '</div>';
 
-// ========== เพิ่มส่วนปรับแต่งหน้า Manage Menu (ใส่หลังส่วนดีไซน์การ์ด POS) ==========
+// ========== ส่วนปรับแต่งหน้า Manage Menu ==========
 html += '<div class="card mb-16">';
 html += '<div class="card-header"><div class="card-title">📋 หน้า Manage Menu (รายการเมนู)</div></div>';
 html += '<div class="p-16">';
 
+// รูปแบบการ์ด
+html += '<div class="form-group">';
+html += '<label class="form-label">รูปแบบการ์ด</label>';
+html += '<div class="flex gap-16 flex-wrap">';
+html += '<label class="checkbox-wrap"><input type="radio" name="manageCardLayout" value="A" ' + (design.manageCardLayout === 'A' ? 'checked' : '') + '> <span>📐 แบบ A (แนวตั้ง: รูปบน ข้อความล่าง)</span></label>';
+html += '<label class="checkbox-wrap"><input type="radio" name="manageCardLayout" value="B" ' + (design.manageCardLayout !== 'A' ? 'checked' : '') + '> <span>📏 แบบ B (แนวนอน: รูปซ้าย ข้อความขวา)</span></label>';
+html += '</div>';
+html += '</div>';
+
+// ขนาดและระยะห่าง
 html += '<div class="form-row">';
 html += '<div class="form-group">';
 html += '<label class="form-label">ขนาดรูป/Emoji (px)</label>';
@@ -635,29 +645,39 @@ html += '<input type="number" id="manageImageSize" value="' + (design.manageImag
 html += '</div>';
 html += '<div class="form-group">';
 html += '<label class="form-label">ระยะห่างรูป-ข้อความ (px)</label>';
-html += '<input type="number" id="manageCardGap" value="' + (design.manageCardGap || 12) + '" step="2" min="4" max="24">';
+html += '<input type="number" id="manageCardGap" value="' + (design.manageCardGap || 16) + '" step="2" min="4" max="24">';
 html += '</div>';
 html += '</div>';
 
 html += '<div class="form-row">';
 html += '<div class="form-group">';
 html += '<label class="form-label">ระยะห่างระหว่างบรรทัด (px)</label>';
-html += '<input type="number" id="manageVerticalGap" value="' + (design.manageVerticalGap || 4) + '" step="1" min="0" max="12">';
+html += '<input type="number" id="manageVerticalGap" value="' + (design.manageVerticalGap || 6) + '" step="1" min="0" max="12">';
 html += '</div>';
 html += '<div class="form-group">';
 html += '<label class="form-label">ระยะขอบขวา (px)</label>';
-html += '<input type="number" id="managePaddingRight" value="' + (design.managePaddingRight || 8) + '" step="2" min="0" max="20">';
+html += '<input type="number" id="managePaddingRight" value="' + (design.managePaddingRight || 12) + '" step="2" min="0" max="20">';
+html += '</div>';
+html += '</div>';
+
+// ตำแหน่ง
+html += '<div class="form-group">';
+html += '<label class="form-label">ตำแหน่งชื่อเมนู</label>';
+html += '<div class="flex gap-16 flex-wrap">';
+html += '<label class="checkbox-wrap"><input type="radio" name="manageNameAlign" value="left" ' + (design.manageNameAlign === 'left' ? 'checked' : '') + '> <span>ชิดซ้าย</span></label>';
+html += '<label class="checkbox-wrap"><input type="radio" name="manageNameAlign" value="right" ' + (design.manageNameAlign === 'right' ? 'checked' : '') + '> <span>ชิดขวา</span></label>';
 html += '</div>';
 html += '</div>';
 
 html += '<div class="form-group">';
-html += '<label class="form-label">ตำแหน่งชื่อเมนู</label>';
-html += '<select id="manageNameAlign">';
-html += '<option value="left"' + (design.manageNameAlign === 'left' ? ' selected' : '') + '>ชิดซ้าย</option>';
-html += '<option value="right"' + (design.manageNameAlign === 'right' ? ' selected' : '') + '>ชิดขวา</option>';
-html += '</select>';
+html += '<label class="form-label">ตำแหน่งสถานะ (เปิด/ปิด)</label>';
+html += '<div class="flex gap-16 flex-wrap">';
+html += '<label class="checkbox-wrap"><input type="radio" name="manageStatusPosition" value="inline" ' + (design.manageStatusPosition !== 'newline' ? 'checked' : '') + '> <span>ข้างชื่อเมนู</span></label>';
+html += '<label class="checkbox-wrap"><input type="radio" name="manageStatusPosition" value="newline" ' + (design.manageStatusPosition === 'newline' ? 'checked' : '') + '> <span>ขึ้นบรรทัดใหม่</span></label>';
+html += '</div>';
 html += '</div>';
 
+html += '<button class="btn btn-primary btn-sm" onclick="saveMenuCardDesign()">💾 บันทึกดีไซน์การ์ด</button>';
 html += '</div></div>';
 // ========== จบส่วนปรับแต่ง Manage Menu ==========
 
@@ -1946,6 +1966,11 @@ function showLineNotifyGuide() {
 function saveMenuCardDesign() {
   var cfg = ST.getConfig();
   
+  // หาค่า radio ที่เลือก
+  var cardLayout = document.querySelector('input[name="manageCardLayout"]:checked');
+  var nameAlign = document.querySelector('input[name="manageNameAlign"]:checked');
+  var statusPos = document.querySelector('input[name="manageStatusPosition"]:checked');
+  
   var design = {
     showName: document.getElementById('designShowName').checked,
     showPrice: document.getElementById('designShowPrice').checked,
@@ -1965,11 +1990,13 @@ function saveMenuCardDesign() {
     showBorder: document.getElementById('designShowBorder').checked,
     
     // ===== ค่าใหม่สำหรับ Manage Menu =====
+    manageCardLayout: cardLayout ? cardLayout.value : 'B',
     manageImageSize: parseInt(document.getElementById('manageImageSize').value) || 70,
-    manageCardGap: parseInt(document.getElementById('manageCardGap').value) || 12,
-    manageVerticalGap: parseInt(document.getElementById('manageVerticalGap').value) || 4,
-    managePaddingRight: parseInt(document.getElementById('managePaddingRight').value) || 8,
-    manageNameAlign: document.getElementById('manageNameAlign').value
+    manageCardGap: parseInt(document.getElementById('manageCardGap').value) || 16,
+    manageVerticalGap: parseInt(document.getElementById('manageVerticalGap').value) || 6,
+    managePaddingRight: parseInt(document.getElementById('managePaddingRight').value) || 12,
+    manageNameAlign: nameAlign ? nameAlign.value : 'left',
+    manageStatusPosition: statusPos ? statusPos.value : 'inline'
   };
   
   cfg.menuCardDesign = design;

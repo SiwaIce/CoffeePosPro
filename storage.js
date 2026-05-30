@@ -136,13 +136,15 @@ menuCardDesign: {
   showShadow: true,
   showBorder: false,
   
-  // ===== 新增: หน้า Manage Menu =====
-  manageImageSize: 70,        // ขนาดรูป/Emoji (px)
-  manageCardGap: 12,          // ระยะห่างรูป-ข้อความ (px)
-  manageVerticalGap: 4,       // ระยะห่างระหว่างบรรทัด (px)
-  managePaddingRight: 8,      // ระยะขอบขวา (px)
-  manageNameAlign: 'right'    // ตำแหน่งชื่อ ('left' หรือ 'right')
-}    // ========== จบส่วนที่เพิ่ม ========== //
+  // ===== หน้า Manage Menu =====
+  manageCardLayout: 'B',           // 'A' = แนวตั้ง, 'B' = แนวนอน
+  manageImageSize: 70,             // ขนาดรูป/Emoji (px)
+  manageCardGap: 16,               // ระยะห่างรูป-ข้อความ (px)
+  manageVerticalGap: 6,            // ระยะห่างระหว่างบรรทัด (px)
+  managePaddingRight: 12,          // ระยะขอบขวา (px)
+  manageNameAlign: 'left',         // ตำแหน่งชื่อ ('left' หรือ 'right')
+  manageStatusPosition: 'inline'   // 'inline' (ข้างชื่อ) หรือ 'newline' (ขึ้นบรรทัดใหม่)
+}
   };
   
   var cfg = ST.getObj('config', {});

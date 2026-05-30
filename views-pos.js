@@ -489,7 +489,7 @@ if (shouldShowImage) {
   html += '<div class="menu-item-emoji" style="display:none;">' + (it.emoji || '☕') + '</div>';
 } else {
   html += '<div class="menu-item-emoji">' + (it.emoji || '☕') + '</div>';
-}    
+}
     // แสดงชื่อและราคา (ตาม config)
     if (cardStyle === 'overlay') {
       // แบบ A: ข้อความทับรูป (อยู่ในตำแหน่ง absolute)

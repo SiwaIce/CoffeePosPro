@@ -3696,3 +3696,149 @@ html {
     font-size: 36px;
   }
 }
+/* ============================================
+   MANAGE MENU - LAYOUT A & B
+   ============================================ */
+
+/* การ์ดหลัก */
+.menu-manage-card {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.menu-manage-card:hover {
+  border-color: var(--accent);
+  transform: translateX(4px);
+  box-shadow: var(--shadow);
+}
+
+.menu-manage-card.inactive {
+  opacity: 0.5;
+}
+
+/* รูปและ Emoji */
+.menu-manage-img,
+.menu-manage-emoji {
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.menu-manage-emoji {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+/* ข้อมูลด้านขวา */
+.menu-manage-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ชื่อเมนู */
+.menu-manage-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.menu-manage-name-text {
+  color: var(--text-primary);
+}
+
+/* สถานะ */
+.menu-manage-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.menu-manage-status.active {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.menu-manage-status.inactive {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.menu-manage-status-row {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+/* หมวดหมู่ */
+.menu-manage-cat {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ราคา */
+.menu-manage-prices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0;
+}
+
+.menu-manage-price-badge {
+  background: rgba(249, 115, 22, 0.12);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ต้นทุน/กำไร */
+.menu-manage-cost {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Layout A (แนวตั้ง) - ต้องการ CSS เพิ่ม */
+.menu-manage-card:has(.layout-A) {
+  flex-direction: column;
+  text-align: center;
+}
+
+/* Responsive มือถือ */
+@media (max-width: 768px) {
+  .menu-manage-name {
+    font-size: 14px;
+  }
+  
+  .menu-manage-price-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  
+  .menu-manage-cat {
+    font-size: 11px;
+  }
+  
+  .menu-manage-cost {
+    font-size: 10px;
+  }
+}

@@ -159,31 +159,28 @@ function filterMenuItems(allItems) {
 }
 
 function renderMenuManageCard(item, cats) {
-  var cat = findById(cats, item.catId);
-  var catName = cat ? (cat.icon + ' ' + cat.name) : '';
-  var sizes = ST.getSizes();
+  var cfg = ST.getConfig();
+  var design = cfg.menuCardDesign || {};
+  
+  // อ่านค่า config
+  var layout = design.manageCardLayout || 'B';
+  var imageSize = design.manageImageSize || 70;
+  var cardGap = design.manageCardGap || 16;
+  var verticalGap = design.manageVerticalGap || 6;
+  var paddingRight = design.managePaddingRight || 12;
+  var nameAlign = design.manageNameAlign || 'left';
+  var statusInline = design.manageStatusPosition !== 'newline';
   var isActive = item.active !== false;
   var hasImage = item.image && item.image.trim() !== '';
   
-  // อ่านค่า config สำหรับหน้า Manage Menu
-  var cfg = ST.getConfig();
-  var design = cfg.menuCardDesign || {};
-  var imageSize = design.manageImageSize || 70;
-  var cardGap = design.manageCardGap || 12;
-  var verticalGap = design.manageVerticalGap || 4;
-  var paddingRight = design.managePaddingRight || 8;
-  var nameAlign = design.manageNameAlign || 'right';
-  
-  // กำหนด CSS inline
-  var cardStyle = 'gap:' + cardGap + 'px;';
-  var infoStyle = 'gap:' + verticalGap + 'px; padding-right:' + paddingRight + 'px;';
-  var nameStyle = 'text-align:' + nameAlign + ';';
   var mediaStyle = 'width:' + imageSize + 'px; height:' + imageSize + 'px;';
+  var infoStyle = 'gap:' + verticalGap + 'px; padding-right:' + paddingRight + 'px;';
+  var textAlignStyle = 'text-align:' + nameAlign + ';';
   
   var html = '';
-  html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" style="' + cardStyle + '" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
+  html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" style="gap:' + cardGap + 'px;" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
   
-  /* รูปหรือ Emoji ด้านซ้าย */
+  // รูปหรือ Emoji
   if (hasImage) {
     html += '<img class="menu-manage-img" src="' + item.image + '" alt="" loading="lazy" style="' + mediaStyle + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
     html += '<div class="menu-manage-emoji" style="display:none; ' + mediaStyle + '">' + (item.emoji || '☕') + '</div>';
@@ -191,16 +188,30 @@ function renderMenuManageCard(item, cats) {
     html += '<div class="menu-manage-emoji" style="' + mediaStyle + '">' + (item.emoji || '☕') + '</div>';
   }
   
-  /* ข้อมูลด้านขวา */
+  // ข้อมูลด้านขวา
   html += '<div class="menu-manage-info" style="' + infoStyle + '">';
-  html += '<div class="menu-manage-name" style="' + nameStyle + '">';
-  html += sanitize(item.name);
-  html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
-  html += '</div>';
-  html += '<div class="menu-manage-cat" style="' + nameStyle + '">' + catName + '</div>';
   
-  /* ราคาแต่ละขนาด */
-  html += '<div class="menu-manage-prices" style="' + nameStyle + '">';
+  // บรรทัดที่ 1: ชื่อ + สถานะ
+  if (statusInline) {
+    html += '<div class="menu-manage-name" style="' + textAlignStyle + '">';
+    html += '<span class="menu-manage-name-text">' + sanitize(item.name) + '</span>';
+    html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
+    html += '</div>';
+  } else {
+    html += '<div class="menu-manage-name" style="' + textAlignStyle + '">' + sanitize(item.name) + '</div>';
+    html += '<div class="menu-manage-status-row" style="' + textAlignStyle + '">';
+    html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
+    html += '</div>';
+  }
+  
+  // หมวดหมู่
+  var cat = findById(cats, item.catId);
+  var catName = cat ? (cat.icon + ' ' + cat.name) : '';
+  html += '<div class="menu-manage-cat" style="' + textAlignStyle + '">' + catName + '</div>';
+  
+  // ราคา
+  var sizes = ST.getSizes();
+  html += '<div class="menu-manage-prices" style="' + textAlignStyle + '">';
   for (var s = 0; s < sizes.length; s++) {
     var p = item.prices ? item.prices[sizes[s].name] : null;
     if (p && p > 0) {
@@ -209,12 +220,12 @@ function renderMenuManageCard(item, cats) {
   }
   html += '</div>';
   
-  /* ต้นทุนและกำไร (ถ้ามี) */
+  // ต้นทุน/กำไร
   var basePrice = ST.getMenuBasePrice(item);
   var cost = item.cost || 0;
   if (cost > 0) {
     var profit = basePrice - cost;
-    html += '<div class="menu-manage-cost" style="' + nameStyle + '">💰 ต้นทุน ' + formatMoneySign(cost) + ' | กำไร ' + formatMoneySign(profit) + '</div>';
+    html += '<div class="menu-manage-cost" style="' + textAlignStyle + '">💰 ต้นทุน ' + formatMoneySign(cost) + ' | กำไร ' + formatMoneySign(profit) + '</div>';
   }
   
   html += '</div>'; // end menu-manage-info
