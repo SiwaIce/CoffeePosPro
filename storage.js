@@ -518,6 +518,7 @@ ST.adjustStock = function(id, qty, reason) {
   return items[idx];
 };
 
+/* === LOW STOCK CHECK === */
 ST.getLowStock = function() {
   var items = ST.getStock();
   var result = [];
