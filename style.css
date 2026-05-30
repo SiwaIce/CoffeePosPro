@@ -3428,35 +3428,143 @@ html {
 }
 
 /* ============================================
-   EMOJI BACKGROUND OPTIONS
+   EMOJI BACKGROUND OPTIONS (NEW DESIGN)
    ============================================ */
 
-/* ตัวเลือก 1: วงกลมสีส้ม (ค่าเริ่มต้น) */
+/* ตัวเลือก 1: วงกลมสีส้ม (Modern Gradient) */
 .menu-item-emoji[data-emoji-bg="circle"],
 .menu-manage-emoji[data-emoji-bg="circle"] {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   color: white;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  transition: all 0.2s ease;
+}
+
+.menu-item-emoji[data-emoji-bg="circle"]:hover,
+.menu-manage-emoji[data-emoji-bg="circle"]:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+}
+
+/* ตัวเลือก 2: พื้นหลังสีการ์ด (Soft) */
+.menu-item-emoji[data-emoji-bg="card"],
+.menu-manage-emoji[data-emoji-bg="card"] {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 16px;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.menu-item-emoji[data-emoji-bg="card"]:hover,
+.menu-manage-emoji[data-emoji-bg="card"]:hover {
+  border-color: var(--accent);
+  transform: scale(1.02);
+}
+
+/* ตัวเลือก 3: ไม่มีพื้นหลัง (เฉพาะ Emoji) */
+.menu-item-emoji[data-emoji-bg="none"],
+.menu-manage-emoji[data-emoji-bg="none"] {
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 42px;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   POS MENU - EMOJI STYLES (ปรับตาม option)
+   ============================================ */
+
+/* สำหรับ POS Menu - ปรับขนาดให้เหมาะสม */
+.menu-item .menu-item-emoji {
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto;
 }
 
-/* ตัวเลือก 2: พื้นหลังสีการ์ด */
-.menu-item-emoji[data-emoji-bg="card"],
-.menu-manage-emoji[data-emoji-bg="card"] {
-  background: var(--bg-card);
-  color: var(--text-primary);
+.menu-item .menu-item-emoji[data-emoji-bg="circle"] {
+  width: 60px;
+  height: 60px;
+  font-size: 32px;
 }
 
-/* ตัวเลือก 3: ไม่มีพื้นหลัง (โปร่งใส) */
-.menu-item-emoji[data-emoji-bg="none"],
-.menu-manage-emoji[data-emoji-bg="none"] {
-  background: transparent;
-  color: var(--text-primary);
+.menu-item .menu-item-emoji[data-emoji-bg="card"] {
+  width: 60px;
+  height: 60px;
+  font-size: 32px;
+}
+
+.menu-item .menu-item-emoji[data-emoji-bg="none"] {
+  font-size: 48px;
+  width: auto;
+  height: auto;
+}
+
+/* Responsive สำหรับมือถือ */
+@media (max-width: 768px) {
+  .menu-item .menu-item-emoji[data-emoji-bg="circle"],
+  .menu-item .menu-item-emoji[data-emoji-bg="card"] {
+    width: 50px;
+    height: 50px;
+    font-size: 28px;
+  }
+  
+  .menu-item .menu-item-emoji[data-emoji-bg="none"] {
+    font-size: 40px;
+  }
+  
+  .menu-manage-emoji[data-emoji-bg="circle"],
+  .menu-manage-emoji[data-emoji-bg="card"] {
+    width: 55px;
+    height: 55px;
+    font-size: 28px;
+  }
+  
+  .menu-manage-emoji[data-emoji-bg="none"] {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-item .menu-item-emoji[data-emoji-bg="circle"],
+  .menu-item .menu-item-emoji[data-emoji-bg="card"] {
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+  }
+  
+  .menu-item .menu-item-emoji[data-emoji-bg="none"] {
+    font-size: 36px;
+  }
+  
+  .menu-manage-emoji[data-emoji-bg="circle"],
+  .menu-manage-emoji[data-emoji-bg="card"] {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+  
+  .menu-manage-emoji[data-emoji-bg="none"] {
+    font-size: 32px;
+  }
 }
 
 /* ============================================
