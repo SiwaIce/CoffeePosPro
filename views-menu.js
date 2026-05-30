@@ -161,88 +161,56 @@ function filterMenuItems(allItems) {
 function renderMenuManageCard(item, cats) {
   var cat = findById(cats, item.catId);
   var catName = cat ? (cat.icon + ' ' + cat.name) : '';
-  var basePrice = ST.getMenuBasePrice(item);
   var sizes = ST.getSizes();
   var isActive = item.active !== false;
-
+  var hasImage = item.image && item.image.trim() !== '';
+  
+  // อ่าน config สำหรับพื้นหลัง Emoji
+  var cfg = ST.getConfig();
+  var emojiBg = (cfg.menuCardDesign && cfg.menuCardDesign.emojiBg) ? cfg.menuCardDesign.emojiBg : 'circle';
+  
   var html = '';
   html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
-
-  /* Top row: emoji + info */
-  html += '<div class="flex gap-12" style="align-items:flex-start;">';
-
-  /* Emoji / Image */
-  html += '<div class="menu-manage-icon">';
- var isSuperAdmin = (typeof SuperAdmin !== 'undefined' && SuperAdmin.isLoggedIn);
-  var showImage = isSuperAdmin && item.image;
   
-  if (showImage) {
-    html += '<img src="' + item.image + '" style="width:48px;height:48px;border-radius:8px;object-fit:cover;" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<span style=\\\'font-size:36px;\\\'>' + (item.emoji || '☕') + '</span>\'">';
+  /* รูปหรือ Emoji ด้านซ้าย */
+  if (hasImage) {
+    html += '<img class="menu-manage-img" src="' + item.image + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+    html += '<div class="menu-manage-emoji" style="display:none;" data-emoji-bg="' + emojiBg + '">' + (item.emoji || '☕') + '</div>';
   } else {
-    html += '<span style="font-size:36px;">' + (item.emoji || '☕') + '</span>';
+    html += '<div class="menu-manage-emoji" data-emoji-bg="' + emojiBg + '">' + (item.emoji || '☕') + '</div>';
   }
-
+  
+  /* ข้อมูลด้านขวา */
+  html += '<div class="menu-manage-info">';
+  html += '<div class="menu-manage-name">';
+  html += sanitize(item.name);
+  html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
   html += '</div>';
-
-  /* Info */
-  html += '<div style="flex:1;min-width:0;">';
-  html += '<div class="flex-between">';
-  html += '<div class="fw-700 truncate">' + sanitize(item.name) + '</div>';
-  if (!isActive) {
-    html += '<span class="badge badge-danger">ปิด</span>';
-  }
-  html += '</div>';
-  html += '<div class="text-muted fs-sm">' + catName + '</div>';
-
-  /* Prices */
-  html += '<div class="flex gap-8 mt-8 flex-wrap">';
+  html += '<div class="menu-manage-cat">' + catName + '</div>';
+  
+  /* ราคาแต่ละขนาด */
+  html += '<div class="menu-manage-prices">';
   for (var s = 0; s < sizes.length; s++) {
     var p = item.prices ? item.prices[sizes[s].name] : null;
     if (p && p > 0) {
-      html += '<span class="badge badge-accent">' + sizes[s].name + ': ' + formatMoneySign(p) + '</span>';
+      html += '<span class="menu-manage-price-badge">' + sizes[s].name + ': ' + formatMoneySign(p) + '</span>';
     }
   }
   html += '</div>';
-
-  /* Cost */
-  if (item.cost > 0) {
-    html += '<div class="text-muted fs-sm mt-8">ต้นทุน: ' + formatMoneySign(item.cost) + ' | กำไร: ' + formatMoneySign(basePrice - item.cost) + '</div>';
+  
+  /* ต้นทุนและกำไร (ถ้ามี) */
+  var basePrice = ST.getMenuBasePrice(item);
+  var cost = item.cost || 0;
+  if (cost > 0) {
+    var profit = basePrice - cost;
+    html += '<div class="menu-manage-cost">💰 ต้นทุน ' + formatMoneySign(cost) + ' | กำไร ' + formatMoneySign(profit) + '</div>';
   }
-
-/* Options badges */
-  html += '<div class="flex gap-4 mt-4 flex-wrap">';
-  if (item.allowDrinkType !== false) {
-    var dtCount = item.availableDrinkTypes ? item.availableDrinkTypes.length : ST.getDrinkTypes().length;
-    html += '<span class="badge badge-info" style="font-size:10px;">🔥 ' + dtCount + ' ประเภท</span>';
-  }
-  if (item.allowSweetLevel !== false) {
-    html += '<span class="badge badge-warning" style="font-size:10px;">🍯 เลือกหวาน</span>';
-  }
-  html += '</div>';
-
-  html += '</div>'; /* end info */
-  html += '</div>'; /* end top row */
-
-  html += '</div>'; /* end card */
+  
+  html += '</div>'; // end menu-manage-info
+  html += '</div>'; // end menu-manage-card
+  
   return html;
 }
-
-/* Search */
-var _menuListSearchDebounce = debounce(function(val) {
-  MENUVIEW.searchQuery = val;
-  setHTML('menuManageGrid', '');
-  var items = filterMenuItems(ST.getMenu());
-  var cats = ST.getCategories();
-  var h = '';
-  for (var i = 0; i < items.length; i++) {
-    h += renderMenuManageCard(items[i], cats);
-  }
-  if (items.length === 0) {
-    h = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><div class="empty-text">ไม่พบเมนู</div></div>';
-  }
-  setHTML('menuManageGrid', h);
-}, 250);
-
 function menuListSearch(val) {
   _menuListSearchDebounce(val);
 }

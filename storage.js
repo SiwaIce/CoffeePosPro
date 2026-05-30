@@ -132,9 +132,13 @@ ST.getConfig = function() {
       cardRadius: 16,         // px
       imageRadius: 12,        // px
       
-      // เอฟเฟกต์
-      showShadow: true,
-      showBorder: false
+     // เอฟเฟกต์
+  showShadow: true,
+  showBorder: false,
+  
+  // พื้นหลัง Emoji (เพิ่มตรงนี้)
+  emojiBg: 'circle'   // ← เพิ่มบรรทัดนี้
+
     }
     // ========== จบส่วนที่เพิ่ม ========== //
   };

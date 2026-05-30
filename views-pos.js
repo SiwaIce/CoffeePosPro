@@ -483,13 +483,13 @@ function renderMenuItems() {
     
     if (cartQty > 0) html += '<div class="menu-item-badge">' + cartQty + '</div>';
     
-    // แสดงรูปหรือ Emoji
-    if (shouldShowImage) {
-      html += '<img class="menu-item-img" src="' + it.image + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
-      html += '<div class="menu-item-emoji" style="display:none;">' + (it.emoji || '☕') + '</div>';
-    } else {
-      html += '<div class="menu-item-emoji">' + (it.emoji || '☕') + '</div>';
-    }
+   // แทนที่ส่วนแสดง Emoji เดิม
+if (shouldShowImage) {
+  html += '<img class="menu-item-img" src="' + it.image + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+  html += '<div class="menu-item-emoji" style="display:none;" data-emoji-bg="' + (design.emojiBg || 'circle') + '">' + (it.emoji || '☕') + '</div>';
+} else {
+  html += '<div class="menu-item-emoji" data-emoji-bg="' + (design.emojiBg || 'circle') + '">' + (it.emoji || '☕') + '</div>';
+}
     
     // แสดงชื่อและราคา (ตาม config)
     if (cardStyle === 'overlay') {

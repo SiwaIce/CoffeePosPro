@@ -545,6 +545,16 @@ html += '<input type="number" id="designImageRadius" value="' + design.imageRadi
 html += '</div>';
 html += '</div>';
 
+// เพิ่ม selector พื้นหลัง Emoji (ใส่หลังส่วนเอฟเฟกต์ หรือก่อนปุ่มบันทึก)
+html += '<div class="form-group">';
+html += '<label class="form-label">🎨 พื้นหลัง Emoji (เมื่อไม่มีรูป)</label>';
+html += '<select id="designEmojiBg">';
+html += '<option value="circle"' + (design.emojiBg === 'circle' ? ' selected' : '') + '>วงกลมสีส้ม (แบบเดิม)</option>';
+html += '<option value="card"' + (design.emojiBg === 'card' ? ' selected' : '') + '>พื้นหลังสีการ์ด</option>';
+html += '<option value="none"' + (design.emojiBg === 'none' ? ' selected' : '') + '>ไม่มีพื้นหลัง (โปร่งใส)</option>';
+html += '</select>';
+html += '</div>';
+
 // เอฟเฟกต์
 html += '<div class="form-group">';
 html += '<label class="form-label">เอฟเฟกต์</label>';
@@ -1913,7 +1923,8 @@ function saveMenuCardDesign() {
     cardRadius: parseInt(document.getElementById('designCardRadius').value) || 16,
     imageRadius: parseInt(document.getElementById('designImageRadius').value) || 12,
     showShadow: document.getElementById('designShowShadow').checked,
-    showBorder: document.getElementById('designShowBorder').checked
+       showBorder: document.getElementById('designShowBorder').checked,
+        emojiBg: document.getElementById('designEmojiBg').value
   };
   
   cfg.menuCardDesign = design;
