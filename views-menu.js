@@ -107,6 +107,7 @@ function renderMenuList() {
   }
   html += '</select>';
   html += '<button class="btn btn-primary btn-sm" onclick="modalEditMenu(null)">➕ เพิ่มเมนู</button>';
+    html += '<button class="btn btn-secondary btn-sm" onclick="showBatchToggleModal()">🔘 จัดการเมนูที่เปิดขาย</button>';
   html += '</div>';
 
   html += '</div>';
@@ -161,24 +162,34 @@ function filterMenuItems(allItems) {
 function renderMenuManageCard(item, cats) {
   var cfg = ST.getConfig();
   var design = cfg.menuCardDesign || {};
+  var manageCard = design.manageCard || {};
   
   // อ่านค่า config
-  var layout = design.manageCardLayout || 'B';
-  var imageSize = design.manageImageSize || 70;
-  var cardGap = design.manageCardGap || 16;
-  var verticalGap = design.manageVerticalGap || 6;
-  var paddingRight = design.managePaddingRight || 12;
-  var nameAlign = design.manageNameAlign || 'left';
-  var statusInline = design.manageStatusPosition !== 'newline';
+  var layout = manageCard.cardLayout || 'B';
+  var imageSize = manageCard.imageSize || 70;
+  var cardGap = manageCard.cardGap || 16;
+  var verticalGap = manageCard.verticalGap || 6;
+  var paddingRight = manageCard.paddingRight || 12;
+  var showImageBorder = manageCard.showImageBorder === true;
+  var nameFontSize = manageCard.nameFontSize || 15;
+  var nameFontWeight = manageCard.nameFontWeight || 600;
+  var nameMarginLeft = manageCard.nameMarginLeft || 0;
+  var nameMarginRight = manageCard.nameMarginRight || 0;
+  var nameAlign = manageCard.nameAlign || 'left';
+  var statusInline = manageCard.statusPosition !== 'newline';
   var isActive = item.active !== false;
   var hasImage = item.image && item.image.trim() !== '';
   
-  var mediaStyle = 'width:' + imageSize + 'px; height:' + imageSize + 'px;';
+  // สร้าง style inline
+  var cardStyle = 'gap:' + cardGap + 'px;';
   var infoStyle = 'gap:' + verticalGap + 'px; padding-right:' + paddingRight + 'px;';
   var textAlignStyle = 'text-align:' + nameAlign + ';';
+  var nameStyle = '--name-font-size:' + nameFontSize + 'px; --name-font-weight:' + nameFontWeight + '; --name-margin-left:' + nameMarginLeft + 'px; --name-margin-right:' + nameMarginRight + 'px;';
+  var mediaStyle = 'width:' + imageSize + 'px; height:' + imageSize + 'px;';
+  var borderAttr = showImageBorder ? 'true' : 'false';
   
   var html = '';
-  html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" style="gap:' + cardGap + 'px;" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
+  html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" style="' + cardStyle + '" data-image-border="' + borderAttr + '" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
   
   // รูปหรือ Emoji
   if (hasImage) {
@@ -193,12 +204,12 @@ function renderMenuManageCard(item, cats) {
   
   // บรรทัดที่ 1: ชื่อ + สถานะ
   if (statusInline) {
-    html += '<div class="menu-manage-name" style="' + textAlignStyle + '">';
-    html += '<span class="menu-manage-name-text">' + sanitize(item.name) + '</span>';
+    html += '<div class="menu-manage-name" style="' + nameStyle + '">';
+    html += '<span class="menu-manage-name-text" style="' + textAlignStyle + '">' + sanitize(item.name) + '</span>';
     html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
     html += '</div>';
   } else {
-    html += '<div class="menu-manage-name" style="' + textAlignStyle + '">' + sanitize(item.name) + '</div>';
+    html += '<div class="menu-manage-name" style="' + nameStyle + ' ' + textAlignStyle + '">' + sanitize(item.name) + '</div>';
     html += '<div class="menu-manage-status-row" style="' + textAlignStyle + '">';
     html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
     html += '</div>';
@@ -232,6 +243,68 @@ function renderMenuManageCard(item, cats) {
   html += '</div>'; // end menu-manage-card
   
   return html;
+}
+// ============================================
+// BATCH TOGGLE - เปิด/ปิดเมนูทีละหลายรายการ
+// ============================================
+
+function showBatchToggleModal() {
+  var menuItems = ST.getMenu();
+  var html = '';
+  
+  html += '<div class="batch-toggle-header mb-16">';
+  html += '<div class="flex gap-8 mb-12">';
+  html += '<button class="btn btn-secondary btn-sm" onclick="selectAllMenus(true)">☑️ เลือกทั้งหมด</button>';
+  html += '<button class="btn btn-secondary btn-sm" onclick="selectAllMenus(false)">☐ ยกเลิกทั้งหมด</button>';
+  html += '</div>';
+  html += '</div>';
+  
+  html += '<div class="batch-toggle-list" style="max-height:400px;overflow-y:auto;">';
+  for (var i = 0; i < menuItems.length; i++) {
+    var item = menuItems[i];
+    var isActive = item.active !== false;
+    html += '<div class="batch-toggle-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">';
+    html += '<div class="flex gap-12" style="align-items:center;">';
+    html += '<input type="checkbox" class="batch-menu-checkbox" data-id="' + sanitize(item.id) + '" ' + (isActive ? 'checked' : '') + ' style="width:20px;height:20px;">';
+    html += '<span class="fw-600">' + sanitize(item.name) + '</span>';
+    html += '</div>';
+    html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิด' : 'ปิด') + '</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+  
+  var footer = '';
+  footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
+  footer += '<button class="btn btn-primary" onclick="saveBatchToggle()">💾 บันทึก</button>';
+  
+  openModal('🔘 จัดการเมนูที่เปิดขาย', html, footer, { wide: true });
+}
+
+function selectAllMenus(checked) {
+  var checkboxes = document.querySelectorAll('.batch-menu-checkbox');
+  for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].checked = checked;
+  }
+}
+
+function saveBatchToggle() {
+  var checkboxes = document.querySelectorAll('.batch-menu-checkbox');
+  var updates = [];
+  
+  for (var i = 0; i < checkboxes.length; i++) {
+    var id = checkboxes[i].getAttribute('data-id');
+    var isActive = checkboxes[i].checked;
+    updates.push({ id: id, active: isActive });
+  }
+  
+  // อัปเดตทีละรายการ
+  for (var u = 0; u < updates.length; u++) {
+    ST.updateMenuItem(updates[u].id, { active: updates[u].active });
+  }
+  
+  closeMForce();
+  toast('อัปเดตสถานะเมนูเรียบร้อย', 'success');
+  renderMenuView(); // รีเฟรชหน้า
 }
 function menuListSearch(val) {
   _menuListSearchDebounce(val);

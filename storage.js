@@ -106,7 +106,7 @@ ST.getConfig = function() {
     promptPayEnabled: false,
     
     // ========== เพิ่มส่วนนี้ ========== //
-    // ดีไซน์การ์ดเมนู (POS)
+// ดีไซน์การ์ดเมนู (POS)
 menuCardDesign: {
   // พื้นฐาน
   showName: true,
@@ -137,25 +137,31 @@ menuCardDesign: {
   showBorder: false,
   
   // ===== หน้า Manage Menu =====
-  manageCardLayout: 'B',           // 'A' = แนวตั้ง, 'B' = แนวนอน
-  manageImageSize: 70,             // ขนาดรูป/Emoji (px)
-  manageCardGap: 16,               // ระยะห่างรูป-ข้อความ (px)
-  manageVerticalGap: 6,            // ระยะห่างระหว่างบรรทัด (px)
-  managePaddingRight: 12,          // ระยะขอบขวา (px)
-  manageNameAlign: 'left',         // ตำแหน่งชื่อ ('left' หรือ 'right')
-  manageStatusPosition: 'inline'   // 'inline' (ข้างชื่อ) หรือ 'newline' (ขึ้นบรรทัดใหม่)
+  manageCard: {
+    cardLayout: 'B',              // 'A' = แนวตั้ง, 'B' = แนวนอน
+    imageSize: 70,               // ขนาดรูป/Emoji (px)
+    cardGap: 16,                 // ระยะห่างรูป-ข้อความ (px)
+    verticalGap: 6,              // ระยะห่างระหว่างบรรทัด (px)
+    paddingRight: 12,            // ระยะขอบขวา (px)
+    showImageBorder: false,      // แสดงขอบกรอบรูป (false = ไม่มีขอบ)
+    nameFontSize: 15,            // ขนาดตัวอักษรชื่อ (px)
+    nameFontWeight: 600,         // ความหนาตัวอักษร (400-800)
+    nameMarginLeft: 0,           // ระยะขอบซ้ายชื่อ (px)
+    nameMarginRight: 0,          // ระยะขอบขวาชื่อ (px)
+    nameAlign: 'left',           // ตำแหน่งชื่อ ('left' หรือ 'right')
+    statusPosition: 'inline'     // 'inline' (ข้างชื่อ) หรือ 'newline' (ขึ้นบรรทัดใหม่)
+  }
+}   // ← ไม่ต้องมี semicolon ตรงนี้
+
+var cfg = ST.getObj('config', {});
+for (var k in defaults) {
+  if (cfg[k] === undefined) cfg[k] = defaults[k];
 }
-  };
-  
-  var cfg = ST.getObj('config', {});
-  for (var k in defaults) {
-    if (cfg[k] === undefined) cfg[k] = defaults[k];
-  }
-  
-  // ========== เพิ่ม这部分 (เผื่อ menuCardDesign ไม่มี) ========== //
-  if (!cfg.menuCardDesign) {
-    cfg.menuCardDesign = defaults.menuCardDesign;
-  }
+
+// ========== เพิ่ม这部分 (เผื่อ menuCardDesign ไม่มี) ========== //
+if (!cfg.menuCardDesign) {
+  cfg.menuCardDesign = defaults.menuCardDesign;
+}
   // ========== จบ ========== //
   
   return cfg;
