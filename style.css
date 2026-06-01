@@ -4036,8 +4036,28 @@ html {
 .menu-item[data-font="large"] .menu-item-price {
   font-size: 16px;
 }
+}
+
+/* เงา */
+.menu-item[data-shadow="true"] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.menu-item[data-shadow="true"]:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px);
+}
+
+/* มุมมน */
+.menu-item {
+  border-radius: var(--card-radius, 20px);
+}
+
+/* ===== รูปและ Emoji (ไม่มีขอบแน่นอน) ===== */
+.menu-item-img {
+  width: 100%;
+  display: block;
 /* ============================================
-   POS MENU CARDS - 3 STYLES (A, B, H)
+   POS MENU CARDS - 3 STYLES (A, B, H) - ปรับสวย
    ============================================ */
 
 /* การ์ดหลัก */
@@ -4049,6 +4069,8 @@ html {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  border: none;
+  height: 100%;
 }
 
 /* ขอบการ์ด (control โดย data-border) */
@@ -4086,24 +4108,28 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: var(--bg-card);
   border: none;
   outline: none;
+  width: 100%;
 }
 
 /* ===== แบบ A: Overlay ===== */
 .menu-item[data-style="overlay"] {
-  min-height: 180px;
+  min-height: 200px;
 }
 
 .menu-item[data-style="overlay"] .menu-item-img {
-  height: 100%;
-  min-height: 180px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
 }
 
 .menu-item[data-style="overlay"] .menu-item-emoji {
   font-size: 56px;
-  min-height: 180px;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  background: linear-gradient(135deg, var(--card), var(--card2));
 }
 
 .menu-item[data-style="overlay"] .menu-item-name,
@@ -4111,27 +4137,28 @@ html {
   position: absolute;
   bottom: 12px;
   z-index: 2;
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: 30px;
   font-weight: 700;
+  white-space: nowrap;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.menu-item[data-style="overlay"] .menu-item-name {
+.menu-item[data-style="overlay"][data-name-pos="left"] .menu-item-name {
   left: 12px;
 }
-.menu-item[data-style="overlay"] .menu-item-price {
-  right: 12px;
-}
-
-/* ตำแหน่งแบบปรับได้ */
 .menu-item[data-style="overlay"][data-name-pos="center"] .menu-item-name {
   left: 50%;
   transform: translateX(-50%);
+  text-align: center;
 }
 .menu-item[data-style="overlay"][data-name-pos="right"] .menu-item-name {
   left: auto;
   right: 12px;
 }
+
 .menu-item[data-style="overlay"][data-price-pos="left"] .menu-item-price {
   right: auto;
   left: 12px;
@@ -4141,11 +4168,14 @@ html {
   left: 50%;
   transform: translateX(-50%);
 }
+.menu-item[data-style="overlay"][data-price-pos="right"] .menu-item-price {
+  right: 12px;
+}
 
 /* พื้นหลังข้อความ */
 .menu-item[data-style="overlay"][data-text-bg="translucent"] .menu-item-name,
 .menu-item[data-style="overlay"][data-text-bg="translucent"] .menu-item-price {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(8px);
   color: white;
 }
@@ -4167,12 +4197,16 @@ html {
 }
 
 .menu-item[data-style="classic"] .menu-item-img {
-  height: 140px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
 .menu-item[data-style="classic"] .menu-item-emoji {
   font-size: 48px;
-  height: 140px;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  background: linear-gradient(135deg, var(--card), var(--card2));
 }
 
 .menu-item[data-style="classic"] .menu-item-info {
@@ -4180,6 +4214,8 @@ html {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
 .menu-item[data-style="classic"][data-name-pos="center"] .menu-item-info {
@@ -4195,24 +4231,36 @@ html {
 
 .menu-item[data-style="classic"] .menu-item-name {
   font-weight: 700;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
+
 .menu-item[data-style="classic"] .menu-item-price {
   font-weight: 800;
   color: var(--accent);
+  font-size: 15px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ===== แบบ H: Big Hero ===== */
 .menu-item[data-style="bighero"] {
-  min-height: 210px;
+  min-height: 240px;
 }
 
 .menu-item[data-style="bighero"] .menu-item-img {
-  height: var(--hero-height, 210px);
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
 .menu-item[data-style="bighero"] .menu-item-emoji {
   font-size: 64px;
-  height: var(--hero-height, 210px);
+  aspect-ratio: 4 / 3;
+  width: 100%;
   background: linear-gradient(135deg, var(--card), var(--card2));
 }
 
@@ -4221,29 +4269,35 @@ html {
   position: absolute;
   bottom: 16px;
   z-index: 2;
-  padding: 8px 18px;
-  border-radius: 40px;
-  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-weight: 700;
+  white-space: nowrap;
+  max-width: calc(100% - 32px);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-item[data-style="bighero"] .menu-item-name {
-  left: 16px;
-  font-size: 18px;
+  font-size: 15px;
 }
 .menu-item[data-style="bighero"] .menu-item-price {
-  right: 16px;
-  font-size: 22px;
+  font-size: 17px;
 }
 
-/* ตำแหน่งแบบปรับได้ */
+.menu-item[data-style="bighero"][data-name-pos="left"] .menu-item-name {
+  left: 16px;
+}
 .menu-item[data-style="bighero"][data-name-pos="center"] .menu-item-name {
   left: 50%;
   transform: translateX(-50%);
+  text-align: center;
 }
 .menu-item[data-style="bighero"][data-name-pos="right"] .menu-item-name {
   left: auto;
   right: 16px;
 }
+
 .menu-item[data-style="bighero"][data-price-pos="left"] .menu-item-price {
   right: auto;
   left: 16px;
@@ -4253,11 +4307,14 @@ html {
   left: 50%;
   transform: translateX(-50%);
 }
+.menu-item[data-style="bighero"][data-price-pos="right"] .menu-item-price {
+  right: 16px;
+}
 
 /* พื้นหลังข้อความ (แบบ H) */
 .menu-item[data-style="bighero"][data-text-bg="translucent"] .menu-item-name,
 .menu-item[data-style="bighero"][data-text-bg="translucent"] .menu-item-price {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(8px);
   color: white;
 }
@@ -4270,10 +4327,10 @@ html {
 .menu-item[data-style="bighero"][data-text-bg="none"] .menu-item-price {
   background: transparent;
   color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
-/* ขนาดตัวอักษร */
+/* ===== ขนาดตัวอักษร ===== */
 .menu-item[data-font="small"] .menu-item-name { font-size: 12px; }
 .menu-item[data-font="small"] .menu-item-price { font-size: 13px; }
 .menu-item[data-font="medium"] .menu-item-name { font-size: 14px; }
@@ -4281,13 +4338,21 @@ html {
 .menu-item[data-font="large"] .menu-item-name { font-size: 16px; }
 .menu-item[data-font="large"] .menu-item-price { font-size: 17px; }
 
-/* ปุ่มโปรด (⭐) */
+/* เฉพาะแบบ H ขนาดตัวอักษร */
+.menu-item[data-style="bighero"][data-font="small"] .menu-item-name { font-size: 14px; }
+.menu-item[data-style="bighero"][data-font="small"] .menu-item-price { font-size: 15px; }
+.menu-item[data-style="bighero"][data-font="medium"] .menu-item-name { font-size: 16px; }
+.menu-item[data-style="bighero"][data-font="medium"] .menu-item-price { font-size: 17px; }
+.menu-item[data-style="bighero"][data-font="large"] .menu-item-name { font-size: 18px; }
+.menu-item[data-style="bighero"][data-font="large"] .menu-item-price { font-size: 19px; }
+
+/* ===== ปุ่มโปรด (⭐) ===== */
 .menu-item .fav-btn {
   position: absolute;
   top: 8px;
   left: 8px;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4298,9 +4363,19 @@ html {
   cursor: pointer;
   border: none;
   font-size: 14px;
+  transition: all 0.2s;
 }
 
-/* Badge จำนวนในตะกร้า */
+.menu-item .fav-btn:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.menu-item .fav-btn.active {
+  color: #fbbf24;
+}
+
+/* ===== Badge จำนวนในตะกร้า ===== */
 .menu-item-badge {
   position: absolute;
   top: 8px;
@@ -4309,21 +4384,38 @@ html {
   color: white;
   font-size: 11px;
   font-weight: 800;
-  min-width: 22px;
-  height: 22px;
-  border-radius: 11px;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 5;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-/* Responsive */
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .menu-item[data-style="bighero"] .menu-item-name { font-size: 14px; padding: 4px 12px; bottom: 12px; }
-  .menu-item[data-style="bighero"] .menu-item-price { font-size: 16px; padding: 4px 12px; bottom: 12px; }
   .menu-item[data-style="overlay"] .menu-item-name,
-  .menu-item[data-style="overlay"] .menu-item-price { font-size: 12px; padding: 4px 10px; bottom: 8px; }
-  .menu-item[data-style="classic"] .menu-item-img,
-  .menu-item[data-style="classic"] .menu-item-emoji { height: 110px; }
+  .menu-item[data-style="overlay"] .menu-item-price {
+    font-size: 11px;
+    padding: 4px 10px;
+    bottom: 8px;
+  }
+  
+  .menu-item[data-style="bighero"] .menu-item-name {
+    font-size: 13px;
+    bottom: 12px;
+  }
+  .menu-item[data-style="bighero"] .menu-item-price {
+    font-size: 14px;
+    bottom: 12px;
+  }
+  
+  .menu-item[data-style="classic"] .menu-item-name {
+    font-size: 12px;
+  }
+  .menu-item[data-style="classic"] .menu-item-price {
+    font-size: 13px;
+  }
 }
