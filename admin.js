@@ -2193,19 +2193,26 @@ function bindPreviewEvents() {
   if (borderCheck) borderCheck.addEventListener('change', updateRealTimePreview);
 }
 
-// แทนที่ setTimeout เดิม ด้วย:
+// ============================================
+// เริ่มต้นระบบ Preview เมื่อโหลดหน้าเสร็จ
+// ============================================
+
 document.addEventListener('DOMContentLoaded', function() {
+  // รอให้ DOM พร้อมแล้วค่อยเริ่ม
   setTimeout(function() {
-    bindPOSPreviewEvents();
-    updatePOSPreview();
+    // สำหรับ POS Card Preview
+    if (typeof bindPOSPreviewEvents === 'function') {
+      bindPOSPreviewEvents();
+      updatePOSPreview();
+    }
+    
+    // สำหรับ Manage Menu Preview (ถ้ามี)
+    if (typeof bindPreviewEvents === 'function') {
+      bindPreviewEvents();
+      updateRealTimePreview();
+    }
   }, 300);
 });
-} else {
-  setTimeout(function() {
-    bindPreviewEvents();
-    updateRealTimePreview();
-  }, 500);
-}
 // ============================================
 // Real-time Preview + Save POS Card Design (A, B, H)
 // ============================================
