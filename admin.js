@@ -2193,14 +2193,13 @@ function bindPreviewEvents() {
   if (borderCheck) borderCheck.addEventListener('change', updateRealTimePreview);
 }
 
-// เรียกใช้หลังจาก DOM พร้อม
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-      bindPreviewEvents();
-      updateRealTimePreview();
-    }, 500);
-  });
+// แทนที่ setTimeout เดิม ด้วย:
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    bindPOSPreviewEvents();
+    updatePOSPreview();
+  }, 300);
+});
 } else {
   setTimeout(function() {
     bindPreviewEvents();
@@ -2212,17 +2211,35 @@ if (document.readyState === 'loading') {
 // ============================================
 
 function updatePOSPreview() {
-  var style = document.querySelector('input[name="cardStyleRadio"]:checked').value;
-  var showName = document.getElementById('designShowName').checked;
-  var showPrice = document.getElementById('designShowPrice').checked;
-  var namePos = document.getElementById('designNamePos').value;
-  var pricePos = document.getElementById('designPricePos').value;
-  var textBg = document.getElementById('designTextBg').value;
-  var fontSize = document.getElementById('designFontSize').value;
-  var heroHeight = document.getElementById('designHeroHeight').value;
-  var cardRadius = document.getElementById('designCardRadius').value;
-  var showShadow = document.getElementById('designShowShadow').checked;
-  var showBorder = document.getElementById('designShowBorder').checked;
+  // ตรวจสอบว่า element มีอยู่ก่อน
+  var styleRadio = document.querySelector('input[name="cardStyleRadio"]:checked');
+  var showNameCheck = document.getElementById('designShowName');
+  var showPriceCheck = document.getElementById('designShowPrice');
+  var namePosSelect = document.getElementById('designNamePos');
+  var pricePosSelect = document.getElementById('designPricePos');
+  var textBgSelect = document.getElementById('designTextBg');
+  var fontSizeSelect = document.getElementById('designFontSize');
+  var heroHeightInput = document.getElementById('designHeroHeight');
+  var cardRadiusInput = document.getElementById('designCardRadius');
+  var showShadowCheck = document.getElementById('designShowShadow');
+  var showBorderCheck = document.getElementById('designShowBorder');
+  
+  // ถ้า element ไม่มีให้ return ออกไป (รอให้โหลดก่อน)
+  if (!styleRadio || !showNameCheck || !showPriceCheck) {
+    return;
+  }
+  
+  var style = styleRadio.value;
+  var showName = showNameCheck.checked;
+  var showPrice = showPriceCheck.checked;
+  var namePos = namePosSelect ? namePosSelect.value : 'left';
+  var pricePos = pricePosSelect ? pricePosSelect.value : 'right';
+  var textBg = textBgSelect ? textBgSelect.value : 'translucent';
+  var fontSize = fontSizeSelect ? fontSizeSelect.value : 'medium';
+  var heroHeight = heroHeightInput ? heroHeightInput.value : 210;
+  var cardRadius = cardRadiusInput ? cardRadiusInput.value : 20;
+  var showShadow = showShadowCheck ? showShadowCheck.checked : true;
+  var showBorder = showBorderCheck ? showBorderCheck.checked : false;
   
   var previewHtml = '';
   
@@ -2269,10 +2286,11 @@ function bindPOSPreviewEvents() {
   }
   var radios = document.querySelectorAll('input[name="cardStyleRadio"]');
   for (var r = 0; r < radios.length; r++) {
-    radios[r].addEventListener('change', updatePOSPreview);
+    if (radios[r]) {
+      radios[r].addEventListener('change', updatePOSPreview);
+    }
   }
 }
-
 function savePOSCardDesign() {
   var cfg = ST.getConfig();
   var design = {
