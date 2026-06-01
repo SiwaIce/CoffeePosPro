@@ -521,7 +521,7 @@ html += '</div></div>';
 // ========== จบ Preview Section ==========
 
 // ============================================
-// ส่วนดีไซน์การ์ดเมนู POS (3 แบบ A, B, H) + Preview Side-by-side
+// ส่วนดีไซน์การ์ดเมนู POS (3 แบบ A, B, H)
 // ============================================
 
 var design = cfg.menuCardDesign || {
@@ -542,29 +542,60 @@ html += '<div class="card mb-16">';
 html += '<div class="card-header"><div class="card-title">🎨 ดีไซน์การ์ดเมนู POS</div></div>';
 html += '<div class="p-16">';
 
-// Preview Section (Side-by-side)
-html += '<div class="preview-sidebar" style="display:flex; gap:24px; flex-wrap:wrap; margin-bottom:24px;">';
+// ตัวอย่างการ์ด (ไม่ interactive)
+html += '<div class="preview-gallery" style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-bottom:24px; padding:16px; background:var(--bg-secondary); border-radius:16px;">';
 
-// Preview Card
-html += '<div class="preview-card-container" style="flex:1; min-width:220px; background:var(--bg-card); border-radius:20px; padding:16px; border:1px solid var(--border);">';
-html += '<div class="preview-label" style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">👁️ ตัวอย่างการ์ด (Real-time)</div>';
-html += '<div id="previewCard" style="width:100%; max-width:260px; margin:0 auto;"></div>';
+// แบบ A
+html += '<div style="width:160px; text-align:center;">';
+html += '<div class="preview-demo" style="background:var(--bg-card); border-radius:16px; overflow:hidden; position:relative; min-height:140px;">';
+html += '<div style="height:140px; display:flex; align-items:center; justify-content:center; font-size:42px; background:linear-gradient(135deg,var(--card),var(--card2));">☕</div>';
+html += '<div style="position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.6); padding:4px 10px; border-radius:20px; font-size:11px; color:white;">อเมริกาโน่</div>';
+html += '<div style="position:absolute; bottom:8px; right:8px; background:rgba(249,115,22,0.9); padding:4px 10px; border-radius:20px; font-size:11px; color:white; font-weight:bold;">฿60</div>';
+html += '</div>';
+html += '<div class="mt-2 fw-600 fs-sm">แบบ A (Overlay)</div>';
+html += '<div class="text-muted fs-sm">ข้อความทับรูป</div>';
 html += '</div>';
 
-// Controls
-html += '<div style="flex:2; min-width:260px;">';
+// แบบ B
+html += '<div style="width:160px; text-align:center;">';
+html += '<div class="preview-demo" style="background:var(--bg-card); border-radius:16px; overflow:hidden;">';
+html += '<div style="height:110px; display:flex; align-items:center; justify-content:center; font-size:42px; background:linear-gradient(135deg,var(--card),var(--card2));">☕</div>';
+html += '<div style="padding:10px; display:flex; justify-content:space-between;">';
+html += '<span style="font-size:12px; font-weight:600;">อเมริกาโน่</span>';
+html += '<span style="font-size:12px; font-weight:800; color:#f97316;">฿60</span>';
+html += '</div>';
+html += '</div>';
+html += '<div class="mt-2 fw-600 fs-sm">แบบ B (Classic)</div>';
+html += '<div class="text-muted fs-sm">รูปบน + ข้อความล่าง</div>';
+html += '</div>';
+
+// แบบ H
+html += '<div style="width:160px; text-align:center;">';
+html += '<div class="preview-demo" style="background:var(--bg-card); border-radius:16px; overflow:hidden; position:relative; min-height:150px;">';
+html += '<div style="height:150px; display:flex; align-items:center; justify-content:center; font-size:48px; background:linear-gradient(135deg,var(--card),var(--card2));">☕</div>';
+html += '<div style="position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.6); padding:4px 10px; border-radius:20px; font-size:11px; color:white;">อเมริกาโน่</div>';
+html += '<div style="position:absolute; bottom:8px; right:8px; background:rgba(249,115,22,0.9); padding:4px 10px; border-radius:20px; font-size:12px; color:white; font-weight:bold;">฿60</div>';
+html += '</div>';
+html += '<div class="mt-2 fw-600 fs-sm">แบบ H (Big Hero)</div>';
+html += '<div class="text-muted fs-sm">ภาพใหญ่พิเศษ</div>';
+html += '</div>';
+
+html += '</div>';
+
+// ฟอร์มปรับแต่ง
+html += '<div class="design-form">';
 
 // รูปแบบการ์ด
 html += '<div class="form-group">';
 html += '<label class="form-label">✨ รูปแบบการ์ด</label>';
-html += '<div class="flex gap-12 flex-wrap">';
-html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="overlay" ' + (design.activeStyle === 'overlay' ? 'checked' : '') + '> <span>🎨 แบบ A (Overlay) - ข้อความทับรูป</span></label>';
-html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="classic" ' + (design.activeStyle === 'classic' ? 'checked' : '') + '> <span>📦 แบบ B (Classic) - รูปบน + ข้อความล่าง</span></label>';
-html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="bighero" ' + (design.activeStyle === 'bighero' ? 'checked' : '') + '> <span>🎬 แบบ H (Big Hero) - ภาพใหญ่พิเศษ</span></label>';
+html += '<div class="flex gap-16 flex-wrap">';
+html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="overlay" ' + (design.activeStyle === 'overlay' ? 'checked' : '') + '> <span>แบบ A (Overlay) - ข้อความทับรูป</span></label>';
+html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="classic" ' + (design.activeStyle === 'classic' ? 'checked' : '') + '> <span>แบบ B (Classic) - รูปบน + ข้อความล่าง</span></label>';
+html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="bighero" ' + (design.activeStyle === 'bighero' ? 'checked' : '') + '> <span>แบบ H (Big Hero) - ภาพใหญ่พิเศษ</span></label>';
 html += '</div>';
 html += '</div>';
 
-// แสดง/ซ่อน
+// แสดงชื่อ/ราคา
 html += '<div class="form-row">';
 html += '<div class="form-group"><label class="checkbox-wrap"><input type="checkbox" id="designShowName" ' + (design.showName ? 'checked' : '') + '> <span>แสดงชื่อเมนู</span></label></div>';
 html += '<div class="form-group"><label class="checkbox-wrap"><input type="checkbox" id="designShowPrice" ' + (design.showPrice ? 'checked' : '') + '> <span>แสดงราคา</span></label></div>';
@@ -586,7 +617,7 @@ html += '<option value="right"' + (design.pricePosition === 'right' ? ' selected
 html += '</select></div>';
 html += '</div>';
 
-// พื้นหลังข้อความ (A/H)
+// พื้นหลังข้อความ
 html += '<div class="form-group"><label class="form-label">พื้นหลังข้อความ (เฉพาะ A/H)</label>';
 html += '<select id="designTextBg">';
 html += '<option value="translucent"' + (design.textBackground === 'translucent' ? ' selected' : '') + '>โปร่งแสง (Blur)</option>';
@@ -594,7 +625,7 @@ html += '<option value="solid"' + (design.textBackground === 'solid' ? ' selecte
 html += '<option value="none"' + (design.textBackground === 'none' ? ' selected' : '') + '>ไม่มีพื้นหลัง</option>';
 html += '</select></div>';
 
-// ขนาดตัวอักษร + ความสูงรูป (H)
+// ขนาดตัวอักษร + ความสูงรูป
 html += '<div class="form-row">';
 html += '<div class="form-group"><label class="form-label">ขนาดตัวอักษร</label>';
 html += '<select id="designFontSize">';
@@ -614,57 +645,9 @@ html += '<div class="form-group"><label class="checkbox-wrap"><input type="check
 html += '<div class="form-group"><label class="checkbox-wrap"><input type="checkbox" id="designShowBorder" ' + (design.showBorder ? 'checked' : '') + '> <span>แสดงขอบการ์ด</span></label></div>';
 html += '</div>';
 
-html += '<button class="btn btn-primary btn-sm" onclick="savePOSCardDesign()">💾 บันทึกดีไซน์การ์ด</button>';
-html += '</div></div></div></div>';
+html += '<button class="btn btn-primary" onclick="savePOSCardDesign()">💾 บันทึกดีไซน์การ์ด</button>';
+html += '</div></div></div>';
 
-// ========== ส่วนปรับแต่งหน้า Manage Menu (คงเดิม) ==========
-var manageCard = design.manageCard || {};
-
-html += '<div class="card mb-16">';
-html += '<div class="card-header"><div class="card-title">📋 หน้า Manage Menu (รายการเมนู)</div></div>';
-html += '<div class="p-16">';
-
-// รูปแบบการ์ด
-html += '<div class="form-group">';
-html += '<label class="form-label">รูปแบบการ์ด</label>';
-html += '<div class="flex gap-16 flex-wrap">';
-html += '<label class="checkbox-wrap"><input type="radio" name="manageCardLayout" value="A" ' + (manageCard.cardLayout === 'A' ? 'checked' : '') + '> <span>📐 แบบ A (แนวตั้ง: รูปบน ข้อความล่าง)</span></label>';
-html += '<label class="checkbox-wrap"><input type="radio" name="manageCardLayout" value="B" ' + (manageCard.cardLayout !== 'A' ? 'checked' : '') + '> <span>📏 แบบ B (แนวนอน: รูปซ้าย ข้อความขวา)</span></label>';
-html += '</div>';
-html += '</div>';
-
-// ขนาดและระยะห่าง
-html += '<div class="form-row">';
-html += '<div class="form-group">';
-html += '<label class="form-label">ขนาดรูป/Emoji (px)</label>';
-html += '<input type="number" id="manageImageSize" value="' + (manageCard.imageSize || 70) + '" step="5" min="40" max="120">';
-html += '</div>';
-html += '<div class="form-group">';
-html += '<label class="form-label">ระยะห่างรูป-ข้อความ (px)</label>';
-html += '<input type="number" id="manageCardGap" value="' + (manageCard.cardGap || 16) + '" step="2" min="4" max="24">';
-html += '</div>';
-html += '</div>';
-
-html += '<div class="form-row">';
-html += '<div class="form-group">';
-html += '<label class="form-label">ระยะห่างระหว่างบรรทัด (px)</label>';
-html += '<input type="number" id="manageVerticalGap" value="' + (manageCard.verticalGap || 6) + '" step="1" min="0" max="12">';
-html += '</div>';
-html += '<div class="form-group">';
-html += '<label class="form-label">ระยะขอบขวา (px)</label>';
-html += '<input type="number" id="managePaddingRight" value="' + (manageCard.paddingRight || 12) + '" step="2" min="0" max="20">';
-html += '</div>';
-html += '</div>';
-
-// ขอบรูป
-html += '<div class="form-group">';
-html += '<label class="checkbox-wrap">';
-html += '<input type="checkbox" id="manageShowImageBorder" ' + (manageCard.showImageBorder ? 'checked' : '') + '> ';
-html += '<span>แสดงขอบกรอบรูป (ถ้าไม่ติ๊ก = ไม่มีขอบ)</span>';
-html += '</label>';
-html += '</div>';
-
-html += '</div></div>';
 
 // ========== ส่วนปรับแต่งชื่อเมนู (Manage Menu) ==========
 html += '<div class="card mb-16">';
@@ -2319,10 +2302,25 @@ function savePOSCardDesign() {
   
   toast('บันทึกดีไซน์การ์ดเมนูแล้ว', 'success');
   
+  // รีเฟรชหน้า POS
   if (typeof APP !== 'undefined' && APP.currentView === 'pos' && typeof renderPOSView === 'function') {
     renderPOSView();
   }
 }
+
+// Event listener สำหรับแสดง/ซ่อนความสูงรูป (แบบ H)
+document.addEventListener('DOMContentLoaded', function() {
+  var radios = document.querySelectorAll('input[name="cardStyleRadio"]');
+  for (var i = 0; i < radios.length; i++) {
+    radios[i].addEventListener('change', function() {
+      var heroGroup = document.getElementById('heroHeightGroup');
+      if (heroGroup) {
+        var isBigHero = document.querySelector('input[name="cardStyleRadio"]:checked').value === 'bighero';
+        heroGroup.style.display = isBigHero ? '' : 'none';
+      }
+    });
+  }
+});
 
 setTimeout(function() {
   bindPOSPreviewEvents();
