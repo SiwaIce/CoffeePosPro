@@ -374,7 +374,7 @@ function selectCat(catId) {
 }
 
 /* ============================================
-   MENU ITEMS GRID
+   MENU ITEMS GRID - รองรับ 3 แบบ (A, B, H)
    ============================================ */
 function renderMenuItems() {
   var allItems = ST.getActiveMenu();
@@ -403,37 +403,34 @@ function renderMenuItems() {
       + '</div></div>';
   }
   
-  // ========== อ่านค่า Config สำหรับดีไซน์การ์ด ==========
+  // ========== อ่านค่า Config สำหรับดีไซน์การ์ด (3 แบบ: overlay, classic, bighero) ==========
   var cfg = ST.getConfig();
   var design = cfg.menuCardDesign || {
-    showName: true, showPrice: true, showImage: true,
-    cardStyle: 'classic',
-    overlayNamePosition: 'left', overlayPricePosition: 'right', overlayTextBg: 'translucent',
-    classicNamePosition: 'left', classicPricePosition: 'right', classicTextBg: 'none',
-    fontSize: 'medium', imageHeight: 160, cardRadius: 16, imageRadius: 12,
-    showShadow: true, showBorder: false
+    activeStyle: 'overlay',
+    showName: true,
+    showPrice: true,
+    namePosition: 'left',
+    pricePosition: 'right',
+    textBackground: 'translucent',
+    fontSize: 'medium',
+    heroImageHeight: 210,
+    cardRadius: 20,
+    showShadow: true,
+    showBorder: false
   };
   
-  var cardStyle = design.cardStyle || 'classic';
+  var activeStyle = design.activeStyle || 'overlay';
   var showName = design.showName !== false;
   var showPrice = design.showPrice !== false;
-  var showImage = design.showImage !== false;
+  var namePos = design.namePosition || 'left';
+  var pricePos = design.pricePosition || 'right';
+  var textBg = design.textBackground || 'translucent';
   var fontSize = design.fontSize || 'medium';
+  var heroHeight = design.heroImageHeight || 210;
+  var cardRadius = design.cardRadius || 20;
   var showShadow = design.showShadow !== false;
   var showBorder = design.showBorder === true;
-  var imageHeight = design.imageHeight || 160;
-  var cardRadius = design.cardRadius || 16;
-  var imageRadius = design.imageRadius || 12;
-  
-  // ตัวแปรเฉพาะแบบ A (overlay)
-  var overlayNamePos = design.overlayNamePosition || 'left';
-  var overlayPricePos = design.overlayPricePosition || 'right';
-  var overlayTextBg = design.overlayTextBg || 'translucent';
-  
-  // ตัวแปรเฉพาะแบบ B (classic)
-  var classicNamePos = design.classicNamePosition || 'left';
-  var classicPricePos = design.classicPricePosition || 'right';
-  var classicTextBg = design.classicTextBg || 'none';
+  var showImage = true;  // เปิดใช้รูป (Pro License จะเช็คทีหลัง)
   // ========== จบอ่านค่า Config ==========
   
   var html = '';
@@ -456,25 +453,18 @@ function renderMenuItems() {
     
     // กำหนด data attributes สำหรับ CSS
     var dataAttrs = '';
-    dataAttrs += ' data-style="' + cardStyle + '"';
+    dataAttrs += ' data-style="' + activeStyle + '"';
+    dataAttrs += ' data-name-pos="' + namePos + '"';
+    dataAttrs += ' data-price-pos="' + pricePos + '"';
+    dataAttrs += ' data-text-bg="' + textBg + '"';
     dataAttrs += ' data-font="' + fontSize + '"';
     dataAttrs += ' data-shadow="' + showShadow + '"';
     dataAttrs += ' data-border="' + showBorder + '"';
     
-    if (cardStyle === 'overlay') {
-      dataAttrs += ' data-name-pos="' + overlayNamePos + '"';
-      dataAttrs += ' data-price-pos="' + overlayPricePos + '"';
-      dataAttrs += ' data-text-bg="' + overlayTextBg + '"';
-    } else {
-      dataAttrs += ' data-name-pos="' + classicNamePos + '"';
-      dataAttrs += ' data-price-pos="' + classicPricePos + '"';
-      dataAttrs += ' data-text-bg="' + classicTextBg + '"';
-    }
-    
-    // สไตล์ inline สำหรับความสูงรูปและมุมมน
+    // สไตล์ inline
     var styleAttr = '';
-    if (cardStyle === 'classic') {
-      styleAttr = ' style="--image-height: ' + imageHeight + 'px; --image-radius: ' + imageRadius + 'px; --card-radius: ' + cardRadius + 'px;"';
+    if (activeStyle === 'bighero') {
+      styleAttr = ' style="--hero-height: ' + heroHeight + 'px; --card-radius: ' + cardRadius + 'px;"';
     } else {
       styleAttr = ' style="--card-radius: ' + cardRadius + 'px;"';
     }
@@ -483,23 +473,16 @@ function renderMenuItems() {
     
     if (cartQty > 0) html += '<div class="menu-item-badge">' + cartQty + '</div>';
     
-// แทนที่ส่วนแสดง Emoji ใน renderMenuItems()
-if (shouldShowImage) {
-  html += '<img class="menu-item-img" src="' + it.image + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
-  html += '<div class="menu-item-emoji" style="display:none;">' + (it.emoji || '☕') + '</div>';
-} else {
-  html += '<div class="menu-item-emoji">' + (it.emoji || '☕') + '</div>';
-}
-    // แสดงชื่อและราคา (ตาม config)
-    if (cardStyle === 'overlay') {
-      // แบบ A: ข้อความทับรูป (อยู่ในตำแหน่ง absolute)
-      if (showName) {
-        html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
-      }
-      if (showPrice) {
-        html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
-      }
+    // รูปหรือ Emoji
+    if (shouldShowImage) {
+      html += '<img class="menu-item-img" src="' + it.image + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+      html += '<div class="menu-item-emoji" style="display:none;">' + (it.emoji || '☕') + '</div>';
     } else {
+      html += '<div class="menu-item-emoji">' + (it.emoji || '☕') + '</div>';
+    }
+    
+    // แสดงชื่อและราคา (แยกตามแบบ)
+    if (activeStyle === 'classic') {
       // แบบ B: รูปบน + ข้อความล่าง
       html += '<div class="menu-item-info">';
       if (showName) {
@@ -509,6 +492,14 @@ if (shouldShowImage) {
         html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
       }
       html += '</div>';
+    } else {
+      // แบบ A (overlay) และ H (bighero): ข้อความทับรูป
+      if (showName) {
+        html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
+      }
+      if (showPrice) {
+        html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
+      }
     }
     
     // ปุ่มโปรด

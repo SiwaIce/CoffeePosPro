@@ -520,145 +520,104 @@ html += '<div class="text-muted fs-sm text-center">💡 ปรับค่าด
 html += '</div></div>';
 // ========== จบ Preview Section ==========
 
-// ========== เพิ่มส่วนดีไซน์การ์ดเมนู ==========
+// ============================================
+// ส่วนดีไซน์การ์ดเมนู POS (3 แบบ A, B, H) + Preview Side-by-side
+// ============================================
+
 var design = cfg.menuCardDesign || {
-  showName: true, showPrice: true, showImage: true,
-  cardStyle: 'classic',
-  overlayNamePosition: 'left', overlayPricePosition: 'right', overlayTextBg: 'translucent',
-  classicNamePosition: 'left', classicPricePosition: 'right', classicTextBg: 'none',
-  fontSize: 'medium', imageHeight: 160, cardRadius: 16, imageRadius: 12,
-  showShadow: true, showBorder: false
+  activeStyle: 'overlay',
+  showName: true,
+  showPrice: true,
+  namePosition: 'left',
+  pricePosition: 'right',
+  textBackground: 'translucent',
+  fontSize: 'medium',
+  heroImageHeight: 210,
+  cardRadius: 20,
+  showShadow: true,
+  showBorder: false
 };
 
 html += '<div class="card mb-16">';
-html += '<div class="card-header"><div class="card-title">🎨 ดีไซน์การ์ดเมนู (POS)</div></div>';
+html += '<div class="card-header"><div class="card-title">🎨 ดีไซน์การ์ดเมนู POS</div></div>';
 html += '<div class="p-16">';
 
-// พื้นฐาน
-html += '<div class="form-group">';
-html += '<label class="form-label">แสดงผล</label>';
-html += '<div class="flex gap-16 flex-wrap">';
-html += '<label class="checkbox-wrap"><input type="checkbox" id="designShowName" ' + (design.showName ? 'checked' : '') + '> <span>แสดงชื่อเมนู</span></label>';
-html += '<label class="checkbox-wrap"><input type="checkbox" id="designShowPrice" ' + (design.showPrice ? 'checked' : '') + '> <span>แสดงราคา</span></label>';
-html += '<label class="checkbox-wrap"><input type="checkbox" id="designShowImage" ' + (design.showImage ? 'checked' : '') + '> <span>แสดงรูป (ถ้ามี)</span></label>';
+// Preview Section (Side-by-side)
+html += '<div class="preview-sidebar" style="display:flex; gap:24px; flex-wrap:wrap; margin-bottom:24px;">';
+
+// Preview Card
+html += '<div class="preview-card-container" style="flex:1; min-width:220px; background:var(--bg-card); border-radius:20px; padding:16px; border:1px solid var(--border);">';
+html += '<div class="preview-label" style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">👁️ ตัวอย่างการ์ด (Real-time)</div>';
+html += '<div id="previewCard" style="width:100%; max-width:260px; margin:0 auto;"></div>';
 html += '</div>';
-html += '</div>';
+
+// Controls
+html += '<div style="flex:2; min-width:260px;">';
 
 // รูปแบบการ์ด
 html += '<div class="form-group">';
-html += '<label class="form-label">รูปแบบการ์ด</label>';
+html += '<label class="form-label">✨ รูปแบบการ์ด</label>';
 html += '<div class="flex gap-12 flex-wrap">';
-html += '<label class="checkbox-wrap"><input type="radio" name="cardStyle" value="classic" ' + (design.cardStyle === 'classic' ? 'checked' : '') + '> <span>📦 แบบ B: รูปบน + ข้อความล่าง</span></label>';
-html += '<label class="checkbox-wrap"><input type="radio" name="cardStyle" value="overlay" ' + (design.cardStyle === 'overlay' ? 'checked' : '') + '> <span>✨ แบบ A: ข้อความทับรูป</span></label>';
+html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="overlay" ' + (design.activeStyle === 'overlay' ? 'checked' : '') + '> <span>🎨 แบบ A (Overlay) - ข้อความทับรูป</span></label>';
+html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="classic" ' + (design.activeStyle === 'classic' ? 'checked' : '') + '> <span>📦 แบบ B (Classic) - รูปบน + ข้อความล่าง</span></label>';
+html += '<label class="checkbox-wrap"><input type="radio" name="cardStyleRadio" value="bighero" ' + (design.activeStyle === 'bighero' ? 'checked' : '') + '> <span>🎬 แบบ H (Big Hero) - ภาพใหญ่พิเศษ</span></label>';
 html += '</div>';
 html += '</div>';
 
-// ขนาด
+// แสดง/ซ่อน
 html += '<div class="form-row">';
-html += '<div class="form-group">';
-html += '<label class="form-label">ขนาดตัวอักษร</label>';
+html += '<div class="form-group"><label class="checkbox-wrap"><input type="checkbox" id="designShowName" ' + (design.showName ? 'checked' : '') + '> <span>แสดงชื่อเมนู</span></label></div>';
+html += '<div class="form-group"><label class="checkbox-wrap"><input type="checkbox" id="designShowPrice" ' + (design.showPrice ? 'checked' : '') + '> <span>แสดงราคา</span></label></div>';
+html += '</div>';
+
+// ตำแหน่งชื่อ/ราคา
+html += '<div class="form-row">';
+html += '<div class="form-group"><label class="form-label">ตำแหน่งชื่อ</label>';
+html += '<select id="designNamePos">';
+html += '<option value="left"' + (design.namePosition === 'left' ? ' selected' : '') + '>ซ้าย</option>';
+html += '<option value="center"' + (design.namePosition === 'center' ? ' selected' : '') + '>กลาง</option>';
+html += '<option value="right"' + (design.namePosition === 'right' ? ' selected' : '') + '>ขวา</option>';
+html += '</select></div>';
+html += '<div class="form-group"><label class="form-label">ตำแหน่งราคา</label>';
+html += '<select id="designPricePos">';
+html += '<option value="left"' + (design.pricePosition === 'left' ? ' selected' : '') + '>ซ้าย</option>';
+html += '<option value="center"' + (design.pricePosition === 'center' ? ' selected' : '') + '>กลาง</option>';
+html += '<option value="right"' + (design.pricePosition === 'right' ? ' selected' : '') + '>ขวา</option>';
+html += '</select></div>';
+html += '</div>';
+
+// พื้นหลังข้อความ (A/H)
+html += '<div class="form-group"><label class="form-label">พื้นหลังข้อความ (เฉพาะ A/H)</label>';
+html += '<select id="designTextBg">';
+html += '<option value="translucent"' + (design.textBackground === 'translucent' ? ' selected' : '') + '>โปร่งแสง (Blur)</option>';
+html += '<option value="solid"' + (design.textBackground === 'solid' ? ' selected' : '') + '>ทึบ</option>';
+html += '<option value="none"' + (design.textBackground === 'none' ? ' selected' : '') + '>ไม่มีพื้นหลัง</option>';
+html += '</select></div>';
+
+// ขนาดตัวอักษร + ความสูงรูป (H)
+html += '<div class="form-row">';
+html += '<div class="form-group"><label class="form-label">ขนาดตัวอักษร</label>';
 html += '<select id="designFontSize">';
 html += '<option value="small"' + (design.fontSize === 'small' ? ' selected' : '') + '>เล็ก</option>';
 html += '<option value="medium"' + (design.fontSize === 'medium' ? ' selected' : '') + '>กลาง</option>';
 html += '<option value="large"' + (design.fontSize === 'large' ? ' selected' : '') + '>ใหญ่</option>';
-html += '</select>';
-html += '</div>';
-html += '<div class="form-group">';
-html += '<label class="form-label">ความสูงรูป (px)</label>';
-html += '<input type="number" id="designImageHeight" value="' + design.imageHeight + '" step="10" min="80" max="300">';
-html += '</div>';
+html += '</select></div>';
+html += '<div class="form-group" id="heroHeightGroup" style="' + (design.activeStyle !== 'bighero' ? 'display:none;' : '') + '"><label class="form-label">ความสูงรูป (H)</label>';
+html += '<input type="number" id="designHeroHeight" value="' + design.heroImageHeight + '" step="10" min="160" max="320"> px</div>';
 html += '</div>';
 
+// มุมมน เงา ขอบ
 html += '<div class="form-row">';
-html += '<div class="form-group">';
-html += '<label class="form-label">มุมมนการ์ด (px)</label>';
-html += '<input type="number" id="designCardRadius" value="' + design.cardRadius + '" step="2" min="0" max="32">';
-html += '</div>';
-html += '<div class="form-group">';
-html += '<label class="form-label">มุมมนรูป (px)</label>';
-html += '<input type="number" id="designImageRadius" value="' + design.imageRadius + '" step="2" min="0" max="32">';
-html += '</div>';
+html += '<div class="form-group"><label class="form-label">มุมมนการ์ด (px)</label>';
+html += '<input type="number" id="designCardRadius" value="' + design.cardRadius + '" step="2" min="0" max="40"></div>';
+html += '<div class="form-group"><label class="checkbox-wrap"><input type="checkbox" id="designShowShadow" ' + (design.showShadow ? 'checked' : '') + '> <span>แสดงเงา</span></label></div>';
+html += '<div class="form-group"><label class="checkbox-wrap"><input type="checkbox" id="designShowBorder" ' + (design.showBorder ? 'checked' : '') + '> <span>แสดงขอบการ์ด</span></label></div>';
 html += '</div>';
 
-// เพิ่ม selector พื้นหลัง Emoji (ใส่หลังส่วนเอฟเฟกต์ หรือก่อนปุ่มบันทึก)
-html += '<div class="form-group">';
-html += '<label class="form-label">🎨 พื้นหลัง Emoji (เมื่อไม่มีรูป)</label>';
-html += '<select id="designEmojiBg">';
-html += '<option value="circle"' + (design.emojiBg === 'circle' ? ' selected' : '') + '>วงกลมสีส้ม (แบบเดิม)</option>';
-html += '<option value="card"' + (design.emojiBg === 'card' ? ' selected' : '') + '>พื้นหลังสีการ์ด</option>';
-html += '<option value="none"' + (design.emojiBg === 'none' ? ' selected' : '') + '>ไม่มีพื้นหลัง (โปร่งใส)</option>';
-html += '</select>';
-html += '</div>';
+html += '<button class="btn btn-primary btn-sm" onclick="savePOSCardDesign()">💾 บันทึกดีไซน์การ์ด</button>';
+html += '</div></div></div></div>';
 
-
-// เอฟเฟกต์
-html += '<div class="form-group">';
-html += '<label class="form-label">เอฟเฟกต์</label>';
-html += '<div class="flex gap-16 flex-wrap">';
-html += '<label class="checkbox-wrap"><input type="checkbox" id="designShowShadow" ' + (design.showShadow ? 'checked' : '') + '> <span>แสดงเงา</span></label>';
-html += '<label class="checkbox-wrap"><input type="checkbox" id="designShowBorder" ' + (design.showBorder ? 'checked' : '') + '> <span>แสดงขอบสีส้ม</span></label>';
-html += '</div>';
-html += '</div>';
-
-// ตัวเลือกเฉพาะแบบ A (overlay)
-html += '<div class="design-option-group" id="overlayOptions" style="' + (design.cardStyle === 'overlay' ? '' : 'display:none;') + '">';
-html += '<div class="form-group">';
-html += '<label class="form-label">🎨 แบบ A: ข้อความทับรูป</label>';
-html += '<div class="form-row">';
-html += '<div class="form-group">';
-html += '<label class="form-label">ตำแหน่งชื่อ</label>';
-html += '<select id="designOverlayNamePos">';
-html += '<option value="left"' + (design.overlayNamePosition === 'left' ? ' selected' : '') + '>ซ้าย</option>';
-html += '<option value="center"' + (design.overlayNamePosition === 'center' ? ' selected' : '') + '>กลาง</option>';
-html += '<option value="right"' + (design.overlayNamePosition === 'right' ? ' selected' : '') + '>ขวา</option>';
-html += '</select>';
-html += '</div>';
-html += '<div class="form-group">';
-html += '<label class="form-label">ตำแหน่งราคา</label>';
-html += '<select id="designOverlayPricePos">';
-html += '<option value="left"' + (design.overlayPricePosition === 'left' ? ' selected' : '') + '>ซ้าย</option>';
-html += '<option value="center"' + (design.overlayPricePosition === 'center' ? ' selected' : '') + '>กลาง</option>';
-html += '<option value="right"' + (design.overlayPricePosition === 'right' ? ' selected' : '') + '>ขวา</option>';
-html += '</select>';
-html += '</div>';
-html += '<div class="form-group">';
-html += '<label class="form-label">พื้นหลังข้อความ</label>';
-html += '<select id="designOverlayTextBg">';
-html += '<option value="translucent"' + (design.overlayTextBg === 'translucent' ? ' selected' : '') + '>โปร่งแสง (Blur)</option>';
-html += '<option value="solid"' + (design.overlayTextBg === 'solid' ? ' selected' : '') + '>ทึบ</option>';
-html += '<option value="none"' + (design.overlayTextBg === 'none' ? ' selected' : '') + '>ไม่มี</option>';
-html += '</select>';
-html += '</div>';
-html += '</div>';
-html += '</div>';
-html += '</div>';
-
-// ตัวเลือกเฉพาะแบบ B (classic)
-html += '<div class="design-option-group" id="classicOptions" style="' + (design.cardStyle === 'classic' ? '' : 'display:none;') + '">';
-html += '<div class="form-group">';
-html += '<label class="form-label">📦 แบบ B: รูปบน + ข้อความล่าง</label>';
-html += '<div class="form-row">';
-html += '<div class="form-group">';
-html += '<label class="form-label">ตำแหน่งชื่อ</label>';
-html += '<select id="designClassicNamePos">';
-html += '<option value="left"' + (design.classicNamePosition === 'left' ? ' selected' : '') + '>ซ้าย</option>';
-html += '<option value="center"' + (design.classicNamePosition === 'center' ? ' selected' : '') + '>กลาง</option>';
-html += '<option value="right"' + (design.classicNamePosition === 'right' ? ' selected' : '') + '>ขวา</option>';
-html += '</select>';
-html += '</div>';
-html += '<div class="form-group">';
-html += '<label class="form-label">ตำแหน่งราคา</label>';
-html += '<select id="designClassicPricePos">';
-html += '<option value="left"' + (design.classicPricePosition === 'left' ? ' selected' : '') + '>ซ้าย</option>';
-html += '<option value="center"' + (design.classicPricePosition === 'center' ? ' selected' : '') + '>กลาง</option>';
-html += '<option value="right"' + (design.classicPricePosition === 'right' ? ' selected' : '') + '>ขวา</option>';
-html += '</select>';
-html += '</div>';
-html += '</div>';
-html += '</div>';
-html += '</div>';
-
-// ========== ส่วนปรับแต่งหน้า Manage Menu ==========
+// ========== ส่วนปรับแต่งหน้า Manage Menu (คงเดิม) ==========
 var manageCard = design.manageCard || {};
 
 html += '<div class="card mb-16">';
@@ -697,7 +656,7 @@ html += '<input type="number" id="managePaddingRight" value="' + (manageCard.pad
 html += '</div>';
 html += '</div>';
 
-// ขอบรูป (เพิ่ม)
+// ขอบรูป
 html += '<div class="form-group">';
 html += '<label class="checkbox-wrap">';
 html += '<input type="checkbox" id="manageShowImageBorder" ' + (manageCard.showImageBorder ? 'checked' : '') + '> ';
@@ -755,7 +714,6 @@ html += '</div></div>';
 html += '<button class="btn btn-primary btn-sm" onclick="saveMenuCardDesign()">💾 บันทึกดีไซน์การ์ด</button>';
 // ========== จบส่วนปรับแต่ง Manage Menu ==========
 
-html += '<button class="btn btn-primary btn-sm" onclick="saveMenuCardDesign()" style="margin-top:8px;">💾 บันทึกดีไซน์การ์ด</button>';
 html += '</div>';
 html += '</div>';
 
@@ -2249,6 +2207,102 @@ if (document.readyState === 'loading') {
     updateRealTimePreview();
   }, 500);
 }
+// ============================================
+// Real-time Preview + Save POS Card Design (A, B, H)
+// ============================================
+
+function updatePOSPreview() {
+  var style = document.querySelector('input[name="cardStyleRadio"]:checked').value;
+  var showName = document.getElementById('designShowName').checked;
+  var showPrice = document.getElementById('designShowPrice').checked;
+  var namePos = document.getElementById('designNamePos').value;
+  var pricePos = document.getElementById('designPricePos').value;
+  var textBg = document.getElementById('designTextBg').value;
+  var fontSize = document.getElementById('designFontSize').value;
+  var heroHeight = document.getElementById('designHeroHeight').value;
+  var cardRadius = document.getElementById('designCardRadius').value;
+  var showShadow = document.getElementById('designShowShadow').checked;
+  var showBorder = document.getElementById('designShowBorder').checked;
+  
+  var previewHtml = '';
+  
+  if (style === 'classic') {
+    previewHtml = '<div class="menu-item preview-card-item" data-style="classic" data-name-pos="' + namePos + '" data-price-pos="' + pricePos + '" data-font="' + fontSize + '" data-shadow="' + showShadow + '" data-border="' + showBorder + '" style="--card-radius:' + cardRadius + 'px; background:var(--bg-card);">';
+    previewHtml += '<div class="menu-item-emoji" style="height:120px; display:flex; align-items:center; justify-content:center; font-size:48px;">☕</div>';
+    previewHtml += '<div class="menu-item-info" style="padding:12px; display:flex; justify-content:space-between;">';
+    if (showName) previewHtml += '<div class="menu-item-name">ลาเต้</div>';
+    if (showPrice) previewHtml += '<div class="menu-item-price" style="color:var(--accent);">฿70</div>';
+    previewHtml += '</div></div>';
+  } else if (style === 'bighero') {
+    previewHtml = '<div class="menu-item preview-card-item" data-style="bighero" data-name-pos="' + namePos + '" data-price-pos="' + pricePos + '" data-text-bg="' + textBg + '" data-font="' + fontSize + '" data-shadow="' + showShadow + '" data-border="' + showBorder + '" style="--hero-height:' + heroHeight + 'px; --card-radius:' + cardRadius + 'px; background:var(--bg-card); position:relative;">';
+    previewHtml += '<div class="menu-item-emoji" style="height:var(--hero-height,210px); display:flex; align-items:center; justify-content:center; font-size:56px;">☕</div>';
+    if (showName) previewHtml += '<div class="menu-item-name" style="position:absolute; bottom:16px; left:16px; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:30px;">ลาเต้</div>';
+    if (showPrice) previewHtml += '<div class="menu-item-price" style="position:absolute; bottom:16px; right:16px; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:30px;">฿70</div>';
+    previewHtml += '</div>';
+  } else {
+    previewHtml = '<div class="menu-item preview-card-item" data-style="overlay" data-name-pos="' + namePos + '" data-price-pos="' + pricePos + '" data-text-bg="' + textBg + '" data-font="' + fontSize + '" data-shadow="' + showShadow + '" data-border="' + showBorder + '" style="--card-radius:' + cardRadius + 'px; background:var(--bg-card); position:relative; min-height:160px;">';
+    previewHtml += '<div class="menu-item-emoji" style="height:160px; display:flex; align-items:center; justify-content:center; font-size:52px;">☕</div>';
+    if (showName) previewHtml += '<div class="menu-item-name" style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:30px;">ลาเต้</div>';
+    if (showPrice) previewHtml += '<div class="menu-item-price" style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:30px;">฿70</div>';
+    previewHtml += '</div>';
+  }
+  
+  var previewContainer = document.getElementById('previewCard');
+  if (previewContainer) previewContainer.innerHTML = previewHtml;
+  
+  var heroGroup = document.getElementById('heroHeightGroup');
+  if (heroGroup) heroGroup.style.display = (style === 'bighero') ? '' : 'none';
+}
+
+function bindPOSPreviewEvents() {
+  var elements = [
+    'designShowName', 'designShowPrice', 'designNamePos', 'designPricePos',
+    'designTextBg', 'designFontSize', 'designHeroHeight', 'designCardRadius',
+    'designShowShadow', 'designShowBorder'
+  ];
+  for (var i = 0; i < elements.length; i++) {
+    var el = document.getElementById(elements[i]);
+    if (el) {
+      el.addEventListener('change', updatePOSPreview);
+      el.addEventListener('input', updatePOSPreview);
+    }
+  }
+  var radios = document.querySelectorAll('input[name="cardStyleRadio"]');
+  for (var r = 0; r < radios.length; r++) {
+    radios[r].addEventListener('change', updatePOSPreview);
+  }
+}
+
+function savePOSCardDesign() {
+  var cfg = ST.getConfig();
+  var design = {
+    activeStyle: document.querySelector('input[name="cardStyleRadio"]:checked').value,
+    showName: document.getElementById('designShowName').checked,
+    showPrice: document.getElementById('designShowPrice').checked,
+    namePosition: document.getElementById('designNamePos').value,
+    pricePosition: document.getElementById('designPricePos').value,
+    textBackground: document.getElementById('designTextBg').value,
+    fontSize: document.getElementById('designFontSize').value,
+    heroImageHeight: parseInt(document.getElementById('designHeroHeight').value) || 210,
+    cardRadius: parseInt(document.getElementById('designCardRadius').value) || 20,
+    showShadow: document.getElementById('designShowShadow').checked,
+    showBorder: document.getElementById('designShowBorder').checked
+  };
+  
+  cfg.menuCardDesign = design;
+  ST.saveConfig(cfg);
+  
+  toast('บันทึกดีไซน์การ์ดเมนูแล้ว', 'success');
+  
+  if (typeof APP !== 'undefined' && APP.currentView === 'pos' && typeof renderPOSView === 'function') {
+    renderPOSView();
+  }
+}
+
+setTimeout(function() {
+  bindPOSPreviewEvents();
+  updatePOSPreview();
+}, 500);
 
 // เรียกใช้ตอนโหลด (ต้องรอให้ DOM พร้อม)
 setTimeout(initDesignOptionsListener, 500);

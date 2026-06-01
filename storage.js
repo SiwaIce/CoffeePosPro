@@ -104,6 +104,33 @@ ST.getConfig = function() {
     promptPayId: '',
     promptPayName: '',
     promptPayEnabled: false,
+// ใน ST.getConfig() เพิ่ม property นี้ใน defaults
+menuCardDesign: {
+  // เลือกแบบ ('overlay', 'classic', 'bighero')
+  activeStyle: 'overlay',
+  
+  // แสดง/ซ่อน
+  showName: true,
+  showPrice: true,
+  
+  // ตำแหน่ง
+  namePosition: 'left',    // 'left', 'center', 'right'
+  pricePosition: 'right',  // 'left', 'center', 'right'
+  
+  // พื้นหลังข้อความ (เฉพาะแบบ A และ H)
+  textBackground: 'translucent',  // 'translucent', 'solid', 'none'
+  
+  // ขนาดตัวอักษร
+  fontSize: 'medium',  // 'small', 'medium', 'large'
+  
+  // เฉพาะแบบ H
+  heroImageHeight: 210,  // px
+  
+  // ร่วมทุกแบบ
+  cardRadius: 20,        // px
+  showShadow: true,
+  showBorder: false      // ขอบการ์ด (ไม่เกี่ยวกับรูป)
+}
     
     // ===== ดีไซน์การ์ดเมนู (POS) =====
     menuCardDesign: {
