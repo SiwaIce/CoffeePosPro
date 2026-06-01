@@ -485,6 +485,41 @@ html += '</div>';
 
   html += '<button class="btn btn-primary btn-lg btn-block" onclick="saveShopSettings()">💾 บันทึกการตั้งค่า</button>';
 
+// ========== Preview Section (Real-time) ==========
+html += '<div class="card mb-16">';
+html += '<div class="card-header"><div class="card-title">👁️ ตัวอย่างการ์ดเมนู (Real-time Preview)</div></div>';
+html += '<div class="p-16">';
+
+html += '<div class="preview-container" style="display:flex; gap:24px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;">';
+
+// Preview แบบ A (Overlay)
+html += '<div class="preview-card" data-preview-style="overlay" style="width:200px;">';
+html += '<div class="menu-item preview-item" data-style="overlay" data-name-pos="left" data-price-pos="right" data-text-bg="translucent" data-font="medium" data-shadow="true" style="position:relative; background:var(--bg-card); border-radius:var(--card-radius, 16px); overflow:hidden; cursor:pointer; transition:all 0.25s ease; display:flex; flex-direction:column; border:1px solid var(--border);">';
+html += '<div class="menu-item-emoji" style="display:flex; align-items:center; justify-content:center; min-height:160px; background:transparent; font-size:48px; color:var(--text-primary);">☕</div>';
+html += '<div class="menu-item-name" style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.55); backdrop-filter:blur(8px); padding:6px 14px; border-radius:30px; color:white; font-weight:700; font-size:14px;">ลาเต้</div>';
+html += '<div class="menu-item-price" style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.55); backdrop-filter:blur(8px); padding:6px 14px; border-radius:30px; color:white; font-weight:800; font-size:15px;">฿70</div>';
+html += '</div>';
+html += '<div class="text-center mt-4 fs-sm text-muted">✨ แบบ A: ข้อความทับรูป</div>';
+html += '</div>';
+
+// Preview แบบ B (Classic)
+html += '<div class="preview-card" data-preview-style="classic" style="width:200px;">';
+html += '<div class="menu-item preview-item" data-style="classic" data-name-pos="left" data-price-pos="right" data-font="medium" data-shadow="true" style="position:relative; background:var(--bg-card); border-radius:var(--card-radius, 16px); overflow:hidden; cursor:pointer; transition:all 0.25s ease; display:flex; flex-direction:column; border:1px solid var(--border); padding-bottom:12px;">';
+html += '<div class="menu-item-emoji" style="display:flex; align-items:center; justify-content:center; height:var(--image-height, 140px); background:var(--bg-card); font-size:48px; color:var(--text-primary);">☕</div>';
+html += '<div class="menu-item-info" style="padding:12px 12px 4px 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">';
+html += '<div class="menu-item-name" style="font-weight:700; color:var(--text-primary); font-size:14px;">ลาเต้</div>';
+html += '<div class="menu-item-price" style="font-weight:800; color:var(--accent); font-size:15px;">฿70</div>';
+html += '</div>';
+html += '</div>';
+html += '<div class="text-center mt-4 fs-sm text-muted">📦 แบบ B: รูปบน + ข้อความล่าง</div>';
+html += '</div>';
+
+html += '</div>';
+
+html += '<div class="text-muted fs-sm text-center">💡 ปรับค่าด้านล่าง แล้วตัวอย่างจะเปลี่ยนทันที</div>';
+html += '</div></div>';
+// ========== จบ Preview Section ==========
+
 // ========== เพิ่มส่วนดีไซน์การ์ดเมนู ==========
 var design = cfg.menuCardDesign || {
   showName: true, showPrice: true, showImage: true,
@@ -2074,6 +2109,145 @@ function initDesignOptionsListener() {
       }
     });
   }
+}
+// ============================================
+// REAL-TIME PREVIEW UPDATE
+// ============================================
+
+function updateRealTimePreview() {
+  // อ่านค่าจาก input
+  var cardStyleRadio = document.querySelector('input[name="cardStyle"]:checked');
+  var fontSizeSelect = document.getElementById('designFontSize');
+  var showShadowCheck = document.getElementById('designShowShadow');
+  var showBorderCheck = document.getElementById('designShowBorder');
+  var imageHeightInput = document.getElementById('designImageHeight');
+  var cardRadiusInput = document.getElementById('designCardRadius');
+  var imageRadiusInput = document.getElementById('designImageRadius');
+  
+  var styleValue = cardStyleRadio ? cardStyleRadio.value : 'classic';
+  var fontValue = fontSizeSelect ? fontSizeSelect.value : 'medium';
+  var shadowValue = showShadowCheck ? showShadowCheck.checked : true;
+  var borderValue = showBorderCheck ? showBorderCheck.checked : false;
+  var imageHeight = (imageHeightInput ? parseInt(imageHeightInput.value) : 140) + 'px';
+  var cardRadius = (cardRadiusInput ? parseInt(cardRadiusInput.value) : 16) + 'px';
+  var imageRadius = (imageRadiusInput ? parseInt(imageRadiusInput.value) : 12) + 'px';
+  
+  // อัปเดต Preview แบบ A (Overlay)
+  var previewA = document.querySelector('.preview-card[data-preview-style="overlay"] .preview-item');
+  if (previewA) {
+    previewA.setAttribute('data-style', styleValue === 'overlay' ? 'overlay' : 'classic');
+    previewA.setAttribute('data-font', fontValue);
+    previewA.setAttribute('data-shadow', shadowValue);
+    previewA.setAttribute('data-border', borderValue);
+    previewA.style.setProperty('--card-radius', cardRadius);
+    previewA.style.setProperty('--image-radius', imageRadius);
+    
+    // อัปเดต visibility ของชื่อ/ราคา ตามแบบ
+    var nameEl = previewA.querySelector('.menu-item-name');
+    var priceEl = previewA.querySelector('.menu-item-price');
+    if (nameEl && priceEl) {
+      if (styleValue === 'overlay') {
+        nameEl.style.display = '';
+        priceEl.style.display = '';
+      } else {
+        nameEl.style.display = 'none';
+        priceEl.style.display = 'none';
+      }
+    }
+  }
+  
+  // อัปเดต Preview แบบ B (Classic)
+  var previewB = document.querySelector('.preview-card[data-preview-style="classic"] .preview-item');
+  if (previewB) {
+    previewB.setAttribute('data-style', 'classic');
+    previewB.setAttribute('data-font', fontValue);
+    previewB.setAttribute('data-shadow', shadowValue);
+    previewB.setAttribute('data-border', borderValue);
+    previewB.style.setProperty('--image-height', imageHeight);
+    previewB.style.setProperty('--card-radius', cardRadius);
+    previewB.style.setProperty('--image-radius', imageRadius);
+  }
+  
+  // อัปเดตตัวเลือกเพิ่มเติม (Manage Menu Preview - แบบ B)
+  var manageNameAlign = document.querySelector('input[name="manageNameAlign"]:checked');
+  var manageStatusPos = document.querySelector('input[name="manageStatusPosition"]:checked');
+  var manageImageSize = document.getElementById('manageImageSize');
+  var manageCardGap = document.getElementById('manageCardGap');
+  
+  if (manageNameAlign) {
+    var previewBInfo = previewB ? previewB.querySelector('.menu-item-info') : null;
+    if (previewBInfo) {
+      if (manageNameAlign.value === 'right') {
+        previewBInfo.style.flexDirection = 'row-reverse';
+      } else {
+        previewBInfo.style.flexDirection = 'row';
+      }
+    }
+  }
+  
+  if (manageImageSize && previewB) {
+    var previewEmoji = previewB.querySelector('.menu-item-emoji');
+    if (previewEmoji) {
+      var size = manageImageSize.value + 'px';
+      previewEmoji.style.height = size;
+    }
+  }
+}
+
+// ผูก event listener กับ input ทุกตัว
+function bindPreviewEvents() {
+  var inputIds = [
+    'designFontSize', 'designShowShadow', 'designShowBorder',
+    'designImageHeight', 'designCardRadius', 'designImageRadius',
+    'manageImageSize', 'manageCardGap'
+  ];
+  
+  for (var i = 0; i < inputIds.length; i++) {
+    var el = document.getElementById(inputIds[i]);
+    if (el) {
+      el.addEventListener('change', updateRealTimePreview);
+      el.addEventListener('input', updateRealTimePreview);
+    }
+  }
+  
+  // Radio buttons - POS card style
+  var styleRadios = document.querySelectorAll('input[name="cardStyle"]');
+  for (var r = 0; r < styleRadios.length; r++) {
+    styleRadios[r].addEventListener('change', updateRealTimePreview);
+  }
+  
+  // Radio buttons - Manage Menu name align
+  var nameRadios = document.querySelectorAll('input[name="manageNameAlign"]');
+  for (var n = 0; n < nameRadios.length; n++) {
+    nameRadios[n].addEventListener('change', updateRealTimePreview);
+  }
+  
+  // Radio buttons - Manage Menu status position
+  var statusRadios = document.querySelectorAll('input[name="manageStatusPosition"]');
+  for (var s = 0; s < statusRadios.length; s++) {
+    statusRadios[s].addEventListener('change', updateRealTimePreview);
+  }
+  
+  // Checkboxes
+  var shadowCheck = document.getElementById('designShowShadow');
+  var borderCheck = document.getElementById('designShowBorder');
+  if (shadowCheck) shadowCheck.addEventListener('change', updateRealTimePreview);
+  if (borderCheck) borderCheck.addEventListener('change', updateRealTimePreview);
+}
+
+// เรียกใช้หลังจาก DOM พร้อม
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      bindPreviewEvents();
+      updateRealTimePreview();
+    }, 500);
+  });
+} else {
+  setTimeout(function() {
+    bindPreviewEvents();
+    updateRealTimePreview();
+  }, 500);
 }
 
 // เรียกใช้ตอนโหลด (ต้องรอให้ DOM พร้อม)

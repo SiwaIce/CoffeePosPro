@@ -3990,3 +3990,49 @@ html {
     font-size: 10px;
   }
 }
+/* ============================================
+   REAL-TIME PREVIEW STYLES
+   ============================================ */
+
+.preview-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.preview-card:hover {
+  transform: translateY(-2px);
+}
+
+.preview-item {
+  transition: all 0.2s ease;
+}
+
+/* การ์ดเงา */
+.menu-item[data-shadow="true"] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item[data-shadow="true"]:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* การ์ดขอบ */
+.menu-item[data-border="true"] {
+  border: 2px solid var(--accent) !important;
+}
+
+/* ขนาดตัวอักษร */
+.menu-item[data-font="small"] .menu-item-name,
+.menu-item[data-font="small"] .menu-item-price {
+  font-size: 12px;
+}
+.menu-item[data-font="medium"] .menu-item-name,
+.menu-item[data-font="medium"] .menu-item-price {
+  font-size: 14px;
+}
+.menu-item[data-font="large"] .menu-item-name,
+.menu-item[data-font="large"] .menu-item-price {
+  font-size: 16px;
+}
