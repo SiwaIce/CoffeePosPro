@@ -104,65 +104,22 @@ ST.getConfig = function() {
     promptPayId: '',
     promptPayName: '',
     promptPayEnabled: false,
-// ใน ST.getConfig() เพิ่ม property นี้ใน defaults
-menuCardDesign: {
-  // เลือกแบบ ('overlay', 'classic', 'bighero')
-  activeStyle: 'overlay',
-  
-  // แสดง/ซ่อน
-  showName: true,
-  showPrice: true,
-  
-  // ตำแหน่ง
-  namePosition: 'left',    // 'left', 'center', 'right'
-  pricePosition: 'right',  // 'left', 'center', 'right'
-  
-  // พื้นหลังข้อความ (เฉพาะแบบ A และ H)
-  textBackground: 'translucent',  // 'translucent', 'solid', 'none'
-  
-  // ขนาดตัวอักษร
-  fontSize: 'medium',  // 'small', 'medium', 'large'
-  
-  // เฉพาะแบบ H
-  heroImageHeight: 210,  // px
-  
-  // ร่วมทุกแบบ
-  cardRadius: 20,        // px
-  showShadow: true,
-  showBorder: false      // ขอบการ์ด (ไม่เกี่ยวกับรูป)
-}
     
-    // ===== ดีไซน์การ์ดเมนู (POS) =====
+    // ===== ดีไซน์การ์ดเมนู POS (3 แบบ A, B, H) =====
     menuCardDesign: {
-      // พื้นฐาน
+      activeStyle: 'overlay',        // 'overlay', 'classic', 'bighero'
       showName: true,
       showPrice: true,
-      showImage: true,
-      
-      // รูปแบบหลัก
-      cardStyle: 'classic',
-      
-      // แบบ A (overlay)
-      overlayNamePosition: 'left',
-      overlayPricePosition: 'right',
-      overlayTextBg: 'translucent',
-      
-      // แบบ B (classic)
-      classicNamePosition: 'left',
-      classicPricePosition: 'right',
-      classicTextBg: 'none',
-      
-      // ขนาด
+      namePosition: 'left',
+      pricePosition: 'right',
+      textBackground: 'translucent',
       fontSize: 'medium',
-      imageHeight: 160,
-      cardRadius: 16,
-      imageRadius: 12,
-      
-      // เอฟเฟกต์
+      heroImageHeight: 210,
+      cardRadius: 20,
       showShadow: true,
       showBorder: false,
       
-      // ===== หน้า Manage Menu =====
+      // ===== หน้า Manage Menu (เก็บไว้ข้างใน) =====
       manageCard: {
         cardLayout: 'B',
         imageSize: 70,
@@ -192,7 +149,6 @@ menuCardDesign: {
   
   return cfg;
 };
-
 ST.saveConfig = function(cfg) {
   ST.setObj('config', cfg);
 };
