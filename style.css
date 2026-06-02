@@ -4606,3 +4606,50 @@ html {
   left: 12px !important;
   bottom: 12px !important;
 }
+/* ============================================
+   QUICK ADD BUTTON (+) - FIX PERMANENT
+   ============================================ */
+
+.menu-item .quick-add-btn {
+  position: absolute !important;
+  bottom: 12px !important;
+  right: 12px !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  background: #f97316 !important;
+  color: white !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  border: none !important;
+  z-index: 999 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+.menu-item .quick-add-btn:hover {
+  background: #ea580c !important;
+  transform: scale(1.1) !important;
+}
+
+.menu-item .quick-add-btn:active {
+  transform: scale(0.95) !important;
+}
+
+/* แบบ A และ H: ปุ่มไปไว้ซ้ายล่าง */
+.menu-item[data-style="overlay"] .quick-add-btn,
+.menu-item[data-style="bighero"] .quick-add-btn {
+  right: auto !important;
+  left: 12px !important;
+  bottom: 12px !important;
+}
+
+/* แบบ B (Classic): ปุ่มอยู่ขวาล่าง */
+.menu-item[data-style="classic"] .quick-add-btn {
+  right: 12px !important;
+  left: auto !important;
+}
