@@ -4419,3 +4419,79 @@ html {
     font-size: 13px;
   }
 }
+/* ============================================
+   QUICK ADD BUTTON (+)
+   ============================================ */
+
+.menu-item .quick-add-btn {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #ea580c);
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  z-index: 6;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-family: monospace;
+  line-height: 1;
+}
+
+.menu-item .quick-add-btn:hover {
+  transform: scale(1.12);
+  background: linear-gradient(135deg, #fb923c, #f97316);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+}
+
+.menu-item .quick-add-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== ตำแหน่งตามรูปแบบการ์ด ===== */
+
+/* แบบ A (Overlay) และ H (Big Hero): ราคาอยู่มุมขวาล่าง → ย้ายปุ่มไปมุมซ้ายล่าง */
+.menu-item[data-style="overlay"] .quick-add-btn,
+.menu-item[data-style="bighero"] .quick-add-btn {
+  bottom: 12px;
+  left: 12px;
+  right: auto;
+}
+
+/* แบบ B (Classic): ราคาอยู่ด้านล่างขวา (ในส่วนข้อความ) → ปุ่มอยู่ขวาล่าง */
+.menu-item[data-style="classic"] .quick-add-btn {
+  bottom: 12px;
+  right: 12px;
+  left: auto;
+}
+
+/* ปรับปุ่มโปรดให้ไม่ชน */
+.menu-item .fav-btn {
+  top: 8px;
+  left: 8px;
+  z-index: 6;
+}
+
+/* Responsive มือถือ */
+@media (max-width: 768px) {
+  .menu-item .quick-add-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+  .menu-item[data-style="overlay"] .quick-add-btn,
+  .menu-item[data-style="bighero"] .quick-add-btn {
+    bottom: 8px;
+    left: 8px;
+  }
+  .menu-item[data-style="classic"] .quick-add-btn {
+    bottom: 8px;
+    right: 8px;
+  }
+}

@@ -505,6 +505,8 @@ function renderMenuItems() {
     // ปุ่มโปรด
     var isFav = ST.isFavorite(it.id);
     html += '<button class="fav-btn' + (isFav ? ' active' : '') + '" onclick="event.stopPropagation(); toggleFav(\'' + sanitize(it.id) + '\', this)" title="' + (isFav ? 'ยกเลิกโปรด' : 'เพิ่มเป็นโปรด') + '">' + (isFav ? '⭐' : '☆') + '</button>';
+// ===== ปุ่ม Quick Add (+) =====
+    html += '<button class="quick-add-btn" onclick="event.stopPropagation(); quickAddToCart(\'' + sanitize(it.id) + '\')" title="เพิ่มเข้าตะกร้าทันที">+</button>';
     
     html += '</div>';
   }
@@ -528,7 +530,113 @@ function getCartQtyForMenu(menuId) {
   }
   return total;
 }
-
+// ============================================
+// QUICK ADD TO CART - เพิ่มเข้าตะกร้าทันที (ใช้ค่า default)
+// ============================================
+function quickAddToCart(menuId) {
+  var menu = findById(ST.getMenu(), menuId);
+  if (!menu) {
+    toast('ไม่พบเมนู', 'error');
+    return;
+  }
+  
+  // 1. หาขนาดเริ่มต้น (ขนาดแรกที่มีราคา)
+  var sizes = ST.getSizes();
+  var prices = menu.prices || {};
+  var sizeActive = menu.sizeActive || {};
+  var defaultSize = null;
+  var defaultPrice = 0;
+  
+  for (var i = 0; i < sizes.length; i++) {
+    var sizeName = sizes[i].name;
+    var isActive = sizeActive[sizeName] !== false;
+    var price = prices[sizeName];
+    if (isActive && price && price > 0) {
+      defaultSize = sizeName;
+      defaultPrice = price;
+      break;
+    }
+  }
+  
+  if (!defaultSize) {
+    toast('ไม่มีขนาดที่เปิดขาย', 'error');
+    return;
+  }
+  
+  // 2. หา Drink Type เริ่มต้น (ถ้าเปิดให้เลือก)
+  var drinkTypeId = '';
+  var drinkTypeName = '';
+  var drinkTypePrice = 0;
+  var allowDrinkType = menu.allowDrinkType !== false;
+  
+  if (allowDrinkType) {
+    var drinkTypes = ST.getDrinkTypes();
+    var availableDrinkTypes = menu.availableDrinkTypes || null;
+    for (var d = 0; d < drinkTypes.length; d++) {
+      if (!availableDrinkTypes || availableDrinkTypes.indexOf(drinkTypes[d].id) !== -1) {
+        drinkTypeId = drinkTypes[d].id;
+        drinkTypeName = drinkTypes[d].name;
+        drinkTypePrice = drinkTypes[d].addPrice || 0;
+        break;
+      }
+    }
+  }
+  
+  // 3. หา Sweet Level เริ่มต้น (ถ้าเปิดให้เลือก) - เลือก "ปกติ" ก่อน
+  var sweetId = '';
+  var sweetName = '';
+  var sweetPrice = 0;
+  var allowSweet = menu.allowSweetLevel !== false;
+  
+  if (allowSweet) {
+    var sweetLevels = ST.getSweetLevels();
+    // หา sw_normal
+    for (var s = 0; s < sweetLevels.length; s++) {
+      if (sweetLevels[s].id === 'sw_normal') {
+        sweetId = sweetLevels[s].id;
+        sweetName = sweetLevels[s].name;
+        sweetPrice = sweetLevels[s].addPrice || 0;
+        break;
+      }
+    }
+    // ถ้าไม่มี sw_normal ให้เอาอันแรก
+    if (!sweetId && sweetLevels.length > 0) {
+      sweetId = sweetLevels[0].id;
+      sweetName = sweetLevels[0].name;
+      sweetPrice = sweetLevels[0].addPrice || 0;
+    }
+  }
+  
+  // 4. สร้าง Cart Item
+  var unitTotal = defaultPrice + drinkTypePrice + sweetPrice;
+  var cartItem = {
+    id: genId('ci'),
+    menuId: menu.id,
+    name: menu.name,
+    size: defaultSize,
+    drinkType: drinkTypeId,
+    drinkTypeName: drinkTypeName,
+    drinkTypePrice: drinkTypePrice,
+    sweetLevel: sweetId,
+    sweetName: sweetName,
+    sweetPrice: sweetPrice,
+    toppings: [],
+    toppingNames: [],
+    qty: 1,
+    unitPrice: defaultPrice,
+    toppingPrice: 0,
+    lineTotal: unitTotal,
+    note: ''
+  };
+  
+  // 5. เพิ่มลงตะกร้า
+  addToCart(cartItem);
+  
+  // 6. แจ้งเตือน
+  toast('➕ ' + menu.name + ' x1', 'success', 1200);
+  vibrate(30);
+  if (typeof playSound === 'function') playSound('add');
+}
 /* ============================================
    MENU ITEM CLICK
    ============================================ */
@@ -614,6 +722,7 @@ function addToCart(cartItem) {
     POS.cart.push(cartItem);
   }
   refreshCartUI();
+    updateMenuBadges();
   if (typeof playSound === 'function') {
     var cfg = ST.getConfig();
     if (cfg.soundEnabled !== false) playSound('add');
