@@ -4527,3 +4527,41 @@ html {
 .menu-item .quick-add-btn:active {
   transform: scale(0.95);
 }
+/* ปุ่ม Quick Add (+) */
+.menu-item .quick-add-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f97316;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+}
+
+.menu-item .quick-add-btn:hover {
+  background: #ea580c;
+  transform: scale(1.1);
+}
+
+.menu-item .quick-add-btn:active {
+  transform: scale(0.95);
+}
+
+/* แบบ A และ H: ปุ่มไปไว้ซ้ายล่าง */
+.menu-item[data-style="overlay"] .quick-add-btn,
+.menu-item[data-style="bighero"] .quick-add-btn {
+  right: auto;
+  left: 12px;
+  bottom: 12px;
+}

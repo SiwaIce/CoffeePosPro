@@ -403,7 +403,7 @@ function renderMenuItems() {
       + '</div></div>';
   }
   
-  // ========== อ่านค่า Config สำหรับดีไซน์การ์ด (3 แบบ: overlay, classic, bighero) ==========
+  // อ่าน config
   var cfg = ST.getConfig();
   var design = cfg.menuCardDesign || {
     activeStyle: 'overlay',
@@ -430,8 +430,6 @@ function renderMenuItems() {
   var cardRadius = design.cardRadius || 20;
   var showShadow = design.showShadow !== false;
   var showBorder = design.showBorder === true;
-  var showImage = true;  // เปิดใช้รูป (Pro License จะเช็คทีหลัง)
-  // ========== จบอ่านค่า Config ==========
   
   var html = '';
   for (var m = 0; m < items.length; m++) {
@@ -439,19 +437,15 @@ function renderMenuItems() {
     var basePrice = ST.getMenuBasePrice(it);
     var cartQty = getCartQtyForMenu(it.id);
     
-    // ตรวจสอบว่าควรแสดงรูปไหม (ต้อง Pro License เท่านั้น)
+    // ตรวจสอบรูป (Pro License)
     var shouldShowImage = false;
-    if (showImage && typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image')) {
-      var licenseTier = 'free';
-      if (typeof LicenseManager !== 'undefined') {
-        licenseTier = LicenseManager.getTier();
-      }
+    if (typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image')) {
+      var licenseTier = (typeof LicenseManager !== 'undefined') ? LicenseManager.getTier() : 'free';
       if (licenseTier === 'pro' && it.image && it.image.trim() !== '') {
         shouldShowImage = true;
       }
     }
     
-    // กำหนด data attributes สำหรับ CSS
     var dataAttrs = '';
     dataAttrs += ' data-style="' + activeStyle + '"';
     dataAttrs += ' data-name-pos="' + namePos + '"';
@@ -461,7 +455,6 @@ function renderMenuItems() {
     dataAttrs += ' data-shadow="' + showShadow + '"';
     dataAttrs += ' data-border="' + showBorder + '"';
     
-    // สไตล์ inline
     var styleAttr = '';
     if (activeStyle === 'bighero') {
       styleAttr = ' style="--hero-height: ' + heroHeight + 'px; --card-radius: ' + cardRadius + 'px;"';
@@ -481,32 +474,24 @@ function renderMenuItems() {
       html += '<div class="menu-item-emoji">' + (it.emoji || '☕') + '</div>';
     }
     
-    // แสดงชื่อและราคา (แยกตามแบบ)
+    // ชื่อและราคา
     if (activeStyle === 'classic') {
-      // แบบ B: รูปบน + ข้อความล่าง
       html += '<div class="menu-item-info">';
-      if (showName) {
-        html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
-      }
-      if (showPrice) {
-        html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
-      }
+      if (showName) html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
+      if (showPrice) html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
       html += '</div>';
     } else {
-      // แบบ A (overlay) และ H (bighero): ข้อความทับรูป
-      if (showName) {
-        html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
-      }
-      if (showPrice) {
-        html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
-      }
+      if (showName) html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
+      if (showPrice) html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
     }
     
-    // ปุ่มโปรด
+    // ปุ่มโปรด (⭐)
     var isFav = ST.isFavorite(it.id);
     html += '<button class="fav-btn' + (isFav ? ' active' : '') + '" onclick="event.stopPropagation(); toggleFav(\'' + sanitize(it.id) + '\', this)" title="' + (isFav ? 'ยกเลิกโปรด' : 'เพิ่มเป็นโปรด') + '">' + (isFav ? '⭐' : '☆') + '</button>';
-// ===== ปุ่ม Quick Add (+) =====
+    
+    // ========== ปุ่ม Quick Add (+) ==========
     html += '<button class="quick-add-btn" onclick="event.stopPropagation(); quickAddToCart(\'' + sanitize(it.id) + '\')" title="เพิ่มเข้าตะกร้าทันที">+</button>';
+    // =======================================
     
     html += '</div>';
   }
