@@ -1988,41 +1988,44 @@ function showLineNotifyGuide() {
 function saveMenuCardDesign() {
   var cfg = ST.getConfig();
   
-  // หาค่า radio ที่เลือก
+  // หาค่า radio ที่เลือก (แบบ A/B)
   var cardLayout = document.querySelector('input[name="manageCardLayout"]:checked');
   var nameAlign = document.querySelector('input[name="manageNameAlign"]:checked');
   var statusPos = document.querySelector('input[name="manageStatusPosition"]:checked');
   
+  // ถ้าไม่มีค่าให้ใช้ default
+  var manageCard = cfg.menuCardDesign && cfg.menuCardDesign.manageCard ? cfg.menuCardDesign.manageCard : {};
+  
   var design = {
-    showName: document.getElementById('designShowName').checked,
-    showPrice: document.getElementById('designShowPrice').checked,
-    showImage: document.getElementById('designShowImage').checked,
-    cardStyle: document.querySelector('input[name="cardStyle"]:checked').value,
-    overlayNamePosition: document.getElementById('designOverlayNamePos').value,
-    overlayPricePosition: document.getElementById('designOverlayPricePos').value,
-    overlayTextBg: document.getElementById('designOverlayTextBg').value,
-    classicNamePosition: document.getElementById('designClassicNamePos').value,
-    classicPricePosition: document.getElementById('designClassicPricePos').value,
+    showName: document.getElementById('designShowName') ? document.getElementById('designShowName').checked : true,
+    showPrice: document.getElementById('designShowPrice') ? document.getElementById('designShowPrice').checked : true,
+    showImage: document.getElementById('designShowImage') ? document.getElementById('designShowImage').checked : true,
+    cardStyle: document.querySelector('input[name="cardStyle"]:checked') ? document.querySelector('input[name="cardStyle"]:checked').value : 'classic',
+    overlayNamePosition: document.getElementById('designOverlayNamePos') ? document.getElementById('designOverlayNamePos').value : 'left',
+    overlayPricePosition: document.getElementById('designOverlayPricePos') ? document.getElementById('designOverlayPricePos').value : 'right',
+    overlayTextBg: document.getElementById('designOverlayTextBg') ? document.getElementById('designOverlayTextBg').value : 'translucent',
+    classicNamePosition: document.getElementById('designClassicNamePos') ? document.getElementById('designClassicNamePos').value : 'left',
+    classicPricePosition: document.getElementById('designClassicPricePos') ? document.getElementById('designClassicPricePos').value : 'right',
     classicTextBg: 'none',
-    fontSize: document.getElementById('designFontSize').value,
-    imageHeight: parseInt(document.getElementById('designImageHeight').value) || 160,
-    cardRadius: parseInt(document.getElementById('designCardRadius').value) || 16,
-    imageRadius: parseInt(document.getElementById('designImageRadius').value) || 12,
-    showShadow: document.getElementById('designShowShadow').checked,
-    showBorder: document.getElementById('designShowBorder').checked,
+    fontSize: document.getElementById('designFontSize') ? document.getElementById('designFontSize').value : 'medium',
+    imageHeight: parseInt(document.getElementById('designImageHeight') ? document.getElementById('designImageHeight').value : 160) || 160,
+    cardRadius: parseInt(document.getElementById('designCardRadius') ? document.getElementById('designCardRadius').value : 16) || 16,
+    imageRadius: parseInt(document.getElementById('designImageRadius') ? document.getElementById('designImageRadius').value : 12) || 12,
+    showShadow: document.getElementById('designShowShadow') ? document.getElementById('designShowShadow').checked : true,
+    showBorder: document.getElementById('designShowBorder') ? document.getElementById('designShowBorder').checked : false,
     
-    // ===== ค่าใหม่สำหรับ Manage Menu =====
+    // ค่าใหม่สำหรับ Manage Menu
     manageCard: {
       cardLayout: cardLayout ? cardLayout.value : 'B',
-      imageSize: parseInt(document.getElementById('manageImageSize').value) || 70,
-      cardGap: parseInt(document.getElementById('manageCardGap').value) || 16,
-      verticalGap: parseInt(document.getElementById('manageVerticalGap').value) || 6,
-      paddingRight: parseInt(document.getElementById('managePaddingRight').value) || 12,
-      showImageBorder: document.getElementById('manageShowImageBorder').checked,
-      nameFontSize: parseInt(document.getElementById('manageNameFontSize').value) || 15,
-      nameFontWeight: parseInt(document.getElementById('manageNameFontWeight').value) || 600,
-      nameMarginLeft: parseInt(document.getElementById('manageNameMarginLeft').value) || 0,
-      nameMarginRight: parseInt(document.getElementById('manageNameMarginRight').value) || 0,
+      imageSize: parseInt(document.getElementById('manageImageSize') ? document.getElementById('manageImageSize').value : 70) || 70,
+      cardGap: parseInt(document.getElementById('manageCardGap') ? document.getElementById('manageCardGap').value : 16) || 16,
+      verticalGap: parseInt(document.getElementById('manageVerticalGap') ? document.getElementById('manageVerticalGap').value : 6) || 6,
+      paddingRight: parseInt(document.getElementById('managePaddingRight') ? document.getElementById('managePaddingRight').value : 12) || 12,
+      showImageBorder: document.getElementById('manageShowImageBorder') ? document.getElementById('manageShowImageBorder').checked : false,
+      nameFontSize: parseInt(document.getElementById('manageNameFontSize') ? document.getElementById('manageNameFontSize').value : 15) || 15,
+      nameFontWeight: parseInt(document.getElementById('manageNameFontWeight') ? document.getElementById('manageNameFontWeight').value : 600) || 600,
+      nameMarginLeft: parseInt(document.getElementById('manageNameMarginLeft') ? document.getElementById('manageNameMarginLeft').value : 0) || 0,
+      nameMarginRight: parseInt(document.getElementById('manageNameMarginRight') ? document.getElementById('manageNameMarginRight').value : 0) || 0,
       nameAlign: nameAlign ? nameAlign.value : 'left',
       statusPosition: statusPos ? statusPos.value : 'inline'
     }
@@ -2033,7 +2036,6 @@ function saveMenuCardDesign() {
   
   toast('บันทึกดีไซน์การ์ดเมนูแล้ว', 'success');
   
-  // รีเฟรชหน้า
   if (typeof APP !== 'undefined' && APP.currentView === 'pos' && typeof renderPOSView === 'function') {
     renderPOSView();
   }
