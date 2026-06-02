@@ -4495,78 +4495,8 @@ html {
     right: 8px;
   }
 }
-/* ปุ่ม Quick Add (+) - แก้ไขให้เป็นปุ่มจริง */
-.menu-item .quick-add-btn {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #f97316 !important;
-  color: white !important;
-  font-size: 20px !important;
-  font-weight: bold !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  border: none !important;
-  z-index: 99 !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
-  font-family: monospace !important;
-  line-height: 1 !important;
-  pointer-events: auto !important;
-}
-
-.menu-item .quick-add-btn:hover {
-  background: #ea580c !important;
-  transform: scale(1.1);
-}
-
-.menu-item .quick-add-btn:active {
-  transform: scale(0.95);
-}
-/* ปุ่ม Quick Add (+) */
-.menu-item .quick-add-btn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #f97316;
-  color: white;
-  font-size: 20px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: none;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  transition: all 0.2s ease;
-}
-
-.menu-item .quick-add-btn:hover {
-  background: #ea580c;
-  transform: scale(1.1);
-}
-
-.menu-item .quick-add-btn:active {
-  transform: scale(0.95);
-}
-
-/* แบบ A และ H: ปุ่มไปไว้ซ้ายล่าง */
-.menu-item[data-style="overlay"] .quick-add-btn,
-.menu-item[data-style="bighero"] .quick-add-btn {
-  right: auto;
-  left: 12px;
-  bottom: 12px;
-}
 /* ============================================
-   QUICK ADD BUTTON - FIX
+   QUICK ADD BUTTON (+) - FINAL VERSION
    ============================================ */
 
 .menu-item .quick-add-btn {
@@ -4599,48 +4529,7 @@ html {
   transform: scale(0.95) !important;
 }
 
-/* แบบ A และ H: ปุ่มไปไว้ซ้ายล่าง */
-.menu-item[data-style="overlay"] .quick-add-btn,
-.menu-item[data-style="bighero"] .quick-add-btn {
-  right: auto !important;
-  left: 12px !important;
-  bottom: 12px !important;
-}
-/* ============================================
-   QUICK ADD BUTTON (+) - FIX PERMANENT
-   ============================================ */
-
-.menu-item .quick-add-btn {
-  position: absolute !important;
-  bottom: 12px !important;
-  right: 12px !important;
-  width: 34px !important;
-  height: 34px !important;
-  border-radius: 50% !important;
-  background: #f97316 !important;
-  color: white !important;
-  font-size: 20px !important;
-  font-weight: bold !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  border: none !important;
-  z-index: 999 !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
-  transition: all 0.2s ease !important;
-}
-
-.menu-item .quick-add-btn:hover {
-  background: #ea580c !important;
-  transform: scale(1.1) !important;
-}
-
-.menu-item .quick-add-btn:active {
-  transform: scale(0.95) !important;
-}
-
-/* แบบ A และ H: ปุ่มไปไว้ซ้ายล่าง */
+/* แบบ A (Overlay): ราคาอยู่ขวาล่าง → ปุ่มไปซ้ายล่าง */
 .menu-item[data-style="overlay"] .quick-add-btn,
 .menu-item[data-style="bighero"] .quick-add-btn {
   right: auto !important;
@@ -4648,7 +4537,7 @@ html {
   bottom: 12px !important;
 }
 
-/* แบบ B (Classic): ปุ่มอยู่ขวาล่าง */
+/* แบบ B (Classic): ปุ่มอยู่ขวาล่าง (ข้างราคา) */
 .menu-item[data-style="classic"] .quick-add-btn {
   right: 12px !important;
   left: auto !important;
