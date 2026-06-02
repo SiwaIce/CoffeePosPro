@@ -4495,3 +4495,35 @@ html {
     right: 8px;
   }
 }
+/* ปุ่ม Quick Add (+) - แก้ไขให้เป็นปุ่มจริง */
+.menu-item .quick-add-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f97316 !important;
+  color: white !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  border: none !important;
+  z-index: 99 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+  font-family: monospace !important;
+  line-height: 1 !important;
+  pointer-events: auto !important;
+}
+
+.menu-item .quick-add-btn:hover {
+  background: #ea580c !important;
+  transform: scale(1.1);
+}
+
+.menu-item .quick-add-btn:active {
+  transform: scale(0.95);
+}
