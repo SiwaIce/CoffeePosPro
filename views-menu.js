@@ -196,7 +196,7 @@ function renderMenuManageCard(item, cats) {
   
   // สวิตช์เปิด/ปิดขาย — กดได้ตรงบนการ์ดเลย ไม่ต้องเปิด modal
   var toggleHtml = '<label class="menu-manage-toggle toggle-wrap" onclick="event.stopPropagation(); toggleMenuActiveInline(\'' + sanitize(item.id) + '\')">' +
-    '<div class="toggle' + (isActive ? ' on' : '') + '" style="width:34px;height:18px;"></div>' +
+    '<div class="toggle toggle--sm' + (isActive ? ' on' : '') + '"></div>' +
     '</label>';
 
   // บรรทัดที่ 1: ชื่อ + สวิตช์

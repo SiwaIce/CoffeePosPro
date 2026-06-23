@@ -380,8 +380,15 @@ ST.updateOrder = function(id, data) {
   return orders[idx];
 };
 
-ST.cancelOrder = function(id) {
-  return ST.updateOrder(id, { status: 'cancelled' });
+ST.cancelOrder = function(id, audit) {
+  audit = audit || {};
+  return ST.updateOrder(id, {
+    status: 'cancelled',
+    cancelReason: audit.reason || '',
+    cancelledBy: audit.cancelledBy || '',
+    cancelApprovedBy: audit.approvedBy || '',
+    cancelledAt: Date.now()
+  });
 };
 
 ST.getOrdersByDate = function(dateStr) {
@@ -572,6 +579,44 @@ ST.verifyPin = function(pin) {
     }
   }
   return null;
+};
+
+/* ============================================
+   ป้องกันการเดา PIN — ล็อกชั่วคราวเมื่อกดผิดหลายครั้ง
+   (ใช้ร่วมกันทั้งหน้า login พนักงาน และหน้ายืนยัน PIN ผู้จัดการ
+   เพราะเป็นช่องโจมตีเดียวกัน — เดา PIN จากเครื่องเดียวกัน)
+   ============================================ */
+ST.PIN_MAX_ATTEMPTS = 5;
+ST.PIN_LOCK_MS = 60000;
+
+ST.getPinLockState = function() {
+  return ST.getObj('pin_lock_state', { attempts: 0, lockedUntil: 0 });
+};
+
+ST.isPinLocked = function() {
+  var state = ST.getPinLockState();
+  return !!(state.lockedUntil && Date.now() < state.lockedUntil);
+};
+
+ST.getPinLockRemainingSec = function() {
+  var state = ST.getPinLockState();
+  if (!state.lockedUntil) return 0;
+  return Math.max(0, Math.ceil((state.lockedUntil - Date.now()) / 1000));
+};
+
+ST.recordFailedPin = function() {
+  var state = ST.getPinLockState();
+  state.attempts = (state.attempts || 0) + 1;
+  if (state.attempts >= ST.PIN_MAX_ATTEMPTS) {
+    state.lockedUntil = Date.now() + ST.PIN_LOCK_MS;
+    state.attempts = 0;
+  }
+  ST.setObj('pin_lock_state', state);
+  return state;
+};
+
+ST.resetPinAttempts = function() {
+  ST.setObj('pin_lock_state', { attempts: 0, lockedUntil: 0 });
 };
 
 /* ============================================

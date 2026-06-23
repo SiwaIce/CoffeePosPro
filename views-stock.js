@@ -296,15 +296,16 @@ function renderStockListItem(item, lowItems) {
   var catDisplay = category ? (category.icon || '📦') + ' ' + category.name : '-';
   
   var statusText = isZero ? 'หมด!' : (isLow ? 'ใกล้หมด' : 'ปกติ');
-  var statusClass = isZero ? 'text-danger' : (isLow ? 'text-warning' : 'text-success');
-  
-  var html = '<div class="stock-list-item" onclick="modalEditStock(findById(ST.getStock(),\'' + item.id + '\'))">';
-  html += '<span class="stock-list-col-name fw-600">' + sanitize(item.name) + '</span>';
+  var statusKey = isZero ? 'out' : (isLow ? 'low' : 'ok');
+  var qtyClass = isZero ? 'text-danger fw-700' : (isLow ? 'text-warning fw-700' : 'fw-600');
+
+  var html = '<div class="stock-list-item" data-status="' + statusKey + '" onclick="modalEditStock(findById(ST.getStock(),\'' + item.id + '\'))">';
+  html += '<span class="stock-list-col-name fw-700">' + sanitize(item.name) + '</span>';
   html += '<span class="stock-list-col-cat">' + catDisplay + '</span>';
-  html += '<span class="stock-list-col-qty">' + displayQty + '</span>';
-  html += '<span class="stock-list-col-cost">' + formatMoneySign(item.costPerUnit || 0) + '</span>';
-  html += '<span class="stock-list-col-value">' + formatMoneySign(value) + '</span>';
-  html += '<span class="stock-list-col-status ' + statusClass + '">' + statusText + '</span>';
+  html += '<span class="stock-list-col-qty ' + qtyClass + '">' + displayQty + '</span>';
+  html += '<span class="stock-list-col-cost text-muted">' + formatMoneySign(item.costPerUnit || 0) + '</span>';
+  html += '<span class="stock-list-col-value fw-600">' + formatMoneySign(value) + '</span>';
+  html += '<span class="stock-list-col-status"><span class="stock-status-pill stock-status-pill--' + statusKey + '">' + statusText + '</span></span>';
   html += '<span class="stock-list-col-actions" onclick="event.stopPropagation()">';
   html += '<button class="btn-icon" onclick="modalStockAdjust(findById(ST.getStock(),\'' + item.id + '\'),\'add\')" title="รับเข้า">📥</button>';
   html += '<button class="btn-icon" onclick="modalStockAdjust(findById(ST.getStock(),\'' + item.id + '\'),\'use\')" title="ใช้ไป">📤</button>';
@@ -813,15 +814,21 @@ function logGoPage(page) {
   /* List view */
   css += '.stock-list{display:flex;flex-direction:column;gap:8px;}';
   css += '.stock-list-header{display:flex;align-items:center;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);font-weight:700;font-size:12px;color:var(--text-muted);}';
-  css += '.stock-list-item{display:flex;align-items:center;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);}';
-  css += '.stock-list-item:hover{border-color:var(--accent);}';
+  css += '.stock-list-item{display:flex;align-items:center;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);box-shadow:0 1px 2px rgba(0,0,0,0.04);}';
+  css += '.stock-list-item:hover{border-color:var(--accent);border-left-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,0.08);}';
+  css += '.stock-list-item[data-status="low"]{border-left-color:var(--warning);background:rgba(234,179,8,0.06);}';
+  css += '.stock-list-item[data-status="out"]{border-left-color:var(--danger);background:rgba(239,68,68,0.06);}';
   css += '.stock-list-col-name{flex:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}';
-  css += '.stock-list-col-cat{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}';
+  css += '.stock-list-col-cat{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted);font-size:13px;}';
   css += '.stock-list-col-qty{flex:1;text-align:right;}';
   css += '.stock-list-col-cost{flex:0.8;text-align:right;}';
   css += '.stock-list-col-value{flex:0.8;text-align:right;}';
   css += '.stock-list-col-status{flex:0.6;text-align:center;}';
   css += '.stock-list-col-actions{flex:0.5;text-align:center;display:flex;gap:4px;justify-content:center;}';
+  css += '.stock-status-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;}';
+  css += '.stock-status-pill--ok{background:rgba(34,197,94,0.15);color:var(--success);}';
+  css += '.stock-status-pill--low{background:rgba(234,179,8,0.15);color:var(--warning);}';
+  css += '.stock-status-pill--out{background:rgba(239,68,68,0.15);color:var(--danger);}';
 
   /* Stock category list */
   css += '.stock-cat-list{display:flex;flex-direction:column;gap:12px;}';

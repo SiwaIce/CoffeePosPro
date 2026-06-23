@@ -176,11 +176,21 @@ function updatePinDots(filled) {
 function pinSubmit() {
   var el = $('pinValue');
   if (!el) return;
+
+  if (ST.isPinLocked()) {
+    var remainSec = ST.getPinLockRemainingSec();
+    setText('pinError', '🔒 ลองผิดหลายครั้งเกินไป กรุณารออีก ' + remainSec + ' วินาที');
+    el.value = '';
+    updatePinDots(0);
+    return;
+  }
+
   var pin = el.value;
   if (pin.length !== 4) { setText('pinError', 'กรอก 4 หลัก'); return; }
 
   var staff = ST.verifyPin(pin);
   if (staff) {
+    ST.resetPinAttempts();
     APP.currentStaff = staff;
     
     // 🔥 ตั้งค่า isStaffLoggedIn
@@ -236,7 +246,12 @@ function pinSubmit() {
       nav(targetView);
     }
   } else {
-    setText('pinError', '❌ PIN ไม่ถูกต้อง');
+    var lockState = ST.recordFailedPin();
+    if (lockState.lockedUntil && Date.now() < lockState.lockedUntil) {
+      setText('pinError', '🔒 ลองผิดครบ ' + ST.PIN_MAX_ATTEMPTS + ' ครั้ง กรุณารอ ' + Math.ceil(ST.PIN_LOCK_MS / 1000) + ' วินาที');
+    } else {
+      setText('pinError', '❌ PIN ไม่ถูกต้อง');
+    }
     el.value = '';
     updatePinDots(0);
     vibrate(100);
@@ -442,6 +457,11 @@ function verifyManagerPIN(view, callback) {
 }
 
 function submitManagerPIN() {
+  if (ST.isPinLocked()) {
+    toast('🔒 ลองผิดหลายครั้งเกินไป กรุณารออีก ' + ST.getPinLockRemainingSec() + ' วินาที', 'error');
+    return;
+  }
+
   var pin = ($('managerPin') || {}).value;
   if (!pin || pin.length !== 4) {
     toast('กรุณาใส่ PIN 4 หลัก', 'error');
@@ -459,8 +479,9 @@ function submitManagerPIN() {
   }
   
   if (manager) {
+    ST.resetPinAttempts();
     closeMForce();
-    
+
     /* 🔥 สำคัญ: ตั้งค่า currentStaff เป็น manager คนนี้ */
     APP.currentStaff = manager;
     
@@ -497,8 +518,87 @@ function submitManagerPIN() {
     /* ไปยังหน้าที่ต้องการ */
     nav(pendingViewForManager);
   } else {
-    toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
+    var mgrLockState = ST.recordFailedPin();
+    if (mgrLockState.lockedUntil && Date.now() < mgrLockState.lockedUntil) {
+      toast('🔒 ลองผิดครบ ' + ST.PIN_MAX_ATTEMPTS + ' ครั้ง กรุณารอ ' + Math.ceil(ST.PIN_LOCK_MS / 1000) + ' วินาที', 'error');
+    } else {
+      toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
+    }
     var pinInput = $('managerPin');
+    if (pinInput) {
+      pinInput.value = '';
+      pinInput.focus();
+    }
+  }
+}
+
+/* ============================================
+   ขออนุมัติจากผู้จัดการ (สำหรับงานที่ต้องมีคนรับผิดชอบ เช่น ยกเลิกออเดอร์)
+   ต่างจาก verifyManagerPIN ตรงที่ไม่ไป nav() ไปหน้าไหน แค่รัน callback แล้วกลับมาที่เดิม
+   ============================================ */
+var _pendingApprovalCallback = null;
+
+function requestManagerApproval(reason, callback) {
+  _pendingApprovalCallback = callback;
+
+  var html = '';
+  html += '<div class="text-center mb-16">';
+  html += '<div style="font-size:48px;margin-bottom:8px;">👑</div>';
+  html += '<div class="fw-700 fs-lg mb-4">ต้องได้รับอนุมัติจากผู้จัดการ</div>';
+  if (reason) html += '<div class="text-muted fs-sm mb-8">' + sanitize(reason) + '</div>';
+  html += '</div>';
+
+  html += '<div class="form-group">';
+  html += '<label class="form-label">PIN ผู้จัดการ</label>';
+  html += '<input type="password" id="managerApprovalPin" placeholder="****" maxlength="4" inputmode="numeric" style="font-size:24px;text-align:center;letter-spacing:8px;">';
+  html += '</div>';
+
+  var footer = '';
+  footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
+  footer += '<button class="btn btn-primary" onclick="submitManagerApproval()">✅ อนุมัติ</button>';
+
+  openModal('🔐 อนุมัติโดยผู้จัดการ', html, footer);
+
+  setTimeout(function() {
+    var el = $('managerApprovalPin');
+    if (el) el.focus();
+  }, 100);
+}
+
+function submitManagerApproval() {
+  if (ST.isPinLocked()) {
+    toast('🔒 ลองผิดหลายครั้งเกินไป กรุณารออีก ' + ST.getPinLockRemainingSec() + ' วินาที', 'error');
+    return;
+  }
+
+  var pin = ($('managerApprovalPin') || {}).value;
+  if (!pin || pin.length !== 4) {
+    toast('กรุณาใส่ PIN 4 หลัก', 'error');
+    return;
+  }
+
+  var staffList = ST.getStaff();
+  var manager = null;
+  for (var i = 0; i < staffList.length; i++) {
+    if (staffList[i].pin === pin && staffList[i].role === 'manager') {
+      manager = staffList[i];
+      break;
+    }
+  }
+
+  if (manager) {
+    ST.resetPinAttempts();
+    var cb = _pendingApprovalCallback;
+    _pendingApprovalCallback = null;
+    cb && cb(manager);
+  } else {
+    var lockState = ST.recordFailedPin();
+    if (lockState.lockedUntil && Date.now() < lockState.lockedUntil) {
+      toast('🔒 ลองผิดครบ ' + ST.PIN_MAX_ATTEMPTS + ' ครั้ง กรุณารอ ' + Math.ceil(ST.PIN_LOCK_MS / 1000) + ' วินาที', 'error');
+    } else {
+      toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
+    }
+    var pinInput = $('managerApprovalPin');
     if (pinInput) {
       pinInput.value = '';
       pinInput.focus();

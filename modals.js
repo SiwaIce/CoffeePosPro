@@ -1673,6 +1673,16 @@ if (order.channelName) {
   html += statusBadge;
   html += '</div>';
 
+  if (order.status === 'cancelled') {
+    html += '<div class="card p-12 mb-16" style="border:1px solid var(--danger);">';
+    html += '<div class="fw-700 fs-sm text-danger mb-4">❌ ข้อมูลการยกเลิก</div>';
+    if (order.cancelledBy) html += '<div class="fs-sm">ยกเลิกโดย: ' + sanitize(order.cancelledBy) + '</div>';
+    if (order.cancelApprovedBy) html += '<div class="fs-sm">อนุมัติโดย: ' + sanitize(order.cancelApprovedBy) + '</div>';
+    if (order.cancelReason) html += '<div class="fs-sm">เหตุผล: ' + sanitize(order.cancelReason) + '</div>';
+    if (order.cancelledAt) html += '<div class="fs-sm text-muted">เวลา: ' + new Date(order.cancelledAt).toLocaleString('th-TH') + '</div>';
+    html += '</div>';
+  }
+
   html += '<div class="card p-16 mb-16">';
   var items = order.items || [];
   for (var i = 0; i < items.length; i++) {
@@ -1720,11 +1730,17 @@ if (order.channelName) {
 }
 
 function cancelOrderFromModal(orderId) {
-  confirmDialog('ยกเลิกออเดอร์นี้?', function() {
-    ST.cancelOrder(orderId);
-    closeMForce();
-    toast('ยกเลิกแล้ว', 'warning');
-    if (typeof renderOrdersView === 'function') renderOrdersView();
+  promptDialog('เหตุผลที่ยกเลิก (ถ้ามี):', '', function(reason) {
+    requestManagerApproval('ยกเลิกออเดอร์นี้ต้องได้รับอนุมัติจากผู้จัดการ', function(manager) {
+      ST.cancelOrder(orderId, {
+        reason: reason || '',
+        cancelledBy: (APP.currentStaff ? APP.currentStaff.name : ''),
+        approvedBy: manager.name
+      });
+      closeMForce();
+      toast('ยกเลิกแล้ว (อนุมัติโดย ' + manager.name + ')', 'warning');
+      if (typeof renderOrdersView === 'function') renderOrdersView();
+    });
   });
 }
 

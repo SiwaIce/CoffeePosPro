@@ -234,6 +234,36 @@ var LicenseManager = {
     return 0;
   },
 
+  /* คืนค่าจำนวนวันก่อนหมดอายุ (ทุก tier ที่มีวันหมดอายุ) — null ถ้าไม่มีวันหมดอายุ (เช่น forced override) */
+  getDaysUntilExpiry: function() {
+    var override = ST.getObj('license_override', null);
+    if (override && override.enabled) return null;
+
+    var saved = ST.getObj('license', null);
+    if (!saved) return null;
+    var expiry = (saved.tier === 'trial') ? saved.trialExpiry : saved.expiresAt;
+    if (!expiry) return null;
+
+    return Math.ceil((expiry - Date.now()) / (1000 * 60 * 60 * 24));
+  },
+
+  /* แจ้งเตือนถ้าใกล้หมดอายุ (≤7 วัน) — เตือนแค่วันละครั้งไม่ให้สแปม */
+  checkExpiryWarning: function() {
+    var daysLeft = this.getDaysUntilExpiry();
+    if (daysLeft === null || daysLeft > 7) return;
+
+    var todayStr = new Date().toDateString();
+    var lastWarnedDate = ST.getObj('license_expiry_warned_date', '');
+    if (lastWarnedDate === todayStr) return;
+    ST.setObj('license_expiry_warned_date', todayStr);
+
+    if (daysLeft <= 0) {
+      toast('⛔ License หมดอายุแล้ว กรุณาต่ออายุ', 'error', 5000);
+    } else {
+      toast('⏰ License จะหมดอายุในอีก ' + daysLeft + ' วัน กรุณาต่ออายุ', 'warning', 5000);
+    }
+  },
+
   setTier: function(tier) {
     this.tier = tier;
     this.afterLicenseChange();
@@ -284,6 +314,17 @@ var LicenseManager = {
     else if (currentTier === 'standard') html += '<span class="badge badge-info">📦 Standard</span>';
     else html += '<span class="badge badge-secondary">🆓 Free</span>';
     html += '</div>';
+
+    var expiryDays = this.getDaysUntilExpiry();
+    if (expiryDays !== null) {
+      if (expiryDays <= 0) {
+        html += '<div class="text-danger fs-sm fw-700 mt-4">⛔ หมดอายุแล้ว</div>';
+      } else if (expiryDays <= 7) {
+        html += '<div class="text-danger fs-sm fw-700 mt-4">⏰ เหลืออีก ' + expiryDays + ' วัน</div>';
+      } else {
+        html += '<div class="text-muted fs-sm mt-4">⏰ เหลืออีก ' + expiryDays + ' วัน</div>';
+      }
+    }
     html += '</div>';
 
     if (!window.currentUser) {
@@ -329,5 +370,9 @@ var LicenseManager = {
 };
 
 LicenseManager.init();
+
+setTimeout(function() {
+  if (typeof toast === 'function') LicenseManager.checkExpiryWarning();
+}, 1500);
 
 console.log('[license-verify.js] loaded');
