@@ -1183,6 +1183,7 @@ select { -webkit-appearance: none; appearance: none; }
 }
 
 .modal-box.wide { max-width: 680px; }
+.modal-box.hide-close-btn .modal-close { display: none; }
 
 /* === CONFIRM / PROMPT DIALOG (stacks above regular modal) === */
 .confirm-overlay { z-index: 10100; }

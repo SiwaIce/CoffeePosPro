@@ -32,12 +32,11 @@ function nav(view) {
     return;
   }
   
-  /* 🔥 ตรวจสอบสิทธิ์พนักงาน - ถ้าไม่มี staff login ให้ขอ PIN ก่อน */
+  /* 🔥 ตรวจสอบสิทธิ์พนักงาน - ถ้าไม่มี staff login ให้บังคับเข้าหน้า PIN login ก่อน
+     (ใช้ showPinLogin เดียวกับปุ่ม 🔐 บน header เพื่อให้ผู้ใช้เห็น UI ที่คุ้นเคย/มีปุ่มตั้งพนักงานคนแรก
+     แทนการเด้ง verifyManagerPIN ซึ่งเช็คแค่ PIN ตรงกับ manager ที่มีอยู่ — กรณีไม่รู้ PIN เริ่มต้นจะเข้าไม่ได้เลย) */
   if (!APP.currentStaff) {
-    /* ถ้ายังไม่มี staff login ให้ขอ PIN ก่อนเข้าหน้า */
-    verifyManagerPIN(view, function() {
-      nav(view);
-    });
+    showPinLoginForView(view);
     return;
   }
   
@@ -85,23 +84,44 @@ function nav(view) {
 /* ============================================
    PIN LOGIN FUNCTIONS (ย้ายมาจาก admin.js)
    ============================================ */
-function showPinLogin() {
-  var staffCount = ST.getStaff().length;
+function showPinLoginForView(view) {
+  _pendingView = view;
+  showPinLogin(true);
+}
+
+function showPinLogin(mandatory) {
+  var staffList = ST.getStaff();
+  var staffCount = staffList.length;
   var hasNoStaff = (staffCount === 0);
-  
+
+  var hasUnchangedDefaultPin = false;
+  for (var s = 0; s < staffList.length; s++) {
+    if (staffList[s].isDefault && staffList[s].pin === '0000') {
+      hasUnchangedDefaultPin = true;
+      break;
+    }
+  }
+
   var html = '';
   html += '<div class="text-center mb-16">';
   html += '<div style="font-size:48px;margin-bottom:8px;">🔐</div>';
   html += '<div class="fw-700 fs-lg mb-4">เข้าสู่ระบบ</div>';
   html += '<div class="text-muted fs-sm">กรอก PIN 4 หลักเพื่อเริ่มใช้งาน</div>';
   html += '</div>';
-  
+
+  if (hasUnchangedDefaultPin) {
+    html += '<div class="card-glass p-12 mb-12 text-center" style="border:1px solid var(--warning);">';
+    html += '<div class="fs-sm">🔑 บัญชีเริ่มต้น: <b>ผู้ดูแลระบบ</b></div>';
+    html += '<div class="fs-sm text-muted">PIN: <code>0000</code> (ระบบจะให้เปลี่ยนทันทีหลัง login ครั้งแรก)</div>';
+    html += '</div>';
+  }
+
   html += '<div class="pin-display" id="pinDisplay">';
   html += '<span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>';
   html += '</div>';
-  
+
   html += '<div id="pinError" class="text-danger text-center fs-sm mb-8" style="min-height:20px;"></div>';
-  
+
   html += '<div class="pin-pad">';
   for (var n = 1; n <= 9; n++) {
     html += '<button class="pin-key" onclick="pinInput(' + n + ')">' + n + '</button>';
@@ -110,17 +130,19 @@ function showPinLogin() {
   html += '<button class="pin-key" onclick="pinInput(0)">0</button>';
   html += '<button class="pin-key pin-key-enter" onclick="pinSubmit()">✓</button>';
   html += '</div>';
-  
+
   html += '<input type="hidden" id="pinValue" value="">';
-  
+
   if (hasNoStaff) {
     html += '<div class="text-center mt-16 pt-12 border-top">';
     html += '<div class="text-muted fs-sm mb-8">🔑 ยังไม่มีบัญชีผู้ใช้งาน</div>';
     html += '<button class="btn btn-primary" onclick="closeMForce(); setupFirstStaff()">➕ ตั้งค่าพนักงานคนแรก</button>';
     html += '</div>';
   }
-  
-  openModal('🔐 เข้าสู่ระบบ', html, '<button class="btn btn-secondary" onclick="closeMForce()">ปิด</button>');
+
+  /* บังคับ login ก่อนเข้าหน้าใดๆ: ไม่ให้ปิดโดยคลิกนอกกล่อง และไม่มีปุ่ม "ปิด" ให้หลีกเลี่ยง */
+  var footer = mandatory ? '' : '<button class="btn btn-secondary" onclick="closeMForce()">ปิด</button>';
+  openModal('🔐 เข้าสู่ระบบ', html, footer, { disableCloseOnOverlay: !!mandatory, hideCloseBtn: !!mandatory });
 }
 
 function pinInput(num) {
@@ -203,8 +225,16 @@ function pinSubmit() {
         console.log('[PIN] Using existing license:', LicenseManager.tier);
       }
     }
-    
-    nav('pos');
+
+    var targetView = _pendingView || 'pos';
+    _pendingView = null;
+
+    /* บังคับเปลี่ยน PIN ถ้ายัง login ด้วยบัญชีเริ่มต้น (PIN 0000) อยู่ — ไม่ปลอดภัยถ้าใช้จริง */
+    if (staff.isDefault && staff.pin === '0000') {
+      forceChangeDefaultPin(staff, targetView);
+    } else {
+      nav(targetView);
+    }
   } else {
     setText('pinError', '❌ PIN ไม่ถูกต้อง');
     el.value = '';
@@ -212,6 +242,57 @@ function pinSubmit() {
     vibrate(100);
     if (typeof playSound === 'function') playSound('error');
   }
+}
+
+/* ============================================
+   บังคับเปลี่ยน PIN เริ่มต้น (0000) — ความปลอดภัยก่อนใช้งานจริง
+   ============================================ */
+function forceChangeDefaultPin(staff, nextView) {
+  var html = '';
+  html += '<div class="text-center mb-16">';
+  html += '<div style="font-size:48px;">🔐</div>';
+  html += '<div class="fw-700 fs-lg mb-4">เปลี่ยน PIN เริ่มต้น</div>';
+  html += '<div class="text-muted fs-sm">เพื่อความปลอดภัย กรุณาตั้ง PIN ใหม่ก่อนใช้งาน (ห้ามใช้ 0000)</div>';
+  html += '</div>';
+
+  html += '<div class="form-group"><label class="form-label">PIN ใหม่ (4 หลัก)</label>';
+  html += '<input type="password" id="newDefaultPin" maxlength="4" inputmode="numeric" placeholder="****" style="font-size:24px;text-align:center;letter-spacing:8px;"></div>';
+
+  html += '<div class="form-group"><label class="form-label">ยืนยัน PIN ใหม่</label>';
+  html += '<input type="password" id="confirmDefaultPin" maxlength="4" inputmode="numeric" placeholder="****" style="font-size:24px;text-align:center;letter-spacing:8px;"></div>';
+
+  html += '<div id="forcePinError" class="text-danger text-center fs-sm" style="min-height:20px;"></div>';
+
+  var footer = '<button class="btn btn-primary btn-block" onclick="submitForceChangePin(\'' + staff.id + '\', \'' + (nextView || 'pos') + '\')">✅ ตั้ง PIN ใหม่</button>';
+
+  openModal('🔑 ตั้ง PIN ใหม่ (บังคับ)', html, footer, { disableCloseOnOverlay: true, hideCloseBtn: true });
+}
+
+function submitForceChangePin(staffId, nextView) {
+  var pin = ($('newDefaultPin') || {}).value.trim();
+  var confirmPin = ($('confirmDefaultPin') || {}).value.trim();
+
+  if (!pin || pin.length !== 4) {
+    setText('forcePinError', 'PIN ต้อง 4 หลัก');
+    return;
+  }
+  if (pin === '0000') {
+    setText('forcePinError', 'ห้ามใช้ PIN 0000 (เป็นค่าเริ่มต้นที่ไม่ปลอดภัย)');
+    return;
+  }
+  if (pin !== confirmPin) {
+    setText('forcePinError', 'PIN ไม่ตรงกัน');
+    return;
+  }
+
+  ST.updateStaff(staffId, { pin: pin, isDefault: false });
+
+  var updatedStaff = findById(ST.getStaff(), staffId);
+  if (updatedStaff) APP.currentStaff = updatedStaff;
+
+  toast('✅ เปลี่ยน PIN สำเร็จ', 'success');
+  closeMForce();
+  nav(nextView || 'pos');
 }
 
 function logoutStaff() {
@@ -327,7 +408,22 @@ function verifyManagerPIN(view, callback) {
   html += '<div class="fw-700 fs-lg mb-4">สิทธิ์ผู้จัดการ</div>';
   html += '<div class="text-muted fs-sm mb-8">กรุณาใส่ PIN ผู้จัดการ เพื่อเข้าถึงหน้านี้</div>';
   html += '</div>';
-  
+
+  var staffListForHint = ST.getStaff();
+  var hasUnchangedDefaultPinHint = false;
+  for (var hp = 0; hp < staffListForHint.length; hp++) {
+    if (staffListForHint[hp].isDefault && staffListForHint[hp].pin === '0000') {
+      hasUnchangedDefaultPinHint = true;
+      break;
+    }
+  }
+  if (hasUnchangedDefaultPinHint) {
+    html += '<div class="card-glass p-12 mb-12 text-center" style="border:1px solid var(--warning);">';
+    html += '<div class="fs-sm">🔑 บัญชีเริ่มต้น: <b>ผู้ดูแลระบบ</b></div>';
+    html += '<div class="fs-sm text-muted">PIN: <code>0000</code></div>';
+    html += '</div>';
+  }
+
   html += '<div class="form-group">';
   html += '<label class="form-label">PIN ผู้จัดการ</label>';
   html += '<input type="password" id="managerPin" placeholder="****" maxlength="4" inputmode="numeric" style="font-size:24px;text-align:center;letter-spacing:8px;">';
@@ -381,18 +477,25 @@ function submitManagerPIN() {
     updateSidebarByStaffPermission();
     
     toast('ยืนยันสิทธิ์สำเร็จ เข้าสู่ระบบในนาม ' + manager.name, 'success');
-    
+
+    var pendingViewForManager = _pendingView || 'pos';
+    var pendingCallbackForManager = _pendingCallback;
+    _pendingView = null;
+    _pendingCallback = null;
+
+    /* บังคับเปลี่ยน PIN ถ้ายัง login ด้วยบัญชีเริ่มต้น (PIN 0000) อยู่ */
+    if (manager.isDefault && manager.pin === '0000') {
+      forceChangeDefaultPin(manager, pendingViewForManager);
+      return;
+    }
+
     /* ถ้ามี callback ให้เรียก */
-    if (_pendingCallback && typeof _pendingCallback === 'function') {
-      _pendingCallback();
-      _pendingCallback = null;
+    if (pendingCallbackForManager && typeof pendingCallbackForManager === 'function') {
+      pendingCallbackForManager();
     }
-    
+
     /* ไปยังหน้าที่ต้องการ */
-    if (_pendingView) {
-      nav(_pendingView);
-      _pendingView = null;
-    }
+    nav(pendingViewForManager);
   } else {
     toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
     var pinInput = $('managerPin');
@@ -755,40 +858,6 @@ function doSeedData() {
   }
 }
 /* ============================================
-   SHOW STAFF MENU (กดชื่อผู้ใช้)
-   ============================================ */
-function showStaffMenu() {
-  if (!APP.currentStaff) {
-    showPinLogin();
-    return;
-  }
-  
-  var html = '';
-  html += '<div class="text-center mb-16">';
-  html += '<div style="font-size:48px;">👤</div>';
-  html += '<div class="fw-800 fs-lg mt-2">' + sanitize(APP.currentStaff.name) + '</div>';
-  html += '<div class="text-muted">' + getRoleName(APP.currentStaff.role) + '</div>';
-  html += '</div>';
-  
-  html += '<div class="card-glass p-16 mb-16">';
-  html += '<div class="flex-between mb-8">';
-  html += '<span>ตำแหน่ง</span>';
-  html += '<span>' + getRoleName(APP.currentStaff.role) + '</span>';
-  html += '</div>';
-  html += '<div class="flex-between">';
-  html += '<span>สถานะ</span>';
-  html += '<span class="badge badge-success">กำลังทำงาน</span>';
-  html += '</div>';
-  html += '</div>';
-  
-  html += '<div class="flex gap-8">';
-  html += '<button class="btn btn-secondary" onclick="closeMForce()">ปิด</button>';
-  html += '<button class="btn btn-danger" onclick="closeMForce(); logoutStaff()">🚪 ออกจากระบบ</button>';
-  html += '</div>';
-  
-  openModal('👤 บัญชีของฉัน', html);
-}
-/* ============================================
    KEYBOARD SHORTCUTS
    ============================================ */
 function initShortcuts() {
@@ -997,12 +1066,108 @@ function showStaffMenu() {
   html += '</div>';
   html += '</div>';
   
-  html += '<div class="flex gap-8">';
+  html += '<div class="flex gap-8 flex-wrap">';
   html += '<button class="btn btn-secondary" onclick="closeMForce()">ปิด</button>';
+  html += '<button class="btn btn-outline" onclick="showSwitchAccountList()">🔄 สลับบัญชี</button>';
   html += '<button class="btn btn-danger" onclick="closeMForce(); logoutStaff()">🚪 ออกจากระบบ</button>';
   html += '</div>';
-  
+
   openModal('👤 บัญชีของฉัน', html);
+}
+
+/* ============================================
+   สลับบัญชี — เช่น ผู้จัดการสลับเข้ามาดูหน้าที่ถูกล็อกไว้
+   โดยไม่ต้อง logout แคชเชียร์ที่ login ค้างอยู่ก่อน
+   ============================================ */
+function showSwitchAccountList() {
+  var staffList = ST.getStaff().filter(function(s) { return s.active !== false; });
+
+  var html = '';
+  html += '<div class="text-muted fs-sm mb-12">เลือกบัญชีที่จะสลับไป (ต้องใส่ PIN ของบัญชีนั้นยืนยัน)</div>';
+  html += '<div class="flex" style="flex-direction:column;gap:6px;">';
+
+  for (var i = 0; i < staffList.length; i++) {
+    var s = staffList[i];
+    var isCurrent = APP.currentStaff && APP.currentStaff.id === s.id;
+    html += '<div class="admin-action-card' + (isCurrent ? ' disabled' : '') + '" style="' + (isCurrent ? 'opacity:0.5;cursor:default;' : 'cursor:pointer;') + '"' +
+      (isCurrent ? '' : ' onclick="promptSwitchAccountPin(\'' + s.id + '\')"') + '>';
+    html += '<div class="admin-action-icon">👤</div>';
+    html += '<div class="admin-action-info">';
+    html += '<div class="fw-600">' + sanitize(s.name) + (isCurrent ? ' (ปัจจุบัน)' : '') + '</div>';
+    html += '<div class="text-muted fs-sm">' + getRoleName(s.role) + '</div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+
+  var footer = '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
+  openModal('🔄 สลับบัญชี', html, footer);
+}
+
+function promptSwitchAccountPin(staffId) {
+  var target = findById(ST.getStaff(), staffId);
+  if (!target) return;
+
+  var html = '';
+  html += '<div class="text-center mb-16">';
+  html += '<div style="font-size:40px;">👤</div>';
+  html += '<div class="fw-700 fs-lg mt-2">' + sanitize(target.name) + '</div>';
+  html += '<div class="text-muted fs-sm">' + getRoleName(target.role) + '</div>';
+  html += '</div>';
+
+  html += '<div class="form-group"><label class="form-label">PIN ของบัญชีนี้</label>';
+  html += '<input type="password" id="switchAccountPin" maxlength="4" inputmode="numeric" placeholder="****" style="font-size:24px;text-align:center;letter-spacing:8px;" onkeydown="if(event.key===\'Enter\'){event.preventDefault();submitSwitchAccount(\'' + staffId + '\');}">';
+  html += '</div>';
+  html += '<div id="switchAccountError" class="text-danger text-center fs-sm" style="min-height:20px;"></div>';
+
+  var footer = '<button class="btn btn-secondary" onclick="showSwitchAccountList()">ย้อนกลับ</button>';
+  footer += '<button class="btn btn-primary" onclick="submitSwitchAccount(\'' + staffId + '\')">✅ สลับบัญชี</button>';
+
+  openModal('🔐 ยืนยัน PIN', html, footer);
+}
+
+function submitSwitchAccount(staffId) {
+  var pin = ($('switchAccountPin') || {}).value.trim();
+  var target = findById(ST.getStaff(), staffId);
+
+  if (!target) return;
+  if (!pin || pin.length !== 4 || pin !== target.pin) {
+    setText('switchAccountError', '❌ PIN ไม่ถูกต้อง');
+    return;
+  }
+
+  /* clock-out บัญชีเดิม (ถ้ามี shift เปิดอยู่) ก่อนสลับ */
+  if (APP.currentStaff) {
+    var prevShift = ST.getActiveShift(APP.currentStaff.id);
+    if (prevShift) ST.clockOut(prevShift.id);
+  }
+
+  APP.currentStaff = target;
+  window.isStaffLoggedIn = true;
+
+  ST.setObj('current_session', {
+    staffId: target.id,
+    loginTime: Date.now(),
+    staffName: target.name,
+    role: target.role
+  });
+
+  setText('topStaff', '👤 ' + target.name);
+
+  var targetShift = ST.getActiveShift(target.id);
+  if (!targetShift) ST.clockIn(target.id);
+
+  closeMForce();
+  toast('🔄 สลับไปบัญชี ' + target.name, 'success');
+  if (typeof updateSidebarByStaffPermission === 'function') updateSidebarByStaffPermission();
+
+  /* บังคับเปลี่ยน PIN ถ้าบัญชีที่สลับไปยังเป็นค่าเริ่มต้น 0000 อยู่ */
+  if (target.isDefault && target.pin === '0000') {
+    forceChangeDefaultPin(target, APP.currentView || 'pos');
+  } else {
+    nav(APP.currentView || 'pos');
+  }
 }
 
 /* ============================================

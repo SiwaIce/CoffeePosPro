@@ -35,6 +35,13 @@ function openModal(title, bodyHTML, footerHTML, opts) {
     overlay.removeAttribute('data-disable-close');
   }
 
+  /* เพิ่ม option ซ่อนปุ่มกากบาทปิด (ใช้กับ modal ที่บังคับให้ทำให้สำเร็จก่อน เช่น login บังคับ) */
+  if (o.hideCloseBtn) {
+    addClass(box, 'hide-close-btn');
+  } else {
+    removeClass(box, 'hide-close-btn');
+  }
+
   addClass(overlay, 'show');
   addClass(box, 'show');
   _modalOpen = true;
