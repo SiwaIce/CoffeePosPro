@@ -627,6 +627,7 @@ select { -webkit-appearance: none; appearance: none; }
   padding: 10px 16px 16px;
   overflow-y: auto;
   align-content: start;
+  align-items: start;
 }
 
 /* === RIGHT: Cart === */
@@ -3256,20 +3257,21 @@ html {
   border-color: var(--border);
 }
 
-/* พื้นที่รูป/อิโมจิ — กรอบสี่เหลี่ยมสัดส่วนคงที่ */
+/* พื้นที่รูป/อิโมจิ — กรอบสี่เหลี่ยมสัดส่วนคงที่ (ใช้ padding-top แทน aspect-ratio
+   เพื่อเลี่ยงปัญหาการคำนวณความสูงแถวผิดพลาดเมื่ออยู่ใน CSS Grid) */
 .menu-item-media {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: 0;
+  padding-top: 75%;
   flex-shrink: 0;
   background: linear-gradient(135deg, var(--bg-card-hover, var(--bg-card)), var(--bg-card));
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
 
 .menu-item-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -3277,6 +3279,11 @@ html {
 }
 
 .menu-item-emoji {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 44px;
   line-height: 1;
 }
