@@ -115,18 +115,11 @@ ST.getConfig = function() {
       showBorder: false,
       textAlign: 'default',          // 'default' (ชื่อซ้าย-ราคาขวา) หรือ 'center' (กึ่งกลางทั้งหมด)
       
-      // ===== หน้า Manage Menu (เก็บไว้ข้างใน) =====
+      // ===== หน้า Manage Menu (เก็บไว้ข้างใน) — ลดความซับซ้อน เหลือเฉพาะที่ใช้บ่อย =====
       manageCard: {
-        cardLayout: 'B',
         imageSize: 70,
-        cardGap: 16,
-        verticalGap: 6,
-        paddingRight: 12,
         showImageBorder: false,
         nameFontSize: 15,
-        nameFontWeight: 600,
-        nameMarginLeft: 0,
-        nameMarginRight: 0,
         nameAlign: 'left',
         statusPosition: 'inline'
       }

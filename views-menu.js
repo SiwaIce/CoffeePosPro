@@ -164,32 +164,24 @@ function renderMenuManageCard(item, cats) {
   var design = cfg.menuCardDesign || {};
   var manageCard = design.manageCard || {};
   
-  // อ่านค่า config
-  var layout = manageCard.cardLayout || 'B';
+  // อ่านค่า config (ลดความซับซ้อน เหลือเฉพาะที่ใช้บ่อย ส่วนอื่นใช้ค่าคงที่ที่ดูดีอยู่แล้ว)
   var imageSize = manageCard.imageSize || 70;
-  var cardGap = manageCard.cardGap || 16;
-  var verticalGap = manageCard.verticalGap || 6;
-  var paddingRight = manageCard.paddingRight || 12;
   var showImageBorder = manageCard.showImageBorder === true;
   var nameFontSize = manageCard.nameFontSize || 15;
-  var nameFontWeight = manageCard.nameFontWeight || 600;
-  var nameMarginLeft = manageCard.nameMarginLeft || 0;
-  var nameMarginRight = manageCard.nameMarginRight || 0;
   var nameAlign = manageCard.nameAlign || 'left';
   var statusInline = manageCard.statusPosition !== 'newline';
   var isActive = item.active !== false;
   var hasImage = item.image && item.image.trim() !== '';
-  
+
   // สร้าง style inline
-  var cardStyle = 'gap:' + cardGap + 'px;';
-  var infoStyle = 'gap:' + verticalGap + 'px; padding-right:' + paddingRight + 'px;';
+  var infoStyle = 'gap:6px; padding-right:12px;';
   var textAlignStyle = 'text-align:' + nameAlign + ';';
-  var nameStyle = '--name-font-size:' + nameFontSize + 'px; --name-font-weight:' + nameFontWeight + '; --name-margin-left:' + nameMarginLeft + 'px; --name-margin-right:' + nameMarginRight + 'px;';
+  var nameStyle = '--name-font-size:' + nameFontSize + 'px; --name-font-weight:600;';
   var mediaStyle = 'width:' + imageSize + 'px; height:' + imageSize + 'px;';
   var borderAttr = showImageBorder ? 'true' : 'false';
-  
+
   var html = '';
-  html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" style="' + cardStyle + '" data-image-border="' + borderAttr + '" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
+  html += '<div class="menu-manage-card anim-fadeUp' + (isActive ? '' : ' inactive') + '" data-image-border="' + borderAttr + '" onclick="modalEditMenu(findById(ST.getMenu(),\'' + sanitize(item.id) + '\'))">';
   
   // รูปหรือ Emoji
   if (hasImage) {

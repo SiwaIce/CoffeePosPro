@@ -682,96 +682,50 @@ function renderShopSettings() {
   html += '<button class="btn btn-primary" onclick="savePOSCardDesign()">💾 บันทึกดีไซน์การ์ด</button>';
   html += '</div></div></div>';
 
-  // ========== ส่วนปรับแต่งหน้า Manage Menu ==========
+  // ========== ส่วนปรับแต่งการ์ด Manage Menu (รายการเมนู) — ลดความซับซ้อน ==========
   var manageCard = (cfg.menuCardDesign && cfg.menuCardDesign.manageCard) || {};
 
   html += '<div class="card mb-16">';
-  html += '<div class="card-header"><div class="card-title">📋 หน้า Manage Menu (รายการเมนู)</div></div>';
+  html += '<div class="card-header"><div class="card-title">📋 การ์ดหน้า Manage Menu (รายการเมนู)</div></div>';
   html += '<div class="p-16">';
 
-  // รูปแบบการ์ด
-  html += '<div class="form-group">';
-  html += '<label class="form-label">รูปแบบการ์ด</label>';
-  html += '<div class="flex gap-16 flex-wrap">';
-  html += '<label class="checkbox-wrap"><input type="radio" name="manageCardLayout" value="A" ' + (manageCard.cardLayout === 'A' ? 'checked' : '') + '> <span>📐 แบบ A (แนวตั้ง: รูปบน ข้อความล่าง)</span></label>';
-  html += '<label class="checkbox-wrap"><input type="radio" name="manageCardLayout" value="B" ' + (manageCard.cardLayout !== 'A' ? 'checked' : '') + '> <span>📏 แบบ B (แนวนอน: รูปซ้าย ข้อความขวา)</span></label>';
-  html += '</div>';
+  // ตัวอย่างการ์ด (อัปเดตทันทีตามฟอร์มด้านล่าง)
+  html += '<div class="preview-gallery" style="margin-bottom:24px; padding:16px; background:var(--bg-secondary); border-radius:16px;">';
+  html += '<div id="manageCardPreview" style="max-width:360px;"></div>';
   html += '</div>';
 
-  // ขนาดและระยะห่าง
   html += '<div class="form-row">';
   html += '<div class="form-group">';
   html += '<label class="form-label">ขนาดรูป/Emoji (px)</label>';
   html += '<input type="number" id="manageImageSize" value="' + (manageCard.imageSize || 70) + '" step="5" min="40" max="120">';
   html += '</div>';
   html += '<div class="form-group">';
-  html += '<label class="form-label">ระยะห่างรูป-ข้อความ (px)</label>';
-  html += '<input type="number" id="manageCardGap" value="' + (manageCard.cardGap || 16) + '" step="2" min="4" max="24">';
-  html += '</div>';
-  html += '</div>';
-
-  html += '<div class="form-row">';
-  html += '<div class="form-group">';
-  html += '<label class="form-label">ระยะห่างระหว่างบรรทัด (px)</label>';
-  html += '<input type="number" id="manageVerticalGap" value="' + (manageCard.verticalGap || 6) + '" step="1" min="0" max="12">';
-  html += '</div>';
-  html += '<div class="form-group">';
-  html += '<label class="form-label">ระยะขอบขวา (px)</label>';
-  html += '<input type="number" id="managePaddingRight" value="' + (manageCard.paddingRight || 12) + '" step="2" min="0" max="20">';
-  html += '</div>';
-  html += '</div>';
-
-  // ขอบรูป
-  html += '<div class="form-group">';
-  html += '<label class="checkbox-wrap">';
-  html += '<input type="checkbox" id="manageShowImageBorder" ' + (manageCard.showImageBorder ? 'checked' : '') + '> ';
-  html += '<span>แสดงขอบกรอบรูป (ถ้าไม่ติ๊ก = ไม่มีขอบ)</span>';
-  html += '</label>';
-  html += '</div>';
-
-  html += '</div></div>';
-
-  // ========== ส่วนปรับแต่งชื่อเมนู (Manage Menu) ==========
-  html += '<div class="card mb-16">';
-  html += '<div class="card-header"><div class="card-title">✏️ ดีไซน์ชื่อเมนู (Manage Menu)</div></div>';
-  html += '<div class="p-16">';
-
-  html += '<div class="form-row">';
-  html += '<div class="form-group">';
   html += '<label class="form-label">ขนาดตัวอักษรชื่อ (px)</label>';
   html += '<input type="number" id="manageNameFontSize" value="' + (manageCard.nameFontSize || 15) + '" step="1" min="12" max="24">';
-  html += '</div>';
-  html += '<div class="form-group">';
-  html += '<label class="form-label">ความหนาตัวอักษร</label>';
-  html += '<input type="number" id="manageNameFontWeight" value="' + (manageCard.nameFontWeight || 600) + '" step="100" min="400" max="800">';
-  html += '</div>';
-  html += '</div>';
-
-  html += '<div class="form-row">';
-  html += '<div class="form-group">';
-  html += '<label class="form-label">ระยะขอบซ้าย (px)</label>';
-  html += '<input type="number" id="manageNameMarginLeft" value="' + (manageCard.nameMarginLeft || 0) + '" step="2" min="0" max="20">';
-  html += '</div>';
-  html += '<div class="form-group">';
-  html += '<label class="form-label">ระยะขอบขวา (px)</label>';
-  html += '<input type="number" id="manageNameMarginRight" value="' + (manageCard.nameMarginRight || 0) + '" step="2" min="0" max="20">';
   html += '</div>';
   html += '</div>';
 
   html += '<div class="form-group">';
   html += '<label class="form-label">ตำแหน่งชื่อเมนู</label>';
   html += '<div class="flex gap-16 flex-wrap">';
-  html += '<label class="checkbox-wrap"><input type="radio" name="manageNameAlign" value="left" ' + (manageCard.nameAlign === 'left' ? 'checked' : '') + '> <span>ชิดซ้าย</span></label>';
+  html += '<label class="checkbox-wrap"><input type="radio" name="manageNameAlign" value="left" ' + (manageCard.nameAlign !== 'right' ? 'checked' : '') + '> <span>ชิดซ้าย</span></label>';
   html += '<label class="checkbox-wrap"><input type="radio" name="manageNameAlign" value="right" ' + (manageCard.nameAlign === 'right' ? 'checked' : '') + '> <span>ชิดขวา</span></label>';
   html += '</div>';
   html += '</div>';
 
   html += '<div class="form-group">';
-  html += '<label class="form-label">ตำแหน่งสถานะ (เปิด/ปิด)</label>';
+  html += '<label class="form-label">ตำแหน่งสถานะ (เปิดขาย/ปิด)</label>';
   html += '<div class="flex gap-16 flex-wrap">';
   html += '<label class="checkbox-wrap"><input type="radio" name="manageStatusPosition" value="inline" ' + (manageCard.statusPosition !== 'newline' ? 'checked' : '') + '> <span>ข้างชื่อเมนู</span></label>';
   html += '<label class="checkbox-wrap"><input type="radio" name="manageStatusPosition" value="newline" ' + (manageCard.statusPosition === 'newline' ? 'checked' : '') + '> <span>ขึ้นบรรทัดใหม่</span></label>';
   html += '</div>';
+  html += '</div>';
+
+  html += '<div class="form-group">';
+  html += '<label class="checkbox-wrap">';
+  html += '<input type="checkbox" id="manageShowImageBorder" ' + (manageCard.showImageBorder ? 'checked' : '') + '> ';
+  html += '<span>แสดงขอบกรอบรูป</span>';
+  html += '</label>';
   html += '</div>';
 
   html += '<button class="btn btn-primary btn-sm" onclick="saveMenuCardDesign()">💾 บันทึกดีไซน์การ์ด (Manage Menu)</button>';
@@ -782,9 +736,68 @@ function renderShopSettings() {
   setTimeout(function() {
     renderPOSCardPreview();
     bindPOSCardPreviewEvents();
+    renderManageCardPreview();
+    bindManageCardPreviewEvents();
   }, 0);
 
   return html;
+}
+
+function renderManageCardPreview() {
+  var container = document.getElementById('manageCardPreview');
+  if (!container) return;
+
+  var imageSize = document.getElementById('manageImageSize');
+  var nameFontSize = document.getElementById('manageNameFontSize');
+  var nameAlign = document.querySelector('input[name="manageNameAlign"]:checked');
+  var statusPos = document.querySelector('input[name="manageStatusPosition"]:checked');
+  var showBorder = document.getElementById('manageShowImageBorder');
+
+  var size = imageSize ? (parseInt(imageSize.value) || 70) : 70;
+  var fontPx = nameFontSize ? (parseInt(nameFontSize.value) || 15) : 15;
+  var align = nameAlign ? nameAlign.value : 'left';
+  var statusInline = !statusPos || statusPos.value !== 'newline';
+  var borderOn = showBorder && showBorder.checked;
+
+  var html = '<div style="display:flex; align-items:center; gap:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px;">';
+  html += '<div style="width:' + size + 'px; height:' + size + 'px; flex-shrink:0; border-radius:12px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; font-size:' + Math.round(size * 0.45) + 'px;' + (borderOn ? ' border:1px solid var(--border);' : '') + '">☕</div>';
+  html += '<div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;">';
+  if (statusInline) {
+    html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; text-align:' + align + ';">';
+    html += '<span style="font-size:' + fontPx + 'px; font-weight:600;">อเมริกาโน่</span>';
+    html += '<span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:12px; background:rgba(34,197,94,0.15); color:var(--success); white-space:nowrap;">เปิดขาย</span>';
+    html += '</div>';
+  } else {
+    html += '<div style="font-size:' + fontPx + 'px; font-weight:600; text-align:' + align + ';">อเมริกาโน่</div>';
+    html += '<div style="text-align:' + align + ';"><span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:12px; background:rgba(34,197,94,0.15); color:var(--success);">เปิดขาย</span></div>';
+  }
+  html += '<div style="font-size:11px; color:var(--text-muted); text-align:' + align + ';">☕ กาเฟอีน</div>';
+  html += '<div style="text-align:' + align + ';"><span style="font-size:11px; font-weight:600; color:var(--accent); background:rgba(249,115,22,0.12); padding:2px 8px; border-radius:12px;">M: ฿65</span></div>';
+  html += '</div></div>';
+
+  container.innerHTML = html;
+}
+
+function bindManageCardPreviewEvents() {
+  var ids = ['manageImageSize', 'manageNameFontSize', 'manageShowImageBorder'];
+  for (var i = 0; i < ids.length; i++) {
+    var el = document.getElementById(ids[i]);
+    if (el && !el._previewBound) {
+      el.addEventListener('input', renderManageCardPreview);
+      el.addEventListener('change', renderManageCardPreview);
+      el._previewBound = true;
+    }
+  }
+  var radioNames = ['manageNameAlign', 'manageStatusPosition'];
+  for (var n = 0; n < radioNames.length; n++) {
+    var radios = document.querySelectorAll('input[name="' + radioNames[n] + '"]');
+    for (var r = 0; r < radios.length; r++) {
+      if (!radios[r]._previewBound) {
+        radios[r].addEventListener('change', renderManageCardPreview);
+        radios[r]._previewBound = true;
+      }
+    }
+  }
 }
 
 function renderPOSCardPreview() {
@@ -2113,58 +2126,24 @@ function showLineNotifyGuide() {
 }
 function saveMenuCardDesign() {
   var cfg = ST.getConfig();
-  
-  // หาค่า radio ที่เลือก (แบบ A/B)
-  var cardLayout = document.querySelector('input[name="manageCardLayout"]:checked');
+  if (!cfg.menuCardDesign) cfg.menuCardDesign = {};
+
   var nameAlign = document.querySelector('input[name="manageNameAlign"]:checked');
   var statusPos = document.querySelector('input[name="manageStatusPosition"]:checked');
-  
-  // ถ้าไม่มีค่าให้ใช้ default
-  var manageCard = cfg.menuCardDesign && cfg.menuCardDesign.manageCard ? cfg.menuCardDesign.manageCard : {};
-  
-  var design = {
-    showName: document.getElementById('designShowName') ? document.getElementById('designShowName').checked : true,
-    showPrice: document.getElementById('designShowPrice') ? document.getElementById('designShowPrice').checked : true,
-    showImage: document.getElementById('designShowImage') ? document.getElementById('designShowImage').checked : true,
-    cardStyle: document.querySelector('input[name="cardStyle"]:checked') ? document.querySelector('input[name="cardStyle"]:checked').value : 'classic',
-    overlayNamePosition: document.getElementById('designOverlayNamePos') ? document.getElementById('designOverlayNamePos').value : 'left',
-    overlayPricePosition: document.getElementById('designOverlayPricePos') ? document.getElementById('designOverlayPricePos').value : 'right',
-    overlayTextBg: document.getElementById('designOverlayTextBg') ? document.getElementById('designOverlayTextBg').value : 'translucent',
-    classicNamePosition: document.getElementById('designClassicNamePos') ? document.getElementById('designClassicNamePos').value : 'left',
-    classicPricePosition: document.getElementById('designClassicPricePos') ? document.getElementById('designClassicPricePos').value : 'right',
-    classicTextBg: 'none',
-    fontSize: document.getElementById('designFontSize') ? document.getElementById('designFontSize').value : 'medium',
-    imageHeight: parseInt(document.getElementById('designImageHeight') ? document.getElementById('designImageHeight').value : 160) || 160,
-    cardRadius: parseInt(document.getElementById('designCardRadius') ? document.getElementById('designCardRadius').value : 16) || 16,
-    imageRadius: parseInt(document.getElementById('designImageRadius') ? document.getElementById('designImageRadius').value : 12) || 12,
-    showShadow: document.getElementById('designShowShadow') ? document.getElementById('designShowShadow').checked : true,
-    showBorder: document.getElementById('designShowBorder') ? document.getElementById('designShowBorder').checked : false,
-    
-    // ค่าใหม่สำหรับ Manage Menu
-    manageCard: {
-      cardLayout: cardLayout ? cardLayout.value : 'B',
-      imageSize: parseInt(document.getElementById('manageImageSize') ? document.getElementById('manageImageSize').value : 70) || 70,
-      cardGap: parseInt(document.getElementById('manageCardGap') ? document.getElementById('manageCardGap').value : 16) || 16,
-      verticalGap: parseInt(document.getElementById('manageVerticalGap') ? document.getElementById('manageVerticalGap').value : 6) || 6,
-      paddingRight: parseInt(document.getElementById('managePaddingRight') ? document.getElementById('managePaddingRight').value : 12) || 12,
-      showImageBorder: document.getElementById('manageShowImageBorder') ? document.getElementById('manageShowImageBorder').checked : false,
-      nameFontSize: parseInt(document.getElementById('manageNameFontSize') ? document.getElementById('manageNameFontSize').value : 15) || 15,
-      nameFontWeight: parseInt(document.getElementById('manageNameFontWeight') ? document.getElementById('manageNameFontWeight').value : 600) || 600,
-      nameMarginLeft: parseInt(document.getElementById('manageNameMarginLeft') ? document.getElementById('manageNameMarginLeft').value : 0) || 0,
-      nameMarginRight: parseInt(document.getElementById('manageNameMarginRight') ? document.getElementById('manageNameMarginRight').value : 0) || 0,
-      nameAlign: nameAlign ? nameAlign.value : 'left',
-      statusPosition: statusPos ? statusPos.value : 'inline'
-    }
+
+  // อัปเดตเฉพาะ manageCard เท่านั้น ไม่แตะค่าดีไซน์การ์ด POS ที่อยู่ใน cfg.menuCardDesign ระดับบน
+  cfg.menuCardDesign.manageCard = {
+    imageSize: parseInt(document.getElementById('manageImageSize').value) || 70,
+    showImageBorder: document.getElementById('manageShowImageBorder').checked,
+    nameFontSize: parseInt(document.getElementById('manageNameFontSize').value) || 15,
+    nameAlign: nameAlign ? nameAlign.value : 'left',
+    statusPosition: statusPos ? statusPos.value : 'inline'
   };
-  
-  cfg.menuCardDesign = design;
+
   ST.saveConfig(cfg);
-  
+
   toast('บันทึกดีไซน์การ์ดเมนูแล้ว', 'success');
-  
-  if (typeof APP !== 'undefined' && APP.currentView === 'pos' && typeof renderPOSView === 'function') {
-    renderPOSView();
-  }
+
   if (typeof APP !== 'undefined' && APP.currentView === 'menu' && typeof renderMenuView === 'function') {
     renderMenuView();
   }

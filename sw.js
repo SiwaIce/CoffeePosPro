@@ -3,7 +3,7 @@
    Offline-first + Cache
    ============================================ */
 
-var CACHE_NAME = 'coffee-pos-v5';
+var CACHE_NAME = 'coffee-pos-v6';
 var urlsToCache = [
   './',
   './index.html',
