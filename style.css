@@ -3257,13 +3257,12 @@ html {
   border-color: var(--border);
 }
 
-/* พื้นที่รูป/อิโมจิ — กรอบสี่เหลี่ยมสัดส่วนคงที่ (ใช้ padding-top แทน aspect-ratio
-   เพื่อเลี่ยงปัญหาการคำนวณความสูงแถวผิดพลาดเมื่ออยู่ใน CSS Grid) */
+/* พื้นที่รูป/อิโมจิ — ใช้ความสูงตายตัวเป็น px (ไม่ใช่ % หรือ aspect-ratio)
+   เพื่อเลี่ยงปัญหาการคำนวณความสูงแถวผิดพลาดเมื่ออยู่ใน CSS Grid ที่มีหลายแถว */
 .menu-item-media {
   position: relative;
   width: 100%;
-  height: 0;
-  padding-top: 75%;
+  height: 130px;
   flex-shrink: 0;
   background: linear-gradient(135deg, var(--bg-card-hover, var(--bg-card)), var(--bg-card));
   overflow: hidden;
@@ -3423,6 +3422,9 @@ html {
 }
 
 @media (max-width: 768px) {
+  .menu-item-media {
+    height: 100px;
+  }
   .menu-item-emoji {
     font-size: 36px;
   }
@@ -3449,6 +3451,9 @@ html {
 }
 
 @media (max-width: 480px) {
+  .menu-item-media {
+    height: 85px;
+  }
   .menu-item-emoji {
     font-size: 30px;
   }
