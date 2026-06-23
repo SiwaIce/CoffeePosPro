@@ -403,40 +403,33 @@ function renderMenuItems() {
       + '</div></div>';
   }
   
-  // อ่าน config
+  // อ่าน config (ดีไซน์การ์ดแบบเดียว เรียบง่าย เน้นใช้งานบนมือถือ/แท็บเล็ต)
   var cfg = ST.getConfig();
   var design = cfg.menuCardDesign || {
-    activeStyle: 'overlay',
     showName: true,
     showPrice: true,
-    namePosition: 'left',
-    pricePosition: 'right',
-    textBackground: 'translucent',
     fontSize: 'medium',
-    heroImageHeight: 210,
-    cardRadius: 20,
+    cardRadius: 16,
     showShadow: true,
-    showBorder: false
+    showBorder: false,
+    textAlign: 'default'
   };
-  
-  var activeStyle = design.activeStyle || 'overlay';
+
   var showName = design.showName !== false;
   var showPrice = design.showPrice !== false;
-  var namePos = design.namePosition || 'left';
-  var pricePos = design.pricePosition || 'right';
-  var textBg = design.textBackground || 'translucent';
   var fontSize = design.fontSize || 'medium';
-  var heroHeight = design.heroImageHeight || 210;
-  var cardRadius = design.cardRadius || 20;
+  var cardRadius = (design.cardRadius !== undefined) ? design.cardRadius : 16;
   var showShadow = design.showShadow !== false;
   var showBorder = design.showBorder === true;
-  
+  // ถ้าแสดงแค่ชื่อหรือแค่ราคาอย่างเดียว ให้จัดกึ่งกลางอัตโนมัติ
+  var stacked = (design.textAlign === 'center') || (showName !== showPrice);
+
   var html = '';
   for (var m = 0; m < items.length; m++) {
     var it = items[m];
     var basePrice = ST.getMenuBasePrice(it);
     var cartQty = getCartQtyForMenu(it.id);
-    
+
     // ตรวจสอบรูป (Pro License)
     var shouldShowImage = false;
     if (typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image')) {
@@ -445,57 +438,42 @@ function renderMenuItems() {
         shouldShowImage = true;
       }
     }
-    
+
     var dataAttrs = '';
-    dataAttrs += ' data-style="' + activeStyle + '"';
-    dataAttrs += ' data-name-pos="' + namePos + '"';
-    dataAttrs += ' data-price-pos="' + pricePos + '"';
-    dataAttrs += ' data-text-bg="' + textBg + '"';
     dataAttrs += ' data-font="' + fontSize + '"';
     dataAttrs += ' data-shadow="' + showShadow + '"';
     dataAttrs += ' data-border="' + showBorder + '"';
-    
-    var styleAttr = '';
-    if (activeStyle === 'bighero') {
-      styleAttr = ' style="--hero-height: ' + heroHeight + 'px; --card-radius: ' + cardRadius + 'px;"';
-    } else {
-      styleAttr = ' style="--card-radius: ' + cardRadius + 'px;"';
-    }
-    
-    html += '<div class="menu-item anim-fadeUp"' + dataAttrs + styleAttr + ' onclick="onMenuItemClick(\'' + sanitize(it.id) + '\')">';
-    
+
+    html += '<div class="menu-item anim-fadeUp"' + dataAttrs + ' style="--card-radius: ' + cardRadius + 'px;" onclick="onMenuItemClick(\'' + sanitize(it.id) + '\')">';
+
+    // ปุ่มโปรด (⭐) — มุมซ้ายบนเสมอ
+    var isFav = ST.isFavorite(it.id);
+    html += '<button class="fav-btn' + (isFav ? ' active' : '') + '" onclick="event.stopPropagation(); toggleFav(\'' + sanitize(it.id) + '\', this)" title="' + (isFav ? 'ยกเลิกโปรด' : 'เพิ่มเป็นโปรด') + '">' + (isFav ? '⭐' : '☆') + '</button>';
+
+    // จำนวนในตะกร้า — มุมขวาบนเสมอ
     if (cartQty > 0) html += '<div class="menu-item-badge">' + cartQty + '</div>';
-    
-    // รูปหรือ Emoji
+
+    // พื้นที่รูป/Emoji
+    html += '<div class="menu-item-media">';
     if (shouldShowImage) {
       html += '<img class="menu-item-img" src="' + it.image + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
       html += '<div class="menu-item-emoji" style="display:none;">' + (it.emoji || '☕') + '</div>';
     } else {
       html += '<div class="menu-item-emoji">' + (it.emoji || '☕') + '</div>';
     }
-    
-    // ชื่อและราคา
-    if (activeStyle === 'classic') {
-      html += '<div class="menu-item-info">';
-      if (showName) html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
-      if (showPrice) html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
-      html += '</div>';
-    } else {
-      if (showName) html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
-      if (showPrice) html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
-    }
-    
-    // ปุ่มโปรด (⭐)
-    var isFav = ST.isFavorite(it.id);
-    html += '<button class="fav-btn' + (isFav ? ' active' : '') + '" onclick="event.stopPropagation(); toggleFav(\'' + sanitize(it.id) + '\', this)" title="' + (isFav ? 'ยกเลิกโปรด' : 'เพิ่มเป็นโปรด') + '">' + (isFav ? '⭐' : '☆') + '</button>';
-    
-    // ========== ปุ่ม Quick Add (+) ==========
+    // ปุ่ม Quick Add (+) — มุมขวาล่างของรูปเสมอ ไม่ขึ้นกับสไตล์การ์ด
     html += '<button class="quick-add-btn" onclick="event.stopPropagation(); quickAddToCart(\'' + sanitize(it.id) + '\')" title="เพิ่มเข้าตะกร้าทันที">+</button>';
-    // =======================================
-    
+    html += '</div>';
+
+    // ชื่อและราคา
+    html += '<div class="menu-item-info' + (stacked ? ' menu-item-info--stacked' : '') + '">';
+    if (showName) html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
+    if (showPrice) html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
+    html += '</div>';
+
     html += '</div>';
   }
-  
+
   return html;
 }
 

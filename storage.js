@@ -105,19 +105,15 @@ ST.getConfig = function() {
     promptPayName: '',
     promptPayEnabled: false,
     
-    // ===== ดีไซน์การ์ดเมนู POS (3 แบบ A, B, H) =====
+    // ===== ดีไซน์การ์ดเมนู POS (ดีไซน์เดียว เรียบง่าย) =====
     menuCardDesign: {
-      activeStyle: 'overlay',        // 'overlay', 'classic', 'bighero'
       showName: true,
       showPrice: true,
-      namePosition: 'left',
-      pricePosition: 'right',
-      textBackground: 'translucent',
       fontSize: 'medium',
-      heroImageHeight: 210,
-      cardRadius: 20,
+      cardRadius: 16,
       showShadow: true,
       showBorder: false,
+      textAlign: 'default',          // 'default' (ชื่อซ้าย-ราคาขวา) หรือ 'center' (กึ่งกลางทั้งหมด)
       
       // ===== หน้า Manage Menu (เก็บไว้ข้างใน) =====
       manageCard: {

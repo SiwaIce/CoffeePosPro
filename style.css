@@ -2880,461 +2880,6 @@ html {
   overflow: hidden;
 }
 /* ============================================
-   MODERN MENU CARD - เต็มรูป + ข้อความทับ
-   ============================================ */
-
-/* การ์ดเมนูหลัก */
-.menu-item {
-  position: relative;
-  background: var(--bg-card);
-  border-radius: 20px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 160px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border);
-}
-
-.menu-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-  border-color: var(--accent);
-}
-
-.menu-item:active {
-  transform: scale(0.97);
-}
-
-/* ===== กรณีมีรูป ===== */
-.menu-item-img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  display: block;
-}
-
-/* ซ่อน emoji เมื่อมีรูป */
-.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-emoji {
-  display: none;
-}
-
-/* ข้อความทับรูป (absolute position) */
-.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-name,
-.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-price {
-  position: absolute;
-  bottom: 12px;
-  color: white;
-  font-weight: 700;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(8px);
-  padding: 6px 14px;
-  border-radius: 30px;
-  z-index: 2;
-  font-size: 13px;
-  letter-spacing: 0.3px;
-}
-
-.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-name {
-  left: 12px;
-}
-
-.menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-price {
-  right: 12px;
-  background: rgba(249, 115, 22, 0.85);
-  backdrop-filter: blur(4px);
-  font-weight: 800;
-}
-
-/* ปุ่มโปรด (⭐) ปรับตำแหน่งเมื่อมีรูป */
-.menu-item:has(.menu-item-img[src]:not([src=""])) .fav-btn {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-}
-
-/* ===== กรณีไม่มีรูป (แสดง Emoji) ===== */
-.menu-item:not(:has(.menu-item-img[src]:not([src=""]))) {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 20px 12px;
-  background: linear-gradient(135deg, var(--bg-card), var(--bg-card-hover));
-}
-
-.menu-item:not(:has(.menu-item-img)) .menu-item-emoji {
-  font-size: 52px;
-  margin-bottom: 12px;
-  display: block;
-}
-
-.menu-item:not(:has(.menu-item-img)) .menu-item-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 6px;
-  line-height: 1.3;
-  display: block;
-  position: static;
-  background: none;
-  backdrop-filter: none;
-  padding: 0;
-}
-
-.menu-item:not(:has(.menu-item-img)) .menu-item-price {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--accent);
-  display: block;
-  position: static;
-  background: none;
-  backdrop-filter: none;
-  padding: 0;
-}
-
-/* ปุ่มโปรด (⭐) กรณีไม่มีรูป */
-.menu-item:not(:has(.menu-item-img)) .fav-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  left: auto;
-  background: var(--glass);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Badge จำนวนในตะกร้า */
-.menu-item-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: linear-gradient(135deg, var(--accent), #ea580c);
-  color: white;
-  font-size: 11px;
-  font-weight: 800;
-  min-width: 22px;
-  height: 22px;
-  border-radius: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Responsive มือถือ */
-@media (max-width: 768px) {
-  .menu-item-img {
-    height: 130px;
-  }
-  
-  .menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-name,
-  .menu-item:has(.menu-item-img[src]:not([src=""])) .menu-item-price {
-    padding: 4px 10px;
-    font-size: 11px;
-    bottom: 8px;
-  }
-  
-  .menu-item:not(:has(.menu-item-img)) .menu-item-emoji {
-    font-size: 40px;
-  }
-  
-  .menu-item:not(:has(.menu-item-img)) .menu-item-name {
-    font-size: 12px;
-  }
-  
-  .menu-item:not(:has(.menu-item-img)) .menu-item-price {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .menu-item-img {
-    height: 110px;
-  }
-}
-/* ============================================
-   MENU CARD DESIGN - 2 STYLES
-   แบบ A: ข้อความทับรูป (overlay)
-   แบบ B: รูปบน + ข้อความล่าง (classic)
-   ============================================ */
-
-/* ----- ตัวแปรสำหรับการ์ด (ใช้ร่วมกัน) ----- */
-.menu-item {
-  position: relative;
-  background: var(--bg-card);
-  border-radius: var(--card-radius, 16px);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border);
-}
-
-/* เงา */
-.menu-item[data-shadow="true"] {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-.menu-item[data-shadow="true"]:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transform: translateY(-4px);
-}
-
-/* ขอบ */
-.menu-item[data-border="true"] {
-  border: 2px solid var(--accent);
-}
-
-/* ปุ่มโปรด (⭐) */
-.menu-item .fav-btn {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  border-radius: 50%;
-  z-index: 5;
-  cursor: pointer;
-  border: none;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-.menu-item .fav-btn:hover {
-  transform: scale(1.1);
-}
-.menu-item .fav-btn.active {
-  color: var(--accent);
-}
-
-/* Badge จำนวนในตะกร้า */
-.menu-item-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: linear-gradient(135deg, var(--accent), #ea580c);
-  color: white;
-  font-size: 11px;
-  font-weight: 800;
-  min-width: 22px;
-  height: 22px;
-  border-radius: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* ===== แบบ A: ข้อความทับรูป (overlay) ===== */
-.menu-item[data-style="overlay"] {
-  min-height: 180px;
-}
-
-.menu-item[data-style="overlay"] .menu-item-img {
-  width: 100%;
-  height: 100%;
-  min-height: 180px;
-  object-fit: cover;
-  display: block;
-}
-
-.menu-item[data-style="overlay"] .menu-item-emoji {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 56px;
-  min-height: 180px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: white;
-}
-
-/* ข้อความทับรูป - แบบ A */
-.menu-item[data-style="overlay"] .menu-item-name,
-.menu-item[data-style="overlay"] .menu-item-price {
-  position: absolute;
-  bottom: 12px;
-  color: white;
-  font-weight: 700;
-  z-index: 3;
-  padding: 6px 14px;
-  border-radius: 30px;
-  font-size: 14px;
-}
-
-/* พื้นหลังข้อความ - แบบ A */
-.menu-item[data-style="overlay"][data-text-bg="translucent"] .menu-item-name,
-.menu-item[data-style="overlay"][data-text-bg="translucent"] .menu-item-price {
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(8px);
-}
-
-.menu-item[data-style="overlay"][data-text-bg="solid"] .menu-item-name,
-.menu-item[data-style="overlay"][data-text-bg="solid"] .menu-item-price {
-  background: rgba(0, 0, 0, 0.85);
-}
-
-.menu-item[data-style="overlay"][data-text-bg="none"] .menu-item-name,
-.menu-item[data-style="overlay"][data-text-bg="none"] .menu-item-price {
-  background: none;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-/* ตำแหน่งชื่อ - แบบ A */
-.menu-item[data-style="overlay"][data-name-pos="left"] .menu-item-name { left: 12px; }
-.menu-item[data-style="overlay"][data-name-pos="center"] .menu-item-name { left: 50%; transform: translateX(-50%); }
-.menu-item[data-style="overlay"][data-name-pos="right"] .menu-item-name { right: 12px; left: auto; }
-
-/* ตำแหน่งราคา - แบบ A */
-.menu-item[data-style="overlay"][data-price-pos="left"] .menu-item-price { left: 12px; right: auto; }
-.menu-item[data-style="overlay"][data-price-pos="center"] .menu-item-price { left: 50%; transform: translateX(-50%); }
-.menu-item[data-style="overlay"][data-price-pos="right"] .menu-item-price { right: 12px; }
-
-/* จัดระเบียบถ้าชื่อกับราคาอยู่ตำแหน่งเดียวกัน */
-.menu-item[data-style="overlay"][data-name-pos="left"][data-price-pos="left"] .menu-item-name,
-.menu-item[data-style="overlay"][data-name-pos="right"][data-price-pos="right"] .menu-item-price {
-  bottom: 12px;
-}
-.menu-item[data-style="overlay"][data-name-pos="left"][data-price-pos="left"] .menu-item-price {
-  bottom: 48px;
-}
-.menu-item[data-style="overlay"][data-name-pos="right"][data-price-pos="right"] .menu-item-name {
-  bottom: 48px;
-}
-
-/* ===== แบบ B: รูปบน + ข้อความล่าง (classic) ===== */
-.menu-item[data-style="classic"] {
-  padding-bottom: 12px;
-}
-
-.menu-item[data-style="classic"] .menu-item-img {
-  width: 100%;
-  height: var(--image-height, 140px);
-  object-fit: cover;
-  display: block;
-  border-radius: var(--image-radius, 12px) var(--image-radius, 12px) 0 0;
-}
-
-.menu-item[data-style="classic"] .menu-item-emoji {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  height: var(--image-height, 140px);
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: white;
-  border-radius: var(--image-radius, 12px) var(--image-radius, 12px) 0 0;
-}
-
-/* เนื้อหาด้านล่าง - แบบ B */
-.menu-item[data-style="classic"] .menu-item-info {
-  padding: 12px 12px 4px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.menu-item[data-style="classic"] .menu-item-name {
-  font-weight: 700;
-  color: var(--text-primary);
-  font-size: 14px;
-}
-
-.menu-item[data-style="classic"] .menu-item-price {
-  font-weight: 800;
-  color: var(--accent);
-  font-size: 15px;
-}
-
-/* ตำแหน่งชื่อ/ราคา - แบบ B */
-.menu-item[data-style="classic"][data-name-pos="center"] .menu-item-info {
-  justify-content: center;
-}
-.menu-item[data-style="classic"][data-name-pos="right"] .menu-item-info {
-  flex-direction: row-reverse;
-}
-.menu-item[data-style="classic"][data-price-pos="left"] .menu-item-info {
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-}
-
-/* พื้นหลังข้อความ - แบบ B */
-.menu-item[data-style="classic"][data-text-bg="solid"] .menu-item-name,
-.menu-item[data-style="classic"][data-text-bg="solid"] .menu-item-price {
-  background: var(--bg-card-hover);
-  padding: 4px 8px;
-  border-radius: 8px;
-}
-
-/* ===== ขนาดตัวอักษร ===== */
-.menu-item[data-font="small"] .menu-item-name { font-size: 12px; }
-.menu-item[data-font="small"] .menu-item-price { font-size: 13px; }
-.menu-item[data-font="medium"] .menu-item-name { font-size: 14px; }
-.menu-item[data-font="medium"] .menu-item-price { font-size: 15px; }
-.menu-item[data-font="large"] .menu-item-name { font-size: 16px; }
-.menu-item[data-font="large"] .menu-item-price { font-size: 17px; }
-
-/* ===== Responsive ===== */
-@media (max-width: 768px) {
-  .menu-item[data-style="overlay"] .menu-item-img,
-  .menu-item[data-style="overlay"] .menu-item-emoji {
-    min-height: 150px;
-  }
-  
-  .menu-item[data-style="classic"] .menu-item-img,
-  .menu-item[data-style="classic"] .menu-item-emoji {
-    height: 120px;
-  }
-  
-  .menu-item[data-style="overlay"] .menu-item-name,
-  .menu-item[data-style="overlay"] .menu-item-price {
-    font-size: 12px;
-    padding: 4px 10px;
-    bottom: 8px;
-  }
-  
-  .menu-item[data-font="small"] .menu-item-name { font-size: 11px; }
-  .menu-item[data-font="small"] .menu-item-price { font-size: 12px; }
-  .menu-item[data-font="medium"] .menu-item-name { font-size: 13px; }
-  .menu-item[data-font="medium"] .menu-item-price { font-size: 14px; }
-  .menu-item[data-font="large"] .menu-item-name { font-size: 15px; }
-  .menu-item[data-font="large"] .menu-item-price { font-size: 16px; }
-}
-
-@media (max-width: 480px) {
-  .menu-item[data-style="overlay"] .menu-item-img,
-  .menu-item[data-style="overlay"] .menu-item-emoji {
-    min-height: 130px;
-  }
-  
-  .menu-item[data-style="classic"] .menu-item-img,
-  .menu-item[data-style="classic"] .menu-item-emoji {
-    height: 100px;
-  }
-}
-/* ============================================
    MANAGE MENU PAGE - HORIZONTAL CARDS
    ============================================ */
 
@@ -3452,145 +2997,6 @@ html {
   color: var(--danger);
 }
 
-/* ============================================
-   EMOJI BACKGROUND OPTIONS (NEW DESIGN)
-   ============================================ */
-
-/* ตัวเลือก 1: วงกลมสีส้ม (Modern Gradient) */
-.menu-item-emoji[data-emoji-bg="circle"],
-.menu-manage-emoji[data-emoji-bg="circle"] {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-  color: white;
-  border-radius: 50%;
-  width: 70px;
-  height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
-  transition: all 0.2s ease;
-}
-
-.menu-item-emoji[data-emoji-bg="circle"]:hover,
-.menu-manage-emoji[data-emoji-bg="circle"]:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
-}
-
-/* ตัวเลือก 2: พื้นหลังสีการ์ด (Soft) */
-.menu-item-emoji[data-emoji-bg="card"],
-.menu-manage-emoji[data-emoji-bg="card"] {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border-radius: 16px;
-  width: 70px;
-  height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-}
-
-.menu-item-emoji[data-emoji-bg="card"]:hover,
-.menu-manage-emoji[data-emoji-bg="card"]:hover {
-  border-color: var(--accent);
-  transform: scale(1.02);
-}
-
-/* ตัวเลือก 3: ไม่มีพื้นหลัง (เฉพาะ Emoji) */
-.menu-item-emoji[data-emoji-bg="none"],
-.menu-manage-emoji[data-emoji-bg="none"] {
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 42px;
-  width: auto;
-  height: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ============================================
-   POS MENU - EMOJI STYLES (ปรับตาม option)
-   ============================================ */
-
-/* สำหรับ POS Menu - ปรับขนาดให้เหมาะสม */
-.menu-item .menu-item-emoji {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-
-.menu-item .menu-item-emoji[data-emoji-bg="circle"] {
-  width: 60px;
-  height: 60px;
-  font-size: 32px;
-}
-
-.menu-item .menu-item-emoji[data-emoji-bg="card"] {
-  width: 60px;
-  height: 60px;
-  font-size: 32px;
-}
-
-.menu-item .menu-item-emoji[data-emoji-bg="none"] {
-  font-size: 48px;
-  width: auto;
-  height: auto;
-}
-
-/* Responsive สำหรับมือถือ */
-@media (max-width: 768px) {
-  .menu-item .menu-item-emoji[data-emoji-bg="circle"],
-  .menu-item .menu-item-emoji[data-emoji-bg="card"] {
-    width: 50px;
-    height: 50px;
-    font-size: 28px;
-  }
-  
-  .menu-item .menu-item-emoji[data-emoji-bg="none"] {
-    font-size: 40px;
-  }
-  
-  .menu-manage-emoji[data-emoji-bg="circle"],
-  .menu-manage-emoji[data-emoji-bg="card"] {
-    width: 55px;
-    height: 55px;
-    font-size: 28px;
-  }
-  
-  .menu-manage-emoji[data-emoji-bg="none"] {
-    font-size: 36px;
-  }
-}
-
-@media (max-width: 480px) {
-  .menu-item .menu-item-emoji[data-emoji-bg="circle"],
-  .menu-item .menu-item-emoji[data-emoji-bg="card"] {
-    width: 45px;
-    height: 45px;
-    font-size: 24px;
-  }
-  
-  .menu-item .menu-item-emoji[data-emoji-bg="none"] {
-    font-size: 36px;
-  }
-  
-  .menu-manage-emoji[data-emoji-bg="circle"],
-  .menu-manage-emoji[data-emoji-bg="card"] {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
-  }
-  
-  .menu-manage-emoji[data-emoji-bg="none"] {
-    font-size: 32px;
-  }
-}
 
 /* ============================================
    POS MENU GRID - RESPONSIVE AUTO
@@ -3674,22 +3080,8 @@ html {
   }
 }
 /* ============================================
-   EMOJI STYLES - ไม่มีพื้นหลัง (โปร่งใส)
+   MANAGE MENU - EMOJI (ไม่มีพื้นหลังสีส้ม)
    ============================================ */
-
-/* POS Menu - Emoji ไม่มีพื้นหลัง (กรณีไม่มีรูป) */
-.menu-item .menu-item-emoji {
-  background: transparent !important;
-  color: var(--text-primary);
-  font-size: 48px;
-  width: auto;
-  height: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  box-shadow: none;
-}
 
 /* Manage Menu - Emoji มีพื้นหลังอ่อน (แต่ไม่มีสีส้ม) */
 .menu-manage-emoji {
@@ -3707,19 +3099,6 @@ html {
 .menu-manage-emoji:hover {
   border-color: var(--accent);
   transform: scale(1.02);
-}
-
-/* Responsive POS Emoji */
-@media (max-width: 768px) {
-  .menu-item .menu-item-emoji {
-    font-size: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .menu-item .menu-item-emoji {
-    font-size: 36px;
-  }
 }
 /* ============================================
    MANAGE MENU - LAYOUT A & B
@@ -4034,536 +3413,236 @@ html {
   transition: all 0.2s ease;
 }
 
-/* การ์ดเงา */
-.menu-item[data-shadow="true"] {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.menu-item[data-shadow="true"]:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* การ์ดขอบ */
-.menu-item[data-border="true"] {
-  border: 2px solid var(--accent) !important;
-}
-
-/* ขนาดตัวอักษร */
-.menu-item[data-font="small"] .menu-item-name,
-.menu-item[data-font="small"] .menu-item-price {
-  font-size: 12px;
-}
-.menu-item[data-font="medium"] .menu-item-name,
-.menu-item[data-font="medium"] .menu-item-price {
-  font-size: 14px;
-}
-.menu-item[data-font="large"] .menu-item-name,
-.menu-item[data-font="large"] .menu-item-price {
-  font-size: 16px;
-}
-}
-
-/* เงา */
-.menu-item[data-shadow="true"] {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-.menu-item[data-shadow="true"]:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  transform: translateY(-4px);
-}
-
-/* มุมมน */
-.menu-item {
-  border-radius: var(--card-radius, 20px);
-}
-
-/* ===== รูปและ Emoji (ไม่มีขอบแน่นอน) ===== */
-.menu-item-img {
-  width: 100%;
-  display: block;
 /* ============================================
-   POS MENU CARDS - 3 STYLES (A, B, H) - ปรับสวย
+   POS MENU CARD — ดีไซน์เดียว เรียบง่าย
+   (รูป/อิโมจิ + ชื่อ + ราคา, ปุ่มโปรด/ปุ่มเพิ่มตะกร้าอยู่ตำแหน่งคงที่ทุกการ์ด)
    ============================================ */
 
-/* การ์ดหลัก */
 .menu-item {
   position: relative;
   background: var(--bg-card);
+  border-radius: var(--card-radius, 16px);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  border: none;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   height: 100%;
 }
 
-/* ขอบการ์ด (control โดย data-border) */
-.menu-item[data-border="true"] {
-  border: 1px solid var(--border);
-}
-.menu-item[data-border="false"] {
-  border: none;
+.menu-item:hover {
+  transform: translateY(-3px);
 }
 
-/* เงา */
+.menu-item:active {
+  transform: scale(0.97);
+}
+
 .menu-item[data-shadow="true"] {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 .menu-item[data-shadow="true"]:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 
-/* มุมมน */
-.menu-item {
-  border-radius: var(--card-radius, 20px);
+.menu-item[data-border="true"] {
+  border-color: var(--border);
 }
 
-/* ===== รูปและ Emoji (ไม่มีขอบแน่นอน) ===== */
+/* พื้นที่รูป/อิโมจิ — กรอบสี่เหลี่ยมสัดส่วนคงที่ */
+.menu-item-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--bg-card-hover, var(--bg-card)), var(--bg-card));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
 .menu-item-img {
   width: 100%;
-  display: block;
+  height: 100%;
   object-fit: cover;
-  border: none;
-  outline: none;
+  display: block;
 }
 
 .menu-item-emoji {
+  font-size: 44px;
+  line-height: 1;
+}
+
+/* ชื่อ + ราคา */
+.menu-item-info {
+  padding: 10px 12px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+}
+
+.menu-item-info--stacked {
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  background: var(--bg-card);
-  border: none;
-  outline: none;
-  width: 100%;
-}
-
-/* ===== แบบ A: Overlay ===== */
-.menu-item[data-style="overlay"] {
-  min-height: 200px;
-}
-
-.menu-item[data-style="overlay"] .menu-item-img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-}
-
-.menu-item[data-style="overlay"] .menu-item-emoji {
-  font-size: 56px;
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  background: linear-gradient(135deg, var(--card), var(--card2));
-}
-
-.menu-item[data-style="overlay"] .menu-item-name,
-.menu-item[data-style="overlay"] .menu-item-price {
-  position: absolute;
-  bottom: 12px;
-  z-index: 2;
-  padding: 6px 12px;
-  border-radius: 30px;
-  font-weight: 700;
-  white-space: nowrap;
-  max-width: calc(100% - 24px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.menu-item[data-style="overlay"][data-name-pos="left"] .menu-item-name {
-  left: 12px;
-}
-.menu-item[data-style="overlay"][data-name-pos="center"] .menu-item-name {
-  left: 50%;
-  transform: translateX(-50%);
+  gap: 2px;
   text-align: center;
 }
-.menu-item[data-style="overlay"][data-name-pos="right"] .menu-item-name {
-  left: auto;
-  right: 12px;
+
+.menu-item-info--stacked .menu-item-name,
+.menu-item-info--stacked .menu-item-price {
+  max-width: 100%;
 }
 
-.menu-item[data-style="overlay"][data-price-pos="left"] .menu-item-price {
-  right: auto;
-  left: 12px;
-}
-.menu-item[data-style="overlay"][data-price-pos="center"] .menu-item-price {
-  right: auto;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.menu-item[data-style="overlay"][data-price-pos="right"] .menu-item-price {
-  right: 12px;
-}
-
-/* พื้นหลังข้อความ */
-.menu-item[data-style="overlay"][data-text-bg="translucent"] .menu-item-name,
-.menu-item[data-style="overlay"][data-text-bg="translucent"] .menu-item-price {
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
-  color: white;
-}
-.menu-item[data-style="overlay"][data-text-bg="solid"] .menu-item-name,
-.menu-item[data-style="overlay"][data-text-bg="solid"] .menu-item-price {
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-}
-.menu-item[data-style="overlay"][data-text-bg="none"] .menu-item-name,
-.menu-item[data-style="overlay"][data-text-bg="none"] .menu-item-price {
-  background: transparent;
+.menu-item-name {
+  font-weight: 600;
   color: var(--text-primary);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-
-/* ===== แบบ B: Classic ===== */
-.menu-item[data-style="classic"] {
-  padding-bottom: 12px;
-}
-
-.menu-item[data-style="classic"] .menu-item-img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
-
-.menu-item[data-style="classic"] .menu-item-emoji {
-  font-size: 48px;
-  aspect-ratio: 4 / 3;
-  width: 100%;
-  background: linear-gradient(135deg, var(--card), var(--card2));
-}
-
-.menu-item[data-style="classic"] .menu-item-info {
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.menu-item[data-style="classic"][data-name-pos="center"] .menu-item-info {
-  justify-content: center;
-}
-.menu-item[data-style="classic"][data-name-pos="right"] .menu-item-info {
-  flex-direction: row-reverse;
-}
-.menu-item[data-style="classic"][data-price-pos="left"] .menu-item-info {
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-}
-
-.menu-item[data-style="classic"] .menu-item-name {
-  font-weight: 700;
-  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+  min-width: 0;
 }
 
-.menu-item[data-style="classic"] .menu-item-price {
+.menu-item-price {
   font-weight: 800;
   color: var(--accent);
-  font-size: 15px;
-  white-space: nowrap;
   flex-shrink: 0;
-}
-
-/* ===== แบบ H: Big Hero ===== */
-.menu-item[data-style="bighero"] {
-  min-height: 240px;
-}
-
-.menu-item[data-style="bighero"] .menu-item-img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
-
-.menu-item[data-style="bighero"] .menu-item-emoji {
-  font-size: 64px;
-  aspect-ratio: 4 / 3;
-  width: 100%;
-  background: linear-gradient(135deg, var(--card), var(--card2));
-}
-
-.menu-item[data-style="bighero"] .menu-item-name,
-.menu-item[data-style="bighero"] .menu-item-price {
-  position: absolute;
-  bottom: 16px;
-  z-index: 2;
-  padding: 6px 14px;
-  border-radius: 30px;
-  font-weight: 700;
   white-space: nowrap;
-  max-width: calc(100% - 32px);
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.menu-item[data-style="bighero"] .menu-item-name {
-  font-size: 15px;
-}
-.menu-item[data-style="bighero"] .menu-item-price {
-  font-size: 17px;
-}
+.menu-item[data-font="small"] .menu-item-name,
+.menu-item[data-font="small"] .menu-item-price { font-size: 12px; }
+.menu-item[data-font="medium"] .menu-item-name,
+.menu-item[data-font="medium"] .menu-item-price { font-size: 14px; }
+.menu-item[data-font="large"] .menu-item-name,
+.menu-item[data-font="large"] .menu-item-price { font-size: 16px; }
 
-.menu-item[data-style="bighero"][data-name-pos="left"] .menu-item-name {
-  left: 16px;
-}
-.menu-item[data-style="bighero"][data-name-pos="center"] .menu-item-name {
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-}
-.menu-item[data-style="bighero"][data-name-pos="right"] .menu-item-name {
-  left: auto;
-  right: 16px;
-}
-
-.menu-item[data-style="bighero"][data-price-pos="left"] .menu-item-price {
-  right: auto;
-  left: 16px;
-}
-.menu-item[data-style="bighero"][data-price-pos="center"] .menu-item-price {
-  right: auto;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.menu-item[data-style="bighero"][data-price-pos="right"] .menu-item-price {
-  right: 16px;
-}
-
-/* พื้นหลังข้อความ (แบบ H) */
-.menu-item[data-style="bighero"][data-text-bg="translucent"] .menu-item-name,
-.menu-item[data-style="bighero"][data-text-bg="translucent"] .menu-item-price {
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
-  color: white;
-}
-.menu-item[data-style="bighero"][data-text-bg="solid"] .menu-item-name,
-.menu-item[data-style="bighero"][data-text-bg="solid"] .menu-item-price {
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-}
-.menu-item[data-style="bighero"][data-text-bg="none"] .menu-item-name,
-.menu-item[data-style="bighero"][data-text-bg="none"] .menu-item-price {
-  background: transparent;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-}
-
-/* ===== ขนาดตัวอักษร ===== */
-.menu-item[data-font="small"] .menu-item-name { font-size: 12px; }
-.menu-item[data-font="small"] .menu-item-price { font-size: 13px; }
-.menu-item[data-font="medium"] .menu-item-name { font-size: 14px; }
-.menu-item[data-font="medium"] .menu-item-price { font-size: 15px; }
-.menu-item[data-font="large"] .menu-item-name { font-size: 16px; }
-.menu-item[data-font="large"] .menu-item-price { font-size: 17px; }
-
-/* เฉพาะแบบ H ขนาดตัวอักษร */
-.menu-item[data-style="bighero"][data-font="small"] .menu-item-name { font-size: 14px; }
-.menu-item[data-style="bighero"][data-font="small"] .menu-item-price { font-size: 15px; }
-.menu-item[data-style="bighero"][data-font="medium"] .menu-item-name { font-size: 16px; }
-.menu-item[data-style="bighero"][data-font="medium"] .menu-item-price { font-size: 17px; }
-.menu-item[data-style="bighero"][data-font="large"] .menu-item-name { font-size: 18px; }
-.menu-item[data-style="bighero"][data-font="large"] .menu-item-price { font-size: 19px; }
-
-/* ===== ปุ่มโปรด (⭐) ===== */
+/* ปุ่มโปรด (⭐) — มุมซ้ายบนของรูปเสมอ */
 .menu-item .fav-btn {
   position: absolute;
   top: 8px;
   left: 8px;
   width: 30px;
   height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  border-radius: 50%;
-  z-index: 5;
-  cursor: pointer;
-  border: none;
   font-size: 14px;
-  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  z-index: 3;
+  transition: transform 0.15s ease;
 }
-
 .menu-item .fav-btn:hover {
   transform: scale(1.1);
-  background: rgba(0, 0, 0, 0.7);
 }
-
 .menu-item .fav-btn.active {
   color: #fbbf24;
 }
 
-/* ===== Badge จำนวนในตะกร้า ===== */
+/* จำนวนในตะกร้า — มุมขวาบนของการ์ดเสมอ */
 .menu-item-badge {
   position: absolute;
   top: 8px;
   right: 8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
   background: linear-gradient(135deg, var(--accent), #ea580c);
-  color: white;
+  color: #fff;
   font-size: 11px;
   font-weight: 800;
-  min-width: 24px;
-  height: 24px;
-  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 5;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 3;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 768px) {
-  .menu-item[data-style="overlay"] .menu-item-name,
-  .menu-item[data-style="overlay"] .menu-item-price {
-    font-size: 11px;
-    padding: 4px 10px;
-    bottom: 8px;
-  }
-  
-  .menu-item[data-style="bighero"] .menu-item-name {
-    font-size: 13px;
-    bottom: 12px;
-  }
-  .menu-item[data-style="bighero"] .menu-item-price {
-    font-size: 14px;
-    bottom: 12px;
-  }
-  
-  .menu-item[data-style="classic"] .menu-item-name {
-    font-size: 12px;
-  }
-  .menu-item[data-style="classic"] .menu-item-price {
-    font-size: 13px;
-  }
-}
-/* ============================================
-   QUICK ADD BUTTON (+)
-   ============================================ */
-
+/* ปุ่มเพิ่มตะกร้าด่วน (+) — มุมขวาล่างของรูปเสมอ ไม่ขึ้นกับสไตล์การ์ด */
 .menu-item .quick-add-btn {
   position: absolute;
-  width: 34px;
-  height: 34px;
+  bottom: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), #ea580c);
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: monospace;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: none;
-  z-index: 6;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  font-family: monospace;
-  line-height: 1;
+  z-index: 4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, background 0.15s ease;
 }
-
 .menu-item .quick-add-btn:hover {
-  transform: scale(1.12);
+  transform: scale(1.1);
   background: linear-gradient(135deg, #fb923c, #f97316);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
 }
-
 .menu-item .quick-add-btn:active {
   transform: scale(0.95);
 }
 
-/* ===== ตำแหน่งตามรูปแบบการ์ด ===== */
-
-/* แบบ A (Overlay) และ H (Big Hero): ราคาอยู่มุมขวาล่าง → ย้ายปุ่มไปมุมซ้ายล่าง */
-.menu-item[data-style="overlay"] .quick-add-btn,
-.menu-item[data-style="bighero"] .quick-add-btn {
-  bottom: 12px;
-  left: 12px;
-  right: auto;
-}
-
-/* แบบ B (Classic): ราคาอยู่ด้านล่างขวา (ในส่วนข้อความ) → ปุ่มอยู่ขวาล่าง */
-.menu-item[data-style="classic"] .quick-add-btn {
-  bottom: 12px;
-  right: 12px;
-  left: auto;
-}
-
-/* ปรับปุ่มโปรดให้ไม่ชน */
-.menu-item .fav-btn {
-  top: 8px;
-  left: 8px;
-  z-index: 6;
-}
-
-/* Responsive มือถือ */
-@media (max-width: 768px) {
+/* Responsive — แท็บเล็ต/มือถือ ปุ่มยังกดง่าย ไม่บังข้อความ */
+@media (max-width: 1024px) {
   .menu-item .quick-add-btn {
-    width: 28px;
-    height: 28px;
+    width: 34px;
+    height: 34px;
     font-size: 18px;
   }
-  .menu-item[data-style="overlay"] .quick-add-btn,
-  .menu-item[data-style="bighero"] .quick-add-btn {
-    bottom: 8px;
-    left: 8px;
+}
+
+@media (max-width: 768px) {
+  .menu-item-emoji {
+    font-size: 36px;
   }
-  .menu-item[data-style="classic"] .quick-add-btn {
-    bottom: 8px;
-    right: 8px;
+  .menu-item-info {
+    padding: 8px 10px;
+  }
+  .menu-item .fav-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+  .menu-item-badge {
+    min-width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+  .menu-item .quick-add-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 17px;
+    bottom: 6px;
+    right: 6px;
   }
 }
-/* ============================================
-   QUICK ADD BUTTON (+) - WORK FOR ALL STYLES
-   ============================================ */
 
-/* พื้นฐานสำหรับทุกแบบ */
-.menu-item .quick-add-btn {
-  position: absolute !important;
-  bottom: 12px !important;
-  width: 34px !important;
-  height: 34px !important;
-  border-radius: 50% !important;
-  background: #f97316 !important;
-  color: white !important;
-  font-size: 20px !important;
-  font-weight: bold !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  border: none !important;
-  z-index: 999 !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
-  transition: all 0.2s ease !important;
+@media (max-width: 480px) {
+  .menu-item-emoji {
+    font-size: 30px;
+  }
+  .menu-item .quick-add-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
 }
 
-/* แบบ Classic (B): ขวาล่าง */
-.menu-item[data-style="classic"] .quick-add-btn {
-  right: 12px !important;
-  left: auto !important;
-}
-
-/* แบบ Overlay (A) และ Big Hero (H): ซ้ายล่าง */
-.menu-item[data-style="overlay"] .quick-add-btn,
-.menu-item[data-style="bighero"] .quick-add-btn {
-  right: auto !important;
-  left: 12px !important;
-}
-
-/* Hover effect */
-.menu-item .quick-add-btn:hover {
-  background: #ea580c !important;
-  transform: scale(1.1) !important;
-}
-
-.menu-item .quick-add-btn:active {
-  transform: scale(0.95) !important;
-}
