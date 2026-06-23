@@ -40,8 +40,8 @@ function nav(view) {
     return;
   }
   
-  /* ถ้ามี staff แต่ role ไม่ใช่ manager และพยายามเข้าหน้าที่ไม่ได้รับอนุญาต */
-  if (!ST.canAccessView(APP.currentStaff, view)) {
+  /* ถ้ามี staff แต่ role/สิทธิ์รายบุคคล (customPermissions) ไม่อนุญาตให้เข้าหน้านี้ */
+  if (!ST.canAccessViewCustom(APP.currentStaff, view)) {
     verifyManagerPIN(view);
     return;
   }
@@ -934,15 +934,16 @@ function updateSidebarByStaffPermission() {
   console.log('[updateSidebarByStaffPermission] Called, currentStaff:', APP.currentStaff);
   
   var sideItems = qsa('.nav-item');
+  var bnavItems = qsa('.bnav-item');
   var recentStrip = $('#recentStrip');
   var holdStrip = $('#holdOrdersStrip');
-  
+
   // 🔥 ตรวจสอบ license tier ปัจจุบัน (จาก LicenseManager)
   var licenseTier = 'free';
   if (typeof LicenseManager !== 'undefined') {
     licenseTier = LicenseManager.getTier();
   }
-  
+
   // 🔥 ถ้าไม่มี staff login → แสดงเมนูตาม License เท่านั้น (ไม่ใช่ทุกอย่าง)
   if (!APP.currentStaff) {
     for (var i = 0; i < sideItems.length; i++) {
@@ -950,36 +951,45 @@ function updateSidebarByStaffPermission() {
       var show = isViewAllowedByLicense(view, licenseTier);
       sideItems[i].style.display = show ? '' : 'none';
     }
-    
+    for (var bi = 0; bi < bnavItems.length; bi++) {
+      var bview0 = bnavItems[bi].getAttribute('data-view');
+      var bshow0 = isViewAllowedByLicense(bview0, licenseTier);
+      bnavItems[bi].style.display = bshow0 ? '' : 'none';
+    }
+
     if (recentStrip) recentStrip.style.display = 'none';
     if (holdStrip) holdStrip.style.display = 'none';
-    
+
     var loginBtn = $('#loginBtn');
     var logoutBtn = $('#logoutBtn');
     if (loginBtn) loginBtn.style.display = '';
     if (logoutBtn) logoutBtn.style.display = 'none';
     return;
   }
-  
-  // 🔥 มี staff login → แสดงตามสิทธิ์ + license
+
+  // 🔥 มี staff login → แสดงตามสิทธิ์ (role + customPermissions รายบุคคล) + license
   for (var i = 0; i < sideItems.length; i++) {
     var view = sideItems[i].getAttribute('data-view');
     var canAccess = false;
-    
+
     var licenseAllowed = isViewAllowedByLicense(view, licenseTier);
-    
+
     if (!licenseAllowed) {
       canAccess = false;
-    } else if (APP.currentStaff.role === 'manager') {
-      canAccess = licenseAllowed;
     } else {
-      var allowedViews = ['pos', 'orders'];
-      canAccess = (allowedViews.indexOf(view) !== -1) && licenseAllowed;
+      canAccess = ST.canAccessViewCustom(APP.currentStaff, view);
     }
-    
+
     sideItems[i].style.display = canAccess ? '' : 'none';
   }
-  
+
+  for (var bj = 0; bj < bnavItems.length; bj++) {
+    var bview = bnavItems[bj].getAttribute('data-view');
+    var bLicenseAllowed = isViewAllowedByLicense(bview, licenseTier);
+    var bCanAccess = bLicenseAllowed && ST.canAccessViewCustom(APP.currentStaff, bview);
+    bnavItems[bj].style.display = bCanAccess ? '' : 'none';
+  }
+
   if (recentStrip) recentStrip.style.display = '';
   if (holdStrip) holdStrip.style.display = '';
   
@@ -1350,37 +1360,12 @@ function initApp() {
 
   console.log('[app.js] ready!');
 }
-/* เพิ่มฟังก์ชัน forceUpdateSidebarOnLoad */
+/* เพิ่มฟังก์ชัน forceUpdateSidebarOnLoad
+   เดิมเช็คแค่ license tier ล้วนๆ (ไม่เช็ค role/customPermissions ของพนักงาน) แล้วรันทับ
+   updateSidebarByStaffPermission() ที่ถูกต้องอยู่แล้วในขั้นก่อนหน้าของ initApp()
+   ทำให้ตอน boot เมนูที่ควรถูกซ่อนสำหรับ cashier/barista โผล่กลับมาเห็นได้ — เปลี่ยนให้เรียกฟังก์ชันเดียวกันแทน */
 function forceUpdateSidebarOnLoad() {
-  var licenseTier = 'free';
-  if (typeof LicenseManager !== 'undefined') {
-    licenseTier = LicenseManager.getTier();
-  }
-  
-  var freeViews = ['pos', 'menu', 'orders', 'admin'];
-  var sideItems = qsa('.nav-item');
-  
-  for (var i = 0; i < sideItems.length; i++) {
-    var view = sideItems[i].getAttribute('data-view');
-    if (licenseTier === 'free') {
-      sideItems[i].style.display = (freeViews.indexOf(view) !== -1) ? '' : 'none';
-    } else if (typeof FeatureManager !== 'undefined' && typeof FeatureManager.isViewEnabled === 'function') {
-      sideItems[i].style.display = FeatureManager.isViewEnabled(view) ? '' : 'none';
-    }
-  }
-  
-  var bnavItems = qsa('.bnav-item');
-  for (var j = 0; j < bnavItems.length; j++) {
-    var bview = bnavItems[j].getAttribute('data-view');
-    if (licenseTier === 'free') {
-      bnavItems[j].style.display = (freeViews.indexOf(bview) !== -1) ? '' : 'none';
-    } else if (typeof FeatureManager !== 'undefined' && typeof FeatureManager.isViewEnabled === 'function') {
-      bnavItems[j].style.display = FeatureManager.isViewEnabled(bview) ? '' : 'none';
-    }
-  }
-  
-  console.log('[forceUpdateSidebarOnLoad] License tier:', licenseTier);
-
+  updateSidebarByStaffPermission();
 }
 /* softRefresh - รีเฟรชข้อมูลโดยไม่ reload หน้า (ไม่หลุด logout) */
 function softRefresh() {

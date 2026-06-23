@@ -1654,6 +1654,7 @@ function importJSONFile(input) {
         applyShopName();
         applyTheme();
         if (typeof applyFeatureToggle === 'function') applyFeatureToggle();
+        if (typeof updateSidebarByStaffPermission === 'function') updateSidebarByStaffPermission();
         renderAdminView();
       });
     } catch (err) {
