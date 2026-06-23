@@ -221,7 +221,13 @@ function renderLicenseTab() {
   
   html += '</div>';
   html += '</div>';
-  
+
+  var isLicenseAdmin = (typeof window.currentUser !== 'undefined' && window.currentUser && window.currentUser.email === 'iceget6703@gmail.com');
+  if (isLicenseAdmin) {
+    html += renderLicenseGeneratorCard();
+    setTimeout(function() { loadRecentLicensesForAdmin(); }, 50);
+  }
+
   html += '<div class="card mb-16">';
   html += '<div class="card-header">';
   html += '<div class="card-title">💰 แผนราคา</div>';
@@ -252,7 +258,7 @@ function renderLicenseTab() {
   if (licenseTier === 'free') {
     html += '<button class="btn btn-success btn-block" disabled>กำลังใช้งาน</button>';
   } else {
-    html += '<button class="btn btn-outline btn-block" onclick="alert(\'ฟรี ใช้งานได้เลย\')">เริ่มต้นใช้งาน</button>';
+    html += '<button class="btn btn-outline btn-block" onclick="toast(\'ฟรี ใช้งานได้เลย\', \'success\')">เริ่มต้นใช้งาน</button>';
   }
   html += '</div>';
   html += '</div>';
@@ -369,8 +375,137 @@ function renderLicenseTab() {
     html += '<button class="btn btn-secondary" onclick="LicenseManager.showLicenseModal()">🔄 เปลี่ยน License Key</button>';
   }
   html += '</div>';
-  
+
   return html;
+}
+
+/* ============================================
+   LICENSE GENERATOR (เฉพาะ Admin: iceget6703@gmail.com)
+   ออกคีย์ใหม่ + ดูรายการล่าสุด โดยไม่ต้องเปิด Firebase Console
+   ============================================ */
+function renderLicenseGeneratorCard() {
+  var html = '';
+  html += '<div class="card mb-16">';
+  html += '<div class="card-header"><div class="card-title">🔑 ออก License Key (Admin)</div></div>';
+  html += '<div class="p-16">';
+
+  html += '<div class="form-row">';
+  html += '<div class="form-group"><label class="form-label">Tier</label>';
+  html += '<select id="genLicenseTier"><option value="standard">Standard</option><option value="pro">Pro</option><option value="trial">Trial</option></select></div>';
+  html += '<div class="form-group"><label class="form-label">วันหมดอายุ (ว่าง = ไม่มีวันหมดอายุ)</label>';
+  html += '<input type="number" id="genLicenseExpiryDays" min="0" placeholder="เช่น 365"></div>';
+  html += '</div>';
+
+  html += '<div class="form-group"><label class="form-label">Email ลูกค้า (ถ้ารู้)</label>';
+  html += '<input type="email" id="genLicenseEmail" placeholder="customer@email.com"></div>';
+
+  html += '<div class="form-group"><label class="form-label">หมายเหตุ</label>';
+  html += '<input type="text" id="genLicenseNote" placeholder="เช่น ชื่อร้าน"></div>';
+
+  html += '<button class="btn btn-primary" id="btnGenLicense" onclick="generateLicenseKeyFromAdmin()">➕ สร้าง License Key</button>';
+  html += '<div id="genLicenseResult"></div>';
+  html += '</div>';
+
+  html += '<div class="card-header" style="border-top:1px solid var(--border);"><div class="card-title fs-sm">📋 License ล่าสุด (20 รายการ)</div></div>';
+  html += '<div class="p-16" id="genLicenseList"><div class="text-muted fs-sm">⏳ กำลังโหลด...</div></div>';
+
+  html += '</div>';
+  return html;
+}
+
+function _genLicenseKeyString(tier) {
+  var prefix = tier === 'pro' ? 'PRO' : (tier === 'trial' ? 'TRL' : 'STD');
+  function seg() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
+  return prefix + '-' + seg() + '-' + seg();
+}
+
+async function generateLicenseKeyFromAdmin() {
+  if (!window.currentUser || window.currentUser.email !== 'iceget6703@gmail.com') {
+    toast('ไม่มีสิทธิ์สร้าง License Key', 'error');
+    return;
+  }
+
+  var tier = ($('genLicenseTier') || {}).value || 'standard';
+  var customerEmail = (($('genLicenseEmail') || {}).value || '').trim();
+  var note = (($('genLicenseNote') || {}).value || '').trim();
+  var expiryDays = parseInt((($('genLicenseExpiryDays') || {}).value || ''), 10);
+
+  var key = _genLicenseKeyString(tier);
+  var data = {
+    key: key,
+    tier: tier,
+    status: 'active',
+    customerEmail: customerEmail,
+    activatedEmail: '',
+    activatedAt: '',
+    createdAt: new Date().toISOString(),
+    usedCount: 0,
+    lastUsedAt: '',
+    lastUsedBy: '',
+    note: note
+  };
+
+  if (tier === 'trial') {
+    data.trialExpiry = Date.now() + (expiryDays > 0 ? expiryDays : 30) * 24 * 60 * 60 * 1000;
+  } else if (expiryDays > 0) {
+    data.expiresAt = Date.now() + expiryDays * 24 * 60 * 60 * 1000;
+  }
+
+  var btn = $('btnGenLicense');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ กำลังสร้าง...'; }
+
+  try {
+    var db = firebase.firestore();
+    /* ใช้ key เป็น document ID เอง เพื่อให้ rule จำกัด list (.collection().get()) ไว้แค่ admin
+       แต่ยังเปิดให้ลูกค้าทำ get-by-id (.doc(key).get()) ตอน activate ได้ตามปกติ */
+    await db.collection('licenses').doc(key).set(data);
+    toast('✅ สร้าง License สำเร็จ: ' + key, 'success', 4000);
+
+    var resultEl = $('genLicenseResult');
+    if (resultEl) {
+      resultEl.innerHTML = '<div class="card-glass p-12 mt-8"><div class="text-muted fs-sm">License Key ใหม่</div><div class="fw-800" style="font-size:20px;font-family:monospace;">' + sanitize(key) + '</div><button class="btn btn-sm btn-secondary mt-4" onclick="copyText(\'' + key + '\')">📋 คัดลอก</button></div>';
+    }
+    loadRecentLicensesForAdmin();
+  } catch(e) {
+    console.error('[Admin] generateLicenseKey error', e);
+    toast('❌ สร้างไม่สำเร็จ: ' + (e.message || ''), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '➕ สร้าง License Key'; }
+  }
+}
+
+async function loadRecentLicensesForAdmin() {
+  if (!window.currentUser || window.currentUser.email !== 'iceget6703@gmail.com') return;
+  var listEl = $('genLicenseList');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="text-muted fs-sm">⏳ กำลังโหลด...</div>';
+
+  try {
+    var db = firebase.firestore();
+    var snap = await db.collection('licenses').orderBy('createdAt', 'desc').limit(20).get();
+    if (snap.empty) { listEl.innerHTML = '<div class="text-muted fs-sm">ยังไม่มี License</div>'; return; }
+
+    var html = '<div style="overflow-x:auto;"><table style="width:100%;font-size:12px;border-collapse:collapse;">';
+    html += '<thead><tr style="text-align:left;border-bottom:1px solid var(--border);">';
+    html += '<th style="padding:6px 4px;">Key</th><th style="padding:6px 4px;">Tier</th><th style="padding:6px 4px;">สถานะ</th><th style="padding:6px 4px;">ผูกกับ</th><th style="padding:6px 4px;">ใช้</th>';
+    html += '</tr></thead><tbody>';
+
+    snap.forEach(function(doc) {
+      var l = doc.data();
+      html += '<tr style="border-bottom:1px solid var(--border);">';
+      html += '<td style="padding:6px 4px;"><code>' + sanitize(l.key || doc.id) + '</code></td>';
+      html += '<td style="padding:6px 4px;">' + sanitize(l.tier || '') + '</td>';
+      html += '<td style="padding:6px 4px;">' + sanitize(l.status || '') + '</td>';
+      html += '<td style="padding:6px 4px;">' + sanitize(l.activatedEmail || l.customerEmail || '-') + '</td>';
+      html += '<td style="padding:6px 4px;">' + (l.usedCount || 0) + '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    listEl.innerHTML = html;
+  } catch(e) {
+    listEl.innerHTML = '<div class="text-danger fs-sm">โหลดไม่สำเร็จ: ' + sanitize(e.message || '') + '</div>';
+  }
 }
 
 /* ============================================
@@ -408,7 +543,7 @@ function renderShopSettings() {
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">อัตรา VAT (%)</label>';
-  html += '<input type="number" id="cfgVatRate" value="' + (cfg.vatRate || 7) + '">';
+  html += '<input type="number" id="cfgVatRate" value="' + (cfg.vatRate || 7) + '" min="0" max="100" step="0.1">';
   html += '</div>';
   html += '<div style="border-top:1px solid var(--border);margin:14px 0;"></div>';
   html += '<div class="form-group">';
@@ -419,7 +554,7 @@ function renderShopSettings() {
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">อัตรา SC (%)</label>';
-  html += '<input type="number" id="cfgSCRate" value="' + (cfg.serviceChargeRate || 10) + '">';
+  html += '<input type="number" id="cfgSCRate" value="' + (cfg.serviceChargeRate || 10) + '" min="0" max="100" step="0.1">';
   html += '</div>';
   html += '</div>';
 

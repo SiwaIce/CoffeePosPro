@@ -766,7 +766,7 @@ function renderCartSummary() {
   html += '</div>';
   html += '<div class="cart-discount-row">';
   html += '<span class="text-muted fs-sm">ส่วนลด:</span>';
-  html += '<input type="number" id="cartDiscount" value="' + (POS.discount || '') + '" placeholder="0" inputmode="numeric" oninput="onCartDiscountChange()" style="width:60px;">';
+  html += '<input type="number" id="cartDiscount" value="' + (POS.discount || '') + '" placeholder="0" min="0" inputmode="numeric" oninput="onCartDiscountChange()" style="width:60px;">';
   html += '<select id="cartDiscountType" onchange="onCartDiscountChange()" style="width:60px;">';
   html += '<option value="baht"' + (POS.discountType === 'baht' ? ' selected' : '') + '>฿</option>';
   html += '<option value="percent"' + (POS.discountType === 'percent' ? ' selected' : '') + '>%</option>';

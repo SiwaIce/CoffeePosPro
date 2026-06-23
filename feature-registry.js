@@ -59,6 +59,7 @@ function getLicenseTierFromStorage() {
       var license = JSON.parse(licenseRaw);
       if (license && license.tier) {
         if (license.tier === 'trial' && license.trialExpiry && Date.now() > license.trialExpiry) return 'free';
+        if (license.expiresAt && Date.now() > license.expiresAt) return 'free';
         return license.tier;
       }
     }
@@ -74,6 +75,9 @@ var FeatureManager = {
         var license = JSON.parse(licenseRaw);
         if (license && license.tier) {
           if (license.tier === 'trial' && license.trialExpiry && Date.now() > license.trialExpiry) {
+            return 'free';
+          }
+          if (license.expiresAt && Date.now() > license.expiresAt) {
             return 'free';
           }
           return license.tier;

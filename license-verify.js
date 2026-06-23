@@ -31,6 +31,11 @@ var LicenseManager = {
           this.currentKey = null;
           ST.setObj('license', null);
         }
+      } else if (saved.expiresAt && Date.now() > saved.expiresAt) {
+        // license แบบมีกำหนดวันหมดอายุ (ไม่ใช่ trial) หมดอายุแล้วตอนยังออฟไลน์
+        this.tier = 'free';
+        this.currentKey = null;
+        ST.setObj('license', null);
       }
     }
   },
@@ -56,17 +61,17 @@ var LicenseManager = {
 
     try {
       var db = firebase.firestore();
-      var snap = await db.collection('licenses')
-        .where('key', '==', cleanKey)
-        .limit(1)
-        .get();
+      /* ใช้ get-by-id (key คือ document ID) ไม่ใช่ where-query
+         เพื่อให้ security rule จำกัด "list" ทั้ง collection ไว้แค่ admin ได้
+         โดยที่ลูกค้ายัง lookup key ของตัวเองได้ตามปกติ (ต้องรู้ key ที่แน่นอนอยู่แล้ว) */
+      var docRef = db.collection('licenses').doc(cleanKey);
+      var docSnap = await docRef.get();
 
-      if (snap.empty) {
+      if (!docSnap.exists) {
         return { valid: false, error: 'ไม่พบ License Key นี้ในระบบ' };
       }
 
-      var docRef = snap.docs[0].ref;
-      var license = snap.docs[0].data();
+      var license = docSnap.data();
 
       // ตรวจ status
       if (license.status !== 'active') {
@@ -76,6 +81,11 @@ var LicenseManager = {
       // 🔐 ตรวจ email binding: ถ้ามี activatedEmail อยู่แล้วและ ≠ email นี้ → ปฏิเสธ
       if (license.activatedEmail && license.activatedEmail !== userEmail) {
         return { valid: false, error: 'License Key นี้ถูกผูกกับ email อื่นแล้ว' };
+      }
+
+      // ตรวจวันหมดอายุ (ใช้ได้ทุก tier ไม่ใช่แค่ trial)
+      if (license.expiresAt && Date.now() > license.expiresAt) {
+        return { valid: false, error: 'License Key นี้หมดอายุแล้ว' };
       }
 
       var tier = license.tier;
@@ -105,6 +115,16 @@ var LicenseManager = {
 
       await docRef.update(updateData);
 
+      // ผูก license key ไว้ในเอกสารของผู้ใช้เอง (users/{uid}) ที่เจ้าตัวมีสิทธิ์อ่าน/เขียนอยู่แล้ว
+      // เพื่อให้ device อื่นค้นพบ license ได้ โดยไม่ต้องให้ client ทั่วไป list ทั้ง collection licenses
+      if (window.userDb) {
+        try {
+          await window.userDb.set({ licenseKey: cleanKey }, { merge: true });
+        } catch(saveErr) {
+          console.warn('[LicenseManager] save licenseKey to userDb failed:', saveErr);
+        }
+      }
+
       // บันทึกลง localStorage + LicenseManager state
       this.currentKey = cleanKey;
       this.tier = tier;
@@ -112,6 +132,7 @@ var LicenseManager = {
 
       var licenseObj = { key: cleanKey, tier: tier, activatedAt: Date.now() };
       if (trialExpiry) licenseObj.trialExpiry = trialExpiry;
+      if (license.expiresAt) licenseObj.expiresAt = license.expiresAt;
 
       ST.setObj('license', licenseObj);
       localStorage.setItem('v1_coffee_license', JSON.stringify(licenseObj));
@@ -189,6 +210,9 @@ var LicenseManager = {
     var saved = ST.getObj('license', null);
     if (saved && saved.tier) {
       if (saved.tier === 'trial' && saved.trialExpiry && Date.now() > saved.trialExpiry) {
+        return 'free';
+      }
+      if (saved.expiresAt && Date.now() > saved.expiresAt) {
         return 'free';
       }
       return saved.tier;

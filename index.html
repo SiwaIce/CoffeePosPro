@@ -74,40 +74,40 @@
   <!-- === TOP BAR === -->
   <header id="topBar" class="top-bar">
     <div class="top-bar-left">
-      <button id="btnSidebar" class="btn-icon" onclick="toggleSidebar()">
-        <span class="hamburger-icon">☰</span>
+      <button id="btnSidebar" class="btn-icon" onclick="toggleSidebar()" aria-label="เปิด/ปิดเมนู" aria-controls="sidebar" aria-expanded="false">
+        <span class="hamburger-icon" aria-hidden="true">☰</span>
       </button>
       <div class="brand">
-        <span class="brand-icon">☕</span>
+        <span class="brand-icon" aria-hidden="true">☕</span>
         <span id="shopName" class="brand-name">Coffee POS</span>
       </div>
     </div>
 <div class="top-bar-right">
   <span id="topClock" class="top-clock"></span>
-  <span id="topStaff" class="top-staff" onclick="showStaffMenu()" style="cursor:pointer;"></span>
-  <button id="logoutBtn" class="btn-icon" onclick="logoutStaff()" style="display:none;" title="ออกจากระบบ">
-    <span>🚪</span>
+  <span id="topStaff" class="top-staff" onclick="showStaffMenu()" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showStaffMenu();}"></span>
+  <button id="logoutBtn" class="btn-icon" onclick="logoutStaff()" style="display:none;" title="ออกจากระบบ" aria-label="ออกจากระบบ">
+    <span aria-hidden="true">🚪</span>
   </button>
-  
+
   <!-- ✅ ปุ่ม Login (ต้องมี) -->
-  <button id="loginBtn" class="btn-icon" onclick="showPinLogin()" style="display:;" title="เข้าสู่ระบบ">
-    <span>🔐</span>
+  <button id="loginBtn" class="btn-icon" onclick="showPinLogin()" style="display:;" title="เข้าสู่ระบบ" aria-label="เข้าสู่ระบบ">
+    <span aria-hidden="true">🔐</span>
   </button>
 
 <!-- เพิ่มปุ่ม sync ข้างๆ ปุ่มรีเฟรช -->
-<button class="btn-icon" onclick="manualSync()" title="ซิงค์ข้อมูล">
-  <span>☁️</span>
+<button id="btnManualSync" class="btn-icon" onclick="manualSync()" title="ซิงค์ข้อมูล" aria-label="ซิงค์ข้อมูล">
+  <span id="syncIcon" aria-hidden="true">☁️</span>
 </button>
-  
- <button class="btn-icon" onclick="softRefresh()" title="รีเฟรชข้อมูล">
-  <span>🔄</span>
+
+ <button class="btn-icon" onclick="softRefresh()" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">
+  <span aria-hidden="true">🔄</span>
 </button>
-  
-  <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme">
-    <span id="themeIcon">🌙</span>
+
+  <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme" aria-label="สลับธีมสว่าง/มืด">
+    <span id="themeIcon" aria-hidden="true">🌙</span>
   </button>
-  <button class="btn-icon" onclick="nav('admin')" title="Settings">
-    <span>⚙️</span>
+  <button class="btn-icon" onclick="nav('admin')" title="Settings" aria-label="ตั้งค่า">
+    <span aria-hidden="true">⚙️</span>
   </button>
 </div>
 </header>
@@ -116,48 +116,48 @@
   <div class="layout">
 
     <!-- SIDEBAR (PC) -->
-   <nav id="sidebar" class="sidebar">
+   <nav id="sidebar" class="sidebar" aria-label="เมนูหลัก">
   <div class="sidebar-menu">
-    <button class="nav-item active" data-view="pos" onclick="nav('pos')">
-      <span class="nav-icon">🛒</span>
+    <button class="nav-item active" data-view="pos" onclick="nav('pos')" aria-current="page">
+      <span class="nav-icon" aria-hidden="true">🛒</span>
       <span class="nav-label">POS</span>
     </button>
     <button class="nav-item" data-view="menu" onclick="nav('menu')">
-      <span class="nav-icon">📋</span>
+      <span class="nav-icon" aria-hidden="true">📋</span>
       <span class="nav-label">เมนู</span>
     </button>
     <button class="nav-item" data-view="orders" onclick="nav('orders')">
-      <span class="nav-icon">📜</span>
+      <span class="nav-icon" aria-hidden="true">📜</span>
       <span class="nav-label">ออเดอร์</span>
     </button>
     <button class="nav-item" data-view="report" onclick="nav('report')">
-      <span class="nav-icon">📊</span>
+      <span class="nav-icon" aria-hidden="true">📊</span>
       <span class="nav-label">รายงาน</span>
     </button>
     <button class="nav-item" data-view="stock" onclick="nav('stock')">
-      <span class="nav-icon">📦</span>
+      <span class="nav-icon" aria-hidden="true">📦</span>
       <span class="nav-label">Stock</span>
     </button>
-    
+
     <!-- NEW: Staff -->
     <button class="nav-item" data-view="staff" onclick="nav('staff')">
-      <span class="nav-icon">👥</span>
+      <span class="nav-icon" aria-hidden="true">👥</span>
       <span class="nav-label">พนักงาน</span>
     </button>
-    
+
     <!-- NEW: Members (Pro) -->
   <button class="nav-item" data-view="members" onclick="nav('members')" id="navMembers" style="display:none;">
-  <span class="nav-icon">👤</span>
+  <span class="nav-icon" aria-hidden="true">👤</span>
   <span class="nav-label">สมาชิก</span>
 </button>
 
 <button class="nav-item" data-view="recipe" onclick="nav('recipe')" id="navRecipe" style="display:none;">
-  <span class="nav-icon">🧪</span>
+  <span class="nav-icon" aria-hidden="true">🧪</span>
   <span class="nav-label">สูตรวัตถุดิบ</span>
 </button>
-    
+
     <button class="nav-item" data-view="admin" onclick="nav('admin')">
-      <span class="nav-icon">⚙️</span>
+      <span class="nav-icon" aria-hidden="true">⚙️</span>
       <span class="nav-label">ตั้งค่า</span>
     </button>
   </div>
@@ -180,33 +180,33 @@
   </div>
 
   <!-- === BOTTOM NAV (Mobile) === -->
-  <nav id="bottomNav" class="bottom-nav">
-  <button class="bnav-item active" data-view="pos" onclick="nav('pos')">
-    <span class="bnav-icon">🛒</span>
+  <nav id="bottomNav" class="bottom-nav" aria-label="เมนูหลัก (มือถือ)">
+  <button class="bnav-item active" data-view="pos" onclick="nav('pos')" aria-current="page">
+    <span class="bnav-icon" aria-hidden="true">🛒</span>
     <span class="bnav-label">POS</span>
   </button>
   <button class="bnav-item" data-view="menu" onclick="nav('menu')">
-    <span class="bnav-icon">📋</span>
+    <span class="bnav-icon" aria-hidden="true">📋</span>
     <span class="bnav-label">เมนู</span>
   </button>
   <button class="bnav-item" data-view="orders" onclick="nav('orders')">
-    <span class="bnav-icon">📜</span>
+    <span class="bnav-icon" aria-hidden="true">📜</span>
     <span class="bnav-label">ออเดอร์</span>
   </button>
   <button class="bnav-item" data-view="report" onclick="nav('report')">
-    <span class="bnav-icon">📊</span>
+    <span class="bnav-icon" aria-hidden="true">📊</span>
     <span class="bnav-label">รายงาน</span>
   </button>
   <button class="bnav-item" data-view="stock" onclick="nav('stock')">
-    <span class="bnav-icon">📦</span>
+    <span class="bnav-icon" aria-hidden="true">📦</span>
     <span class="bnav-label">Stock</span>
   </button>
   <button class="bnav-item" data-view="staff" onclick="nav('staff')">
-    <span class="bnav-icon">👥</span>
+    <span class="bnav-icon" aria-hidden="true">👥</span>
     <span class="bnav-label">พนักงาน</span>
   </button>
   <button class="bnav-item" data-view="admin" onclick="nav('admin')">
-    <span class="bnav-icon">⚙️</span>
+    <span class="bnav-icon" aria-hidden="true">⚙️</span>
     <span class="bnav-label">เพิ่มเติม</span>
   </button>
 </nav>
@@ -214,14 +214,14 @@
 </div>
 
 <!-- ===== TOAST ===== -->
-<div id="toastContainer" class="toast-container"></div>
+<div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
 
 <!-- ===== MODAL LAYER ===== -->
 <div id="modalOverlay" class="modal-overlay" onclick="handleModalOverlayClick(event)"></div>
-<div id="modalBox" class="modal-box">
+<div id="modalBox" class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal-header">
     <h3 id="modalTitle" class="modal-title"></h3>
-    <button class="modal-close" onclick="closeMForce()">&times;</button>
+    <button class="modal-close" onclick="closeMForce()" aria-label="ปิดหน้าต่าง">&times;</button>
   </div>
   <div id="modalBody" class="modal-body"></div>
   <div id="modalFooter" class="modal-footer"></div>
@@ -229,6 +229,19 @@
 
 <!-- ===== RECEIPT PRINT (Hidden) ===== -->
 <div id="receiptPrint" class="receipt-print"></div>
+
+<!-- ===== CONFIRM / PROMPT DIALOG (replaces native confirm()/prompt()/alert()) ===== -->
+<div id="confirmOverlay" class="modal-overlay confirm-overlay" onclick="if(event.target===this) _confirmDialogCancel()"></div>
+<div id="confirmBox" class="modal-box confirm-box" role="alertdialog" aria-modal="true" aria-describedby="confirmBody">
+  <div class="modal-body">
+    <div id="confirmBody" class="confirm-msg"></div>
+    <input type="text" id="confirmInput" class="input confirm-input" style="display:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();_confirmDialogOk();}">
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" id="confirmCancelBtn" onclick="_confirmDialogCancel()">ยกเลิก</button>
+    <button class="btn btn-primary" id="confirmOkBtn" onclick="_confirmDialogOk()">ตกลง</button>
+  </div>
+</div>
 
 <!-- ===== JS FILES ===== -->
 <script src="utils.js?v=3"></script>

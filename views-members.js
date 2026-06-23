@@ -252,13 +252,13 @@ function renderMemberSettings() {
   
   html += '<div class="form-group">';
   html += '<label class="form-label">💰 รับ 1 แต้มต่อการซื้อ (บาท)</label>';
-  html += '<input type="number" id="pointRate" value="' + pointRate + '" placeholder="100">';
+  html += '<input type="number" id="pointRate" value="' + pointRate + '" placeholder="100" min="0">';
   html += '<div class="form-hint">ลูกค้าจะได้รับ 1 แต้ม ทุก ' + pointRate + ' บาท</div>';
   html += '</div>';
   
   html += '<div class="form-group">';
   html += '<label class="form-label">💎 1 แต้ม มีค่า (บาท)</label>';
-  html += '<input type="number" id="pointValue" value="' + pointValue + '" placeholder="1" step="0.5">';
+  html += '<input type="number" id="pointValue" value="' + pointValue + '" placeholder="1" min="0" step="0.5">';
   html += '<div class="form-hint">1 แต้ม = ' + formatMoneySign(pointValue) + ' ส่วนลด</div>';
   html += '</div>';
   
@@ -312,11 +312,11 @@ function modalEditMember(member) {
   html += '<div class="form-row">';
   html += '<div class="form-group">';
   html += '<label class="form-label">แต้มเริ่มต้น</label>';
-  html += '<input type="number" id="fMemberPoints" value="' + (m.points || 0) + '" placeholder="0" ' + (!isManager ? 'disabled' : '') + '>';
+  html += '<input type="number" id="fMemberPoints" value="' + (m.points || 0) + '" placeholder="0" min="0" ' + (!isManager ? 'disabled' : '') + '>';
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">ยอดซื้อรวม</label>';
-  html += '<input type="number" id="fMemberSpent" value="' + (m.totalSpent || 0) + '" placeholder="0" ' + (!isManager ? 'disabled' : '') + '>';
+  html += '<input type="number" id="fMemberSpent" value="' + (m.totalSpent || 0) + '" placeholder="0" min="0" ' + (!isManager ? 'disabled' : '') + '>';
   html += '</div>';
   html += '</div>';
   
@@ -419,7 +419,7 @@ function modalMemberDetail(memberId) {
   
   html += '<div class="form-group">';
   html += '<label class="form-label">ใช้แต้มลด (1 แต้ม = ' + formatMoneySign(pointValue) + ')</label>';
-  html += '<input type="number" id="usePoints" placeholder="0" max="' + maxPoints + '" value="0" oninput="updateMemberPointDiscount()" style="font-size:20px;text-align:center;">';
+  html += '<input type="number" id="usePoints" placeholder="0" min="0" max="' + maxPoints + '" value="0" oninput="updateMemberPointDiscount()" style="font-size:20px;text-align:center;">';
   html += '<div class="form-hint">สูงสุด ' + formatNumber(maxPoints) + ' แต้ม (มูลค่า ' + formatMoneySign(pointWorth) + ')</div>';
   html += '</div>';
   

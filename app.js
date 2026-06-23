@@ -57,8 +57,10 @@ function nav(view) {
     var v = sideItems[i].getAttribute('data-view');
     if (v === view) {
       addClass(sideItems[i], 'active');
+      sideItems[i].setAttribute('aria-current', 'page');
     } else {
       removeClass(sideItems[i], 'active');
+      sideItems[i].removeAttribute('aria-current');
     }
   }
 
@@ -67,8 +69,10 @@ function nav(view) {
     var bv = bnavItems[j].getAttribute('data-view');
     if (bv === view) {
       addClass(bnavItems[j], 'active');
+      bnavItems[j].setAttribute('aria-current', 'page');
     } else {
       removeClass(bnavItems[j], 'active');
+      bnavItems[j].removeAttribute('aria-current');
     }
   }
 

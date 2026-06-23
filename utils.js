@@ -442,12 +442,91 @@ function optionsHTML(items, valKey, labelKey, selectedVal) {
   return html;
 }
 
-/* === CONFIRM DIALOG (simple) === */
+/* === CONFIRM / PROMPT DIALOG (custom modal, replaces native confirm()/prompt()) === */
+var _confirmCb = null;
+var _confirmIsPrompt = false;
+
 function confirmDialog(msg, onYes) {
-  if (confirm(msg)) {
-    if (typeof onYes === 'function') onYes();
+  _openConfirmDialog(msg, onYes, false, '');
+}
+
+function promptDialog(msg, defaultVal, onOk) {
+  _openConfirmDialog(msg, onOk, true, defaultVal || '');
+}
+
+function _openConfirmDialog(msg, cb, withInput, defaultVal) {
+  var overlay = $('confirmOverlay');
+  var box = $('confirmBox');
+  var body = $('confirmBody');
+  var input = $('confirmInput');
+
+  /* fallback ถ้า markup ยังไม่พร้อม */
+  if (!overlay || !box || !body) {
+    if (withInput) {
+      var v = prompt(msg, defaultVal);
+      if (v !== null && typeof cb === 'function') cb(v);
+    } else if (confirm(msg)) {
+      if (typeof cb === 'function') cb();
+    }
+    return;
+  }
+
+  body.textContent = msg;
+  _confirmCb = cb;
+  _confirmIsPrompt = !!withInput;
+
+  if (input) {
+    if (withInput) {
+      input.style.display = '';
+      input.value = defaultVal;
+    } else {
+      input.style.display = 'none';
+      input.value = '';
+    }
+  }
+
+  addClass(overlay, 'show');
+  addClass(box, 'show');
+
+  setTimeout(function() {
+    if (withInput && input) input.focus();
+  }, 150);
+}
+
+function _confirmDialogOk() {
+  var cb = _confirmCb;
+  var withInput = _confirmIsPrompt;
+  var input = $('confirmInput');
+  var val = input ? input.value : '';
+  _closeConfirmDialog();
+  if (typeof cb === 'function') {
+    if (withInput) cb(val);
+    else cb();
   }
 }
+
+function _confirmDialogCancel() {
+  _closeConfirmDialog();
+}
+
+function _closeConfirmDialog() {
+  var overlay = $('confirmOverlay');
+  var box = $('confirmBox');
+  if (overlay) removeClass(overlay, 'show');
+  if (box) removeClass(box, 'show');
+  _confirmCb = null;
+  _confirmIsPrompt = false;
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var overlay = $('confirmOverlay');
+    if (overlay && hasClass(overlay, 'show')) {
+      e.stopImmediatePropagation();
+      _confirmDialogCancel();
+    }
+  }
+}, true);
 
 /* === COPY TO CLIPBOARD === */
 function copyText(text) {

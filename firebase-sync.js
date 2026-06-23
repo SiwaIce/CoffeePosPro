@@ -41,15 +41,21 @@ function initFirebase() {
       window.currentUser = user;
       window.userDb = db.collection('users').doc(user.uid);
       console.log('[Firebase] Logged in:', user.email);
-      
+
+      var syncBtnInit = document.getElementById('btnManualSync');
+      if (syncBtnInit) addClass(syncBtnInit, 'syncing');
+
       await loadUserLicense(user.email);
       await loadAllFromFirebase();  // 🔥 โหลดข้อมูลจาก Cloud
       await loadUserData();
       updateUIForLogin(user);
+
+      if (syncBtnInit) removeClass(syncBtnInit, 'syncing');
       
       setupAutoSync();    // 🔥 ตั้ง auto sync
       startPeriodicSync(); // 🔥 sync ทุก 5 นาที
-      
+      startLicenseRevalidation(user.email); // 🔥 ตรวจ license ซ้ำเป็นระยะ (กันใครแก้ tier ใน localStorage เอง)
+
       if (isStaffLoggedIn) {
         applyLicenseFromStorage();
       }
@@ -63,9 +69,10 @@ function initFirebase() {
       window.currentUser = null;
       window.userDb = null;
       isStaffLoggedIn = false;
-      
+
       if (periodicSyncInterval) clearInterval(periodicSyncInterval);
-      
+      stopLicenseRevalidation();
+
       if (typeof LicenseManager !== 'undefined') {
         LicenseManager.tier = 'free';
         LicenseManager.currentKey = null;
@@ -84,6 +91,16 @@ function initFirebase() {
 // ============================================
 
 var periodicSyncInterval = null;
+var _lastSyncErrorToastAt = 0;
+
+function notifySyncError(msg) {
+  var now = Date.now();
+  if (now - _lastSyncErrorToastAt < 30000) return; /* กันแจ้งซ้ำถี่เกินไปตอน auto-sync */
+  _lastSyncErrorToastAt = now;
+  if (typeof toast === 'function') {
+    toast(msg, 'error', 3000);
+  }
+}
 
 async function syncAllToFirebase() {
   if (!window.currentUser) return false;
@@ -117,6 +134,7 @@ async function syncAllToFirebase() {
     return true;
   } catch(e) {
     console.error('[Sync] Error saving:', e);
+    notifySyncError('⚠️ ซิงค์ข้อมูลขึ้น Cloud ไม่สำเร็จ (ตรวจสอบอินเทอร์เน็ต)');
     return false;
   }
 }
@@ -166,6 +184,7 @@ async function loadAllFromFirebase() {
     return false;
   } catch(e) {
     console.error('[Sync] Error loading:', e);
+    notifySyncError('⚠️ โหลดข้อมูลจาก Cloud ไม่สำเร็จ (ตรวจสอบอินเทอร์เน็ต)');
     return false;
   }
 }
@@ -194,17 +213,34 @@ function startPeriodicSync() {
 }
 
 async function manualSync() {
+  if (!window.currentUser) {
+    if (typeof toast === 'function') {
+      toast('⚠️ กรุณาเข้าสู่ระบบก่อนซิงค์ข้อมูล', 'warning', 2500);
+    }
+    return;
+  }
+
+  var syncBtn = document.getElementById('btnManualSync');
+  if (syncBtn) addClass(syncBtn, 'syncing');
+
   if (typeof toast === 'function') {
     toast('🔄 กำลังซิงค์ข้อมูล...', 'info', 1000);
   }
-  await syncAllToFirebase();
-  await loadAllFromFirebase();
-  
+  var savedOk = await syncAllToFirebase();
+  var loadedOk = await loadAllFromFirebase();
+
+  if (syncBtn) removeClass(syncBtn, 'syncing');
+
   if (typeof renderView === 'function' && typeof APP !== 'undefined' && APP && APP.currentView) {
     renderView(APP.currentView);
   }
+
   if (typeof toast === 'function') {
-    toast('✅ ซิงค์ข้อมูลเสร็จสมบูรณ์', 'success', 2000);
+    if (savedOk === false) {
+      toast('❌ ซิงค์ข้อมูลไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่', 'error', 3000);
+    } else {
+      toast('✅ ซิงค์ข้อมูลเสร็จสมบูรณ์', 'success', 2000);
+    }
   }
 }
 
@@ -229,61 +265,102 @@ function applyLicenseFromStorage() {
   }
 }
 
+/* ============================================
+   🔥 LICENSE: โหลด/ตรวจซ้ำจาก Firebase
+   ใช้ licenseKey ที่ผูกไว้ใน users/{uid} ของผู้ใช้เอง (เขียนตอน validate() สำเร็จ)
+   แทนการ query ทั้ง licenses collection ด้วย email — เพื่อให้ปิด list-permission
+   ของ collection licenses ไว้แค่ admin ได้ (กันลูกค้าคนอื่นเห็น key/ข้อมูลลูกค้าคนอื่น)
+   ============================================ */
 async function loadUserLicense(email) {
   if (typeof LicenseManager === 'undefined') return;
-  
+  if (!window.userDb) return;
+
   try {
-    const db = firebase.firestore();
-    const licenseQuery = await db.collection('licenses')
-      .where('customerEmail', '==', email)
-      .where('status', '==', 'active')
-      .limit(1)
-      .get();
-    
-    if (!licenseQuery.empty) {
-      const doc = licenseQuery.docs[0];
-      const license = doc.data();
-      
-      const currentCount = license.usedCount || 0;
-      const newCount = currentCount + 1;
-      
-      await doc.ref.update({
-        usedCount: newCount,
-        lastUsedAt: new Date().toISOString(),
-        lastUsedBy: window.location.hostname
-      });
-      
-      console.log(`[License] Used count: ${currentCount} → ${newCount}`);
-      
-      localStorage.setItem('v1_coffee_license', JSON.stringify({
-        key: license.key,
-        tier: license.tier,
-        activatedAt: Date.now()
-      }));
-      
-      LicenseManager.tier = license.tier;
-      LicenseManager.currentKey = license.key;
-      
-      if (typeof LicenseManager.afterLicenseChange === 'function') {
-        LicenseManager.afterLicenseChange();
-      }
-      
-      console.log('[Firebase] License loaded:', license.tier);
-      
-    } else {
-      localStorage.removeItem('v1_coffee_license');
-      LicenseManager.tier = 'free';
-      LicenseManager.currentKey = null;
-      
-      if (typeof LicenseManager.afterLicenseChange === 'function') {
-        LicenseManager.afterLicenseChange();
-      }
-      
-      console.log('[Firebase] No license found, set to free');
+    var userSnap = await window.userDb.get();
+    var licenseKey = userSnap.exists ? (userSnap.data().licenseKey || null) : null;
+
+    if (!licenseKey) {
+      _downgradeLicenseToFree(null);
+      console.log('[Firebase] ยังไม่ได้ผูก License key, ตั้งเป็น Free');
+      return;
     }
-    
+
+    var db = firebase.firestore();
+    var doc = await db.collection('licenses').doc(licenseKey).get();
+
+    if (!doc.exists || doc.data().status !== 'active') {
+      _downgradeLicenseToFree('License ไม่พบหรือถูกระงับ ปรับเป็น Free');
+      return;
+    }
+
+    var license = doc.data();
+
+    if (license.expiresAt && Date.now() > license.expiresAt) {
+      _downgradeLicenseToFree('License หมดอายุแล้ว กรุณาติดต่อผู้ดูแลเพื่อต่ออายุ');
+      return;
+    }
+
+    if (license.activatedEmail && license.activatedEmail !== email) {
+      _downgradeLicenseToFree('License นี้ถูกผูกกับบัญชีอื่นแล้ว');
+      return;
+    }
+
+    await doc.ref.update({
+      usedCount: (license.usedCount || 0) + 1,
+      lastUsedAt: new Date().toISOString(),
+      lastUsedBy: window.location.hostname
+    });
+
+    localStorage.setItem('v1_coffee_license', JSON.stringify({
+      key: license.key || licenseKey,
+      tier: license.tier,
+      activatedAt: Date.now(),
+      trialExpiry: license.trialExpiry || null,
+      expiresAt: license.expiresAt || null
+    }));
+
+    LicenseManager.tier = license.tier;
+    LicenseManager.currentKey = license.key || licenseKey;
+
+    if (typeof LicenseManager.afterLicenseChange === 'function') {
+      LicenseManager.afterLicenseChange();
+    }
+
+    console.log('[Firebase] License loaded:', license.tier);
+
   } catch(e) {
     console.log('[Firebase] loadUserLicense error:', e);
+  }
+}
+
+function _downgradeLicenseToFree(toastMsg) {
+  var wasNotFree = typeof LicenseManager !== 'undefined' && LicenseManager.tier !== 'free';
+  localStorage.removeItem('v1_coffee_license');
+  if (typeof LicenseManager !== 'undefined') {
+    LicenseManager.tier = 'free';
+    LicenseManager.currentKey = null;
+    if (typeof LicenseManager.afterLicenseChange === 'function') {
+      LicenseManager.afterLicenseChange();
+    }
+  }
+  if (wasNotFree && toastMsg && typeof toast === 'function') {
+    toast('⚠️ ' + toastMsg, 'warning', 4000);
+  }
+}
+
+var licenseRevalidationInterval = null;
+
+function startLicenseRevalidation(email) {
+  stopLicenseRevalidation();
+  licenseRevalidationInterval = setInterval(function() {
+    if (window.currentUser) loadUserLicense(email);
+  }, 30 * 60 * 1000); /* ตรวจซ้ำทุก 30 นาทีระหว่างเปิดแอปทิ้งไว้ */
+}
+
+function stopLicenseRevalidation() {
+  if (licenseRevalidationInterval) {
+    clearInterval(licenseRevalidationInterval);
+    licenseRevalidationInterval = null;
   }
 }
 
@@ -362,7 +439,7 @@ function updateUIForLogout() {
 
 function loginWithGoogle() {
   if (typeof firebase === 'undefined') {
-    alert('Firebase ยังไม่ได้ตั้งค่า');
+    toast('Firebase ยังไม่ได้ตั้งค่า', 'error');
     return;
   }
   const provider = new firebase.auth.GoogleAuthProvider();

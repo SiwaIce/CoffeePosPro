@@ -295,7 +295,7 @@ function modalAddRecipeIngredient() {
 
   html += '<div class="form-row">';
   html += '<div class="form-group"><label class="form-label">ปริมาณที่ใช้</label>';
-  html += '<input type="number" id="recipeIngredientQty" placeholder="0" value="1" step="0.1" oninput="updateIngredientCost()"></div>';
+  html += '<input type="number" id="recipeIngredientQty" placeholder="0" value="1" min="0" step="0.1" oninput="updateIngredientCost()"></div>';
   html += '<div class="form-group"><label class="form-label">หน่วย</label>';
   html += '<input type="text" id="recipeIngredientUnit" readonly style="background:var(--bg-input);opacity:0.8;"></div>';
   html += '</div>';
@@ -330,7 +330,7 @@ function modalEditRecipeIngredient(stockId) {
   html += '<div class="form-group"><label class="form-label">วัตถุดิบ</label>';
   html += '<input type="text" value="' + sanitize(stockItem ? stockItem.name : '') + '" disabled></div>';
   html += '<div class="form-group"><label class="form-label">ปริมาณที่ใช้ (ต่อ 1 แก้ว/ชิ้น)</label>';
-  html += '<input type="number" id="recipeIngredientQty" value="' + ingredient.qty + '" step="0.1"></div>';
+  html += '<input type="number" id="recipeIngredientQty" value="' + ingredient.qty + '" min="0" step="0.1"></div>';
 
   var unitCost = (stockItem && stockItem.costPerUnit) ? stockItem.costPerUnit : (ingredient.unitCost || 0);
   html += '<div class="card-glass p-12 mt-8">';

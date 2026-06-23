@@ -99,9 +99,7 @@ document.addEventListener('keydown', function(e) {
     }
     
     if (hasUnsavedData) {
-      if (confirm('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?')) {
-        closeMForce();
-      }
+      confirmDialog('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?', closeMForce);
     } else {
       closeMForce();
     }
@@ -573,7 +571,7 @@ function modalPayment(cartItems, subtotal, discount, discountType) {
   html += '<div id="cashSection">';
   html += '<div class="form-group">';
   html += '<label class="form-label">เงินที่รับ</label>';
-  html += '<input type="number" id="payReceived" inputmode="numeric" value="' + grandTotal + '" placeholder="0" oninput="calcChange()" style="font-size:24px;text-align:center;font-weight:800;">';
+  html += '<input type="number" id="payReceived" inputmode="numeric" min="0" value="' + grandTotal + '" placeholder="0" oninput="calcChange()" style="font-size:24px;text-align:center;font-weight:800;">';
   html += '</div>';
 
   html += '<div class="flex flex-wrap gap-6 mb-16">';
@@ -969,11 +967,11 @@ function modalEditMenu(item) {
     html += '</label>';
     html += '<div class="form-group" style="margin-bottom:6px;">';
     html += '<label class="form-label fs-sm">ราคาขาย</label>';
-    html += '<input type="number" id="fMenuPrice_' + sizeName + '" value="' + priceValue + '" placeholder="0" inputmode="numeric" style="text-align:center;font-size:14px;" ' + (isActive ? '' : 'disabled') + '>';
+    html += '<input type="number" id="fMenuPrice_' + sizeName + '" value="' + priceValue + '" placeholder="0" min="0" inputmode="numeric" style="text-align:center;font-size:14px;" ' + (isActive ? '' : 'disabled') + '>';
     html += '</div>';
     html += '<div class="form-group" style="margin-bottom:0;">';
     html += '<label class="form-label fs-sm">ต้นทุน (Manual)</label>';
-    html += '<input type="number" id="fMenuCost_' + sizeName + '" value="' + costValue + '" placeholder="0" inputmode="numeric" style="text-align:center;font-size:14px;" ' + (isActive ? '' : 'disabled') + '>';
+    html += '<input type="number" id="fMenuCost_' + sizeName + '" value="' + costValue + '" placeholder="0" min="0" inputmode="numeric" style="text-align:center;font-size:14px;" ' + (isActive ? '' : 'disabled') + '>';
     html += '</div>';
     html += '</div>';
   }
@@ -1354,7 +1352,7 @@ function modalEditTopping(tp) {
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">ราคาเพิ่ม (฿)</label>';
-  html += '<input type="number" id="fTpPrice" value="' + (t.price || '') + '" placeholder="0" inputmode="numeric">';
+  html += '<input type="number" id="fTpPrice" value="' + (t.price || '') + '" placeholder="0" min="0" inputmode="numeric">';
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="toggle-wrap" onclick="toggleToggle(this)">';
@@ -1448,7 +1446,7 @@ function modalEditStock(item) {
   /* ขนาดต่อหน่วยใหญ่ */
   html += '<div class="form-row">';
   html += '<div class="form-group"><label class="form-label">1 หน่วยใหญ่ =</label>';
-  html += '<input type="number" id="fStkBigUnitSize" value="' + (s.bigUnitSize || '') + '" placeholder="1000" step="1" oninput="updateStockTotalQty()"></div>';
+  html += '<input type="number" id="fStkBigUnitSize" value="' + (s.bigUnitSize || '') + '" placeholder="1000" min="0" step="1" oninput="updateStockTotalQty()"></div>';
   html += '<div class="form-group"><label class="form-label" style="visibility:hidden;">.</label>';
   html += '<input type="text" id="fStkBigUnitDisplay" value="' + sanitize(s.unit || '') + '" readonly style="background:transparent;border:none;font-weight:600;" disabled></div>';
   html += '</div>';
@@ -1457,13 +1455,13 @@ function modalEditStock(item) {
   html += '<div class="form-group">';
   html += '<label class="form-label">จำนวนคงเหลือ</label>';
   html += '<div class="form-row">';
-  html += '<div class="form-group"><input type="number" id="fStkBigQty" value="' + bigQty + '" placeholder="0" step="1" oninput="updateStockTotalQty()"></div>';
+  html += '<div class="form-group"><input type="number" id="fStkBigQty" value="' + bigQty + '" placeholder="0" min="0" step="1" oninput="updateStockTotalQty()"></div>';
   if (s.bigUnit) {
     html += '<div class="form-group"><input type="text" value="' + sanitize(s.bigUnit) + '" readonly style="background:transparent;border:none;font-weight:600;"></div>';
   } else {
     html += '<div class="form-group"><input type="text" value="หน่วยใหญ่" readonly disabled style="background:transparent;border:none;"></div>';
   }
-  html += '<div class="form-group"><input type="number" id="fStkSmallQty" value="' + smallQty + '" placeholder="0" step="1" oninput="updateStockTotalQty()"></div>';
+  html += '<div class="form-group"><input type="number" id="fStkSmallQty" value="' + smallQty + '" placeholder="0" min="0" step="1" oninput="updateStockTotalQty()"></div>';
   html += '<div class="form-group"><input type="text" id="fStkUnitDisplay" value="' + sanitize(s.unit || '') + '" readonly style="background:transparent;border:none;font-weight:600;"></div>';
   html += '</div>';
   html += '</div>';
@@ -1477,7 +1475,7 @@ function modalEditStock(item) {
   /* ราคาต่อหน่วยใหญ่ */
   html += '<div class="form-group">';
   html += '<label class="form-label">ราคาต่อหน่วยใหญ่ (฿)</label>';
-  html += '<input type="number" id="fStkBigPrice" value="' + ((s.costPerUnit || 0) * (s.bigUnitSize || 1)).toFixed(2) + '" placeholder="0" step="0.01" oninput="updateStockCostAuto()">';
+  html += '<input type="number" id="fStkBigPrice" value="' + ((s.costPerUnit || 0) * (s.bigUnitSize || 1)).toFixed(2) + '" placeholder="0" min="0" step="0.01" oninput="updateStockCostAuto()">';
   html += '</div>';
   
   /* ต้นทุน/หน่วยย่อย (คำนวณอัตโนมัติ) */
@@ -1489,7 +1487,7 @@ function modalEditStock(item) {
   /* แจ้งเตือน */
   html += '<div class="form-group">';
   html += '<label class="form-label">แจ้งเตือนเมื่อเหลือ (หน่วยย่อย)</label>';
-  html += '<input type="number" id="fStkMin" value="' + (s.minQty || 0) + '" placeholder="0" step="1">';
+  html += '<input type="number" id="fStkMin" value="' + (s.minQty || 0) + '" placeholder="0" min="0" step="1">';
   html += '</div>';
   
   html += '<div class="form-hint">💡 ถ้ากรอกหน่วยใหญ่ ระบบจะแสดงผลเป็น "X กล่อง Y ml" อัตโนมัติ</div>';
@@ -1618,7 +1616,7 @@ function modalStockAdjust(item, type) {
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">จำนวน (' + sanitize(item.unit) + ')</label>';
-  html += '<input type="number" id="fAdjQty" value="" placeholder="0" inputmode="numeric" style="font-size:24px;text-align:center;">';
+  html += '<input type="number" id="fAdjQty" value="" placeholder="0" min="0" inputmode="numeric" style="font-size:24px;text-align:center;">';
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">หมายเหตุ</label>';
@@ -1876,17 +1874,18 @@ function saveStaffFromModal() {
 
 /* รีเซ็ตรหัสพนักงาน (Manager เท่านั้น) */
 function resetStaffPassword(staffId) {
-  var newPin = prompt('รหัสใหม่ 4 หลัก:', '0000');
-  if (!newPin || newPin.length !== 4) {
-    toast('PIN ต้อง 4 หลัก', 'error');
-    return;
-  }
-  
-  confirmDialog('รีเซ็ตรหัสพนักงานคนนี้?', function() {
-    ST.updateStaff(staffId, { pin: newPin });
-    toast('รีเซ็ตรหัสสำเร็จ', 'success');
-    closeMForce();
-    if (typeof renderStaffView === 'function') renderStaffView();
+  promptDialog('รหัสใหม่ 4 หลัก:', '0000', function(newPin) {
+    if (!newPin || newPin.length !== 4) {
+      toast('PIN ต้อง 4 หลัก', 'error');
+      return;
+    }
+
+    confirmDialog('รีเซ็ตรหัสพนักงานคนนี้?', function() {
+      ST.updateStaff(staffId, { pin: newPin });
+      toast('รีเซ็ตรหัสสำเร็จ', 'success');
+      closeMForce();
+      if (typeof renderStaffView === 'function') renderStaffView();
+    });
   });
 }
 
@@ -1941,9 +1940,7 @@ function toggleToggle(wrap) {
         }
         
         if (hasUnsavedData) {
-          if (confirm('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?')) {
-            closeMForce();
-          }
+          confirmDialog('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?', closeMForce);
         } else {
           closeMForce();
         }
@@ -1971,9 +1968,7 @@ function toggleToggle(wrap) {
         }
         
         if (hasUnsavedData) {
-          if (confirm('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?')) {
-            closeMForce();
-          }
+          confirmDialog('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?', closeMForce);
         } else {
           closeMForce();
         }
@@ -2030,9 +2025,7 @@ function isPOSPage() {
         }
         
         if (hasUnsavedData) {
-          if (confirm('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?')) {
-            closeMForce();
-          }
+          confirmDialog('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?', closeMForce);
         } else {
           closeMForce();
         }
@@ -2066,9 +2059,7 @@ function isPOSPage() {
         }
         
         if (hasUnsavedData) {
-          if (confirm('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?')) {
-            closeMForce();
-          }
+          confirmDialog('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?', closeMForce);
         } else {
           closeMForce();
         }
@@ -2114,9 +2105,7 @@ function handleModalOverlayClick(event) {
   }
   
   if (hasUnsavedData) {
-    if (confirm('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?')) {
-      closeMForce();
-    }
+    confirmDialog('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?', closeMForce);
   } else {
     closeMForce();
   }
@@ -2163,9 +2152,7 @@ function closeModalOnTouch(e) {
       }
       
       if (hasUnsavedData) {
-        if (confirm('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?')) {
-          closeMForce();
-        }
+        confirmDialog('มีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างหรือไม่?', closeMForce);
       } else {
         closeMForce();
       }

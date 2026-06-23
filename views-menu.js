@@ -510,7 +510,7 @@ function modalEditSize(sz) {
 
   html += '<div class="form-group">';
   html += '<label class="form-label">ราคาเพิ่มจาก Size แรก (฿)</label>';
-  html += '<input type="number" id="fSizeAdd" value="' + (s.addPrice || 0) + '" placeholder="0" inputmode="numeric">';
+  html += '<input type="number" id="fSizeAdd" value="' + (s.addPrice || 0) + '" placeholder="0" min="0" inputmode="numeric">';
   html += '<div class="form-hint">ใช้เป็น reference เท่านั้น — ราคาจริงกำหนดในแต่ละเมนู</div>';
   html += '</div>';
 
@@ -675,7 +675,7 @@ function modalEditDrinkType(item) {
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">ราคาเพิ่ม (฿)</label>';
-  html += '<input type="number" id="fDTPrice" value="' + (d.addPrice || '') + '" placeholder="0" inputmode="numeric">';
+  html += '<input type="number" id="fDTPrice" value="' + (d.addPrice || '') + '" placeholder="0" min="0" inputmode="numeric">';
   html += '</div>';
   html += '</div>';
 
@@ -743,7 +743,7 @@ function modalEditSweetLevel(item) {
   html += '</div>';
   html += '<div class="form-group">';
   html += '<label class="form-label">ราคาเพิ่ม (฿)</label>';
-  html += '<input type="number" id="fSWPrice" value="' + (s.addPrice || '') + '" placeholder="0" inputmode="numeric">';
+  html += '<input type="number" id="fSWPrice" value="' + (s.addPrice || '') + '" placeholder="0" min="0" inputmode="numeric">';
   html += '</div>';
   html += '</div>';
 
