@@ -439,12 +439,14 @@ function renderMenuItems() {
       }
     }
 
+    var soldOut = it.soldOut === true;
+
     var dataAttrs = '';
     dataAttrs += ' data-font="' + fontSize + '"';
     dataAttrs += ' data-shadow="' + showShadow + '"';
     dataAttrs += ' data-border="' + showBorder + '"';
 
-    html += '<div class="menu-item anim-fadeUp"' + dataAttrs + ' style="--card-radius: ' + cardRadius + 'px;" onclick="onMenuItemClick(\'' + sanitize(it.id) + '\')">';
+    html += '<div class="menu-item anim-fadeUp' + (soldOut ? ' is-soldout' : '') + '"' + dataAttrs + ' style="--card-radius: ' + cardRadius + 'px;" onclick="onMenuItemClick(\'' + sanitize(it.id) + '\')">';
 
     // ปุ่มโปรด (⭐) — มุมซ้ายบนเสมอ
     var isFav = ST.isFavorite(it.id);
@@ -461,8 +463,24 @@ function renderMenuItems() {
     } else {
       html += '<div class="menu-item-emoji">' + (it.emoji || '☕') + '</div>';
     }
+
+    // ป้ายพิเศษ — มุมซ้ายล่างของรูปเสมอ (ตรงข้ามปุ่ม +) — ไม่แสดงถ้าหมดชั่วคราว เพราะมีป้าย "หมดชั่วคราว" แทนปุ่ม + อยู่แล้ว
+    if (soldOut) {
+      // no-op
+    } else if (it.badge === 'new') {
+      html += '<div class="menu-item-tag menu-item-tag--new">🆕 ใหม่</div>';
+    } else if (it.badge === 'bestseller') {
+      html += '<div class="menu-item-tag menu-item-tag--bestseller">🔥 ขายดี</div>';
+    } else if (it.badge === 'promo' && it.badgeText) {
+      html += '<div class="menu-item-tag menu-item-tag--promo">' + sanitize(it.badgeText) + '</div>';
+    }
+
     // ปุ่ม Quick Add (+) — มุมขวาล่างของรูปเสมอ ไม่ขึ้นกับสไตล์การ์ด
-    html += '<button class="quick-add-btn" onclick="event.stopPropagation(); quickAddToCart(\'' + sanitize(it.id) + '\')" title="เพิ่มเข้าตะกร้าทันที">+</button>';
+    if (soldOut) {
+      html += '<div class="menu-item-soldout-overlay">หมดชั่วคราว</div>';
+    } else {
+      html += '<button class="quick-add-btn" onclick="event.stopPropagation(); quickAddToCart(\'' + sanitize(it.id) + '\', this)" title="เพิ่มเข้าตะกร้าทันที">+</button>';
+    }
     html += '</div>';
 
     // ชื่อและราคา
@@ -501,6 +519,10 @@ function onMenuItemClick(menuId) {
   var items = ST.getMenu();
   var item = findById(items, menuId);
   if (!item) return;
+  if (item.soldOut === true) {
+    toast('เมนูนี้หมดชั่วคราว', 'error');
+    return;
+  }
   vibrate(30);
   var sizes = ST.getSizes();
   var prices = item.prices || {};
@@ -1689,11 +1711,21 @@ function cancelHoldOrderFromModal(holdId) {
 // ============================================
 // QUICK ADD TO CART - เพิ่มเข้าตะกร้าทันที (ใช้ค่า default)
 // ============================================
-function quickAddToCart(menuId) {
+function quickAddToCart(menuId, btn) {
   var menu = findById(ST.getMenu(), menuId);
   if (!menu) {
     toast('ไม่พบเมนู', 'error');
     return;
+  }
+  if (menu.soldOut === true) {
+    toast('เมนูนี้หมดชั่วคราว', 'error');
+    return;
+  }
+
+  if (btn) {
+    btn.classList.remove('pop');
+    void btn.offsetWidth; /* restart animation */
+    btn.classList.add('pop');
   }
   
   // 1. หาขนาดเริ่มต้น (ขนาดแรกที่มีราคา)
@@ -1792,65 +1824,5 @@ function quickAddToCart(menuId) {
   toast('➕ ' + menu.name + ' x1', 'success', 1200);
   vibrate(30);
   if (typeof playSound === 'function') playSound('add');
-}
-// ตรวจสอบว่าฟังก์ชันมีอยู่จริง
-if (typeof quickAddToCart !== 'function') {
-  window.quickAddToCart = function(menuId) {
-    console.log('Quick add:', menuId);
-    var menu = findById(ST.getMenu(), menuId);
-    if (!menu) {
-      toast('ไม่พบเมนู', 'error');
-      return;
-    }
-    
-    // หาขนาดเริ่มต้น
-    var sizes = ST.getSizes();
-    var prices = menu.prices || {};
-    var defaultSize = null;
-    var defaultPrice = 0;
-    for (var i = 0; i < sizes.length; i++) {
-      var price = prices[sizes[i].name];
-      if (price && price > 0) {
-        defaultSize = sizes[i].name;
-        defaultPrice = price;
-        break;
-      }
-    }
-    if (!defaultSize) {
-      toast('ไม่มีขนาดที่เปิดขาย', 'error');
-      return;
-    }
-    
-    var cartItem = {
-      id: genId('ci'),
-      menuId: menu.id,
-      name: menu.name,
-      size: defaultSize,
-      drinkType: '',
-      drinkTypeName: '',
-      drinkTypePrice: 0,
-      sweetLevel: '',
-      sweetName: '',
-      sweetPrice: 0,
-      toppings: [],
-      toppingNames: [],
-      qty: 1,
-      unitPrice: defaultPrice,
-      toppingPrice: 0,
-      lineTotal: defaultPrice,
-      note: ''
-    };
-    
-    if (typeof addToCart === 'function') {
-      addToCart(cartItem);
-    } else {
-      console.error('addToCart not found');
-      POS.cart.push(cartItem);
-      refreshCartUI();
-    }
-    
-    toast('➕ ' + menu.name + ' x1', 'success', 1200);
-    vibrate(30);
-  };
 }
 console.log('[views-pos.js] loaded');

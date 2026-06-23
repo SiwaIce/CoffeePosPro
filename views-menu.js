@@ -194,24 +194,30 @@ function renderMenuManageCard(item, cats) {
   // ข้อมูลด้านขวา
   html += '<div class="menu-manage-info" style="' + infoStyle + '">';
   
-  // บรรทัดที่ 1: ชื่อ + สถานะ
+  // สวิตช์เปิด/ปิดขาย — กดได้ตรงบนการ์ดเลย ไม่ต้องเปิด modal
+  var toggleHtml = '<label class="menu-manage-toggle toggle-wrap" onclick="event.stopPropagation(); toggleMenuActiveInline(\'' + sanitize(item.id) + '\')">' +
+    '<div class="toggle' + (isActive ? ' on' : '') + '" style="width:34px;height:18px;"></div>' +
+    '</label>';
+
+  // บรรทัดที่ 1: ชื่อ + สวิตช์
   if (statusInline) {
     html += '<div class="menu-manage-name" style="' + nameStyle + '">';
     html += '<span class="menu-manage-name-text" style="' + textAlignStyle + '">' + sanitize(item.name) + '</span>';
-    html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
+    html += toggleHtml;
     html += '</div>';
   } else {
     html += '<div class="menu-manage-name" style="' + nameStyle + ' ' + textAlignStyle + '">' + sanitize(item.name) + '</div>';
     html += '<div class="menu-manage-status-row" style="' + textAlignStyle + '">';
-    html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิดขาย' : 'ปิด') + '</span>';
+    html += toggleHtml;
     html += '</div>';
   }
-  
-  // หมวดหมู่
+
+  // หมวดหมู่ — มีจุดสีตามหมวดเพื่อแยกด้วยตาได้ง่าย
   var cat = findById(cats, item.catId);
   var catName = cat ? (cat.icon + ' ' + cat.name) : '';
-  html += '<div class="menu-manage-cat" style="' + textAlignStyle + '">' + catName + '</div>';
-  
+  var catColor = catColorFromId(item.catId);
+  html += '<div class="menu-manage-cat" style="' + textAlignStyle + '"><span class="menu-manage-cat-dot" style="background:' + catColor + ';"></span>' + catName + '</div>';
+
   // ราคา
   var sizes = ST.getSizes();
   html += '<div class="menu-manage-prices" style="' + textAlignStyle + '">';
@@ -222,19 +228,41 @@ function renderMenuManageCard(item, cats) {
     }
   }
   html += '</div>';
-  
-  // ต้นทุน/กำไร
+
+  // ต้นทุน/กำไร — แถบสีบอกระดับกำไรแบบรวดเร็ว (เขียว=กำไรดี, เหลือง=พอใช้, แดง=น้อย/ขาดทุน)
   var basePrice = ST.getMenuBasePrice(item);
   var cost = item.cost || 0;
   if (cost > 0) {
     var profit = basePrice - cost;
-    html += '<div class="menu-manage-cost" style="' + textAlignStyle + '">💰 ต้นทุน ' + formatMoneySign(cost) + ' | กำไร ' + formatMoneySign(profit) + '</div>';
+    var margin = basePrice > 0 ? (profit / basePrice) : 0;
+    var marginClass = margin >= 0.4 ? 'good' : (margin >= 0.2 ? 'ok' : 'low');
+    html += '<div class="menu-manage-cost menu-manage-cost--' + marginClass + '" style="' + textAlignStyle + '">💰 ต้นทุน ' + formatMoneySign(cost) + ' | กำไร ' + formatMoneySign(profit) + '</div>';
   }
-  
+
   html += '</div>'; // end menu-manage-info
   html += '</div>'; // end menu-manage-card
-  
+
   return html;
+}
+
+function toggleMenuActiveInline(menuId) {
+  var item = findById(ST.getMenu(), menuId);
+  if (!item) return;
+  var newActive = item.active === false;
+  ST.updateMenuItem(menuId, { active: newActive });
+  toast(newActive ? '✅ เปิดขายแล้ว' : '🔒 ปิดขายแล้ว', 'success', 1200);
+  if (typeof renderMenuView === 'function') renderMenuView();
+  if (typeof renderPOSView === 'function' && typeof APP !== 'undefined' && APP.currentView === 'pos') renderPOSView();
+}
+
+var _catColorPalette = ['#f97316', '#3b82f6', '#22c55e', '#a855f7', '#ec4899', '#06b6d4', '#eab308', '#ef4444'];
+function catColorFromId(catId) {
+  if (!catId) return _catColorPalette[0];
+  var hash = 0;
+  for (var i = 0; i < catId.length; i++) {
+    hash = (hash * 31 + catId.charCodeAt(i)) % _catColorPalette.length;
+  }
+  return _catColorPalette[Math.abs(hash)];
 }
 // ============================================
 // BATCH TOGGLE - เปิด/ปิดเมนูทีละหลายรายการ

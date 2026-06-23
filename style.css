@@ -505,9 +505,11 @@ select { -webkit-appearance: none; appearance: none; }
   gap: 8px;
   cursor: pointer;
 }
-.checkbox-wrap input[type="checkbox"] {
+.checkbox-wrap input[type="checkbox"],
+.checkbox-wrap input[type="radio"] {
   width: 18px;
   height: 18px;
+  flex-shrink: 0;
   accent-color: var(--accent);
 }
 
@@ -2387,7 +2389,7 @@ input:focus, select:focus, textarea:focus {
    ป้องกัน keyboard เด้งขึ้นบัง
    ============================================ */
 
-input, select, textarea {
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
   font-size: 16px !important; /* ป้องกัน zoom บน iOS */
 }
 
@@ -3158,6 +3160,17 @@ html {
 .menu-manage-cat {
   font-size: 12px;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.menu-manage-cat-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 /* ราคา */
@@ -3177,11 +3190,20 @@ html {
   font-weight: 600;
 }
 
-/* ต้นทุน/กำไร */
+/* ต้นทุน/กำไร — สีบอกระดับกำไร */
 .menu-manage-cost {
   font-size: 11px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+.menu-manage-cost--good { color: var(--success); }
+.menu-manage-cost--ok { color: var(--warning); }
+.menu-manage-cost--low { color: var(--danger); }
+
+/* สวิตช์เปิด/ปิดขายบนการ์ด */
+.menu-manage-toggle {
+  flex-shrink: 0;
+  margin: 0;
 }
 
 /* Responsive มือถือ */
@@ -3189,16 +3211,16 @@ html {
   .menu-manage-name {
     font-size: calc(var(--name-font-size, 15px) - 1px);
   }
-  
+
   .menu-manage-price-badge {
     font-size: 10px;
     padding: 2px 6px;
   }
-  
+
   .menu-manage-cat {
     font-size: 11px;
   }
-  
+
   .menu-manage-cost {
     font-size: 10px;
   }
@@ -3411,6 +3433,58 @@ html {
 }
 .menu-item .quick-add-btn:active {
   transform: scale(0.95);
+}
+.menu-item .quick-add-btn.pop {
+  animation: quickAddPop 0.32s ease;
+}
+@keyframes quickAddPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+/* ป้ายพิเศษ (ใหม่/ขายดี/โปร/หมด) — มุมซ้ายล่างของรูปเสมอ */
+.menu-item-tag {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 4;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  color: #fff;
+  white-space: nowrap;
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.menu-item-tag--new { background: #2563eb; }
+.menu-item-tag--bestseller { background: #dc2626; }
+.menu-item-tag--promo { background: #16a34a; }
+
+/* การ์ดสินค้าหมดชั่วคราว */
+.menu-item.is-soldout {
+  cursor: default;
+}
+.menu-item.is-soldout .menu-item-media {
+  filter: grayscale(0.6) brightness(0.6);
+}
+.menu-item.is-soldout .menu-item-info {
+  opacity: 0.5;
+}
+.menu-item-soldout-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 4;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  white-space: nowrap;
 }
 
 /* Responsive — แท็บเล็ต/มือถือ ปุ่มยังกดง่าย ไม่บังข้อความ */

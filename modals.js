@@ -1076,6 +1076,26 @@ function modalEditMenu(item) {
   html += '</label>';
   html += '</div>';
 
+  /* หมดชั่วคราว */
+  html += '<div class="form-group">';
+  html += '<label class="toggle-wrap" onclick="toggleToggle(this)">';
+  html += '<div class="toggle' + (m.soldOut === true ? ' on' : '') + '" id="fMenuSoldOut"></div>';
+  html += '<span>🚫 หมดชั่วคราว (แสดงในเมนูแต่กดสั่งไม่ได้)</span>';
+  html += '</label>';
+  html += '</div>';
+
+  /* ป้ายพิเศษ */
+  html += '<div class="form-group">';
+  html += '<label class="form-label">ป้ายพิเศษบนการ์ด</label>';
+  html += '<select id="fMenuBadge" onchange="onMenuBadgeChange(this)">';
+  html += '<option value=""' + (!m.badge ? ' selected' : '') + '>ไม่มี</option>';
+  html += '<option value="new"' + (m.badge === 'new' ? ' selected' : '') + '>🆕 ใหม่</option>';
+  html += '<option value="bestseller"' + (m.badge === 'bestseller' ? ' selected' : '') + '>🔥 ขายดี</option>';
+  html += '<option value="promo"' + (m.badge === 'promo' ? ' selected' : '') + '>🏷️ โปรโมชั่น (กำหนดข้อความเอง)</option>';
+  html += '</select>';
+  html += '<input type="text" id="fMenuBadgeText" value="' + sanitize(m.badgeText || '') + '" placeholder="เช่น ลด 10%" style="margin-top:8px;' + (m.badge === 'promo' ? '' : 'display:none;') + '">';
+  html += '</div>';
+
   /* รูปเมนู (เฉพาะ Pro) */
   if (typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image')) {
     html += '<div class="form-group">';
@@ -1116,6 +1136,11 @@ function modalEditMenu(item) {
   openModal(isNew ? '➕ เพิ่มเมนู' : '✏️ แก้ไขเมนู', html, footer);
 }
 
+function onMenuBadgeChange(select) {
+  var textInput = $('fMenuBadgeText');
+  if (textInput) textInput.style.display = (select.value === 'promo') ? '' : 'none';
+}
+
 /* ฟังก์ชันไปที่หน้า Recipe สำหรับเมนูนี้ */
 function goToRecipeForMenu(menuId) {
   if (typeof RECIPE_VIEW !== 'undefined') {
@@ -1126,39 +1151,6 @@ function goToRecipeForMenu(menuId) {
     nav('recipe');
   }
 }
-/* ============================================
-   modals.js — เพิ่มส่วนนี้ในฟังก์ชัน modalEditMenu
-   แทนที่โค้ดส่วนรูปเมนูเดิม (ประมาณบรรทัด 1100-1120)
-   ============================================ */
-
-/* รูปเมนู (เฉพาะ Super Admin เท่านั้น) */
-var isSuperAdmin = (typeof SuperAdmin !== 'undefined' && SuperAdmin.isLoggedIn);
-
-if (typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image') && isSuperAdmin) {
-  html += '<div class="form-group">';
-  html += '<label class="form-label">🖼️ รูปเมนู (URL)</label>';
-  html += '<input type="text" id="fMenuImage" value="' + sanitize(m.image || '') + '" placeholder="https://...">';
-  html += '<div class="form-hint">ใส่ลิงก์รูป (แนะนำ 200x200px) ถ้าไม่มีจะใช้ Emoji แทน</div>';
-  html += '<div id="imagePreview" style="margin-top:8px;"></div>';
-  html += '</div>';
-  
-  // เพิ่ม script preview รูป
-  html += '<script>';
-  html += 'function previewMenuImage() {';
-  html += '  var url = document.getElementById("fMenuImage").value;';
-  html += '  var preview = document.getElementById("imagePreview");';
-  html += '  if (preview && url) {';
-  html += '    preview.innerHTML = "<img src=\\"" + url + "\\" style=\\"max-width:80px;max-height:80px;border-radius:8px;margin-top:8px;\\" onerror=\\"this.style.display=\'none\'\\">";';
-  html += '  } else if (preview) {';
-  html += '    preview.innerHTML = "";';
-  html += '  }';
-  html += '}';
-  html += 'setTimeout(function(){ previewMenuImage(); }, 100);';
-  html += 'var imgInput = document.getElementById("fMenuImage");';
-  html += 'if (imgInput) imgInput.oninput = previewMenuImage;';
-  html += '</script>';
-}
-
 function toggleSizePrice(checkbox) {
   var sizeName = checkbox.getAttribute('data-size');
   var priceInput = $('fMenuPrice_' + sizeName);
@@ -1220,6 +1212,9 @@ function saveMenuFromModal() {
     if (dtChecks[d].checked) availDrinkTypes.push(dtChecks[d].value);
   }
 
+  var badgeSelect = $('fMenuBadge');
+  var badgeValue = badgeSelect ? badgeSelect.value : '';
+
   var data = {
     name: name,
     catId: ($('fMenuCat') || {}).value || '',
@@ -1228,6 +1223,9 @@ function saveMenuFromModal() {
     costs: costs,
     sizeActive: sizeActive,
     active: hasClass($('fMenuActive'), 'on'),
+    soldOut: hasClass($('fMenuSoldOut'), 'on'),
+    badge: badgeValue,
+    badgeText: badgeValue === 'promo' ? (($('fMenuBadgeText') || {}).value || '').trim() : '',
     allowDrinkType: allowDrinkType,
     availableDrinkTypes: availDrinkTypes,
     allowSweetLevel: hasClass($('fMenuAllowSweet'), 'on')
