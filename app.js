@@ -191,6 +191,7 @@ function pinSubmit() {
   var staff = ST.verifyPin(pin);
   if (staff) {
     ST.resetPinAttempts();
+    clearManagerApprovalCache();
     APP.currentStaff = staff;
     
     // 🔥 ตั้งค่า isStaffLoggedIn
@@ -318,12 +319,13 @@ function logoutStaff() {
     if (activeShift) ST.clockOut(activeShift.id);
     var name = APP.currentStaff.name;
     APP.currentStaff = null;
-    
+    clearManagerApprovalCache();
+
     // 🔥 ตั้งค่า isStaffLoggedIn เป็น false
     if (typeof window !== 'undefined') {
       window.isStaffLoggedIn = false;
     }
-    
+
     ST.remove('current_session');
     
     // 🔥 อย่าลบ license! เพราะ Email ยัง Login อยู่
@@ -408,6 +410,30 @@ function renderView(view) {
   }
 }
 /* ============================================
+   จำสถานะ "ผู้จัดการอนุมัติแล้ววันนี้" — ไม่ต้องใส่ PIN ซ้ำทุกครั้งในวันเดียวกัน
+   ผูกกับ "วันที่ + พนักงานที่ login อยู่" — ล้างทันทีที่สลับบัญชี (login/logout)
+   ============================================ */
+function isManagerApprovedToday() {
+  var cache = ST.getObj('manager_approved_today', null);
+  if (!cache) return false;
+  if (cache.date !== new Date().toDateString()) return false;
+  var currentStaffId = (typeof APP !== 'undefined' && APP.currentStaff) ? APP.currentStaff.id : null;
+  return cache.staffId === currentStaffId;
+}
+
+function markManagerApprovedToday(approvedByName) {
+  ST.setObj('manager_approved_today', {
+    date: new Date().toDateString(),
+    staffId: (typeof APP !== 'undefined' && APP.currentStaff) ? APP.currentStaff.id : null,
+    approvedBy: approvedByName || ''
+  });
+}
+
+function clearManagerApprovalCache() {
+  ST.setObj('manager_approved_today', null);
+}
+
+/* ============================================
    MANAGER PIN OVERRIDE
    ============================================ */
 var _pendingView = null;
@@ -480,6 +506,7 @@ function submitManagerPIN() {
   
   if (manager) {
     ST.resetPinAttempts();
+    clearManagerApprovalCache();
     closeMForce();
 
     /* 🔥 สำคัญ: ตั้งค่า currentStaff เป็น manager คนนี้ */
@@ -539,6 +566,12 @@ function submitManagerPIN() {
 var _pendingApprovalCallback = null;
 
 function requestManagerApproval(reason, callback) {
+  if (isManagerApprovedToday()) {
+    var cache = ST.getObj('manager_approved_today', null);
+    callback && callback({ name: cache ? cache.approvedBy : 'ผู้จัดการ' });
+    return;
+  }
+
   _pendingApprovalCallback = callback;
 
   var html = '';
@@ -588,6 +621,7 @@ function submitManagerApproval() {
 
   if (manager) {
     ST.resetPinAttempts();
+    markManagerApprovedToday(manager.name);
     var cb = _pendingApprovalCallback;
     _pendingApprovalCallback = null;
     cb && cb(manager);
@@ -1572,4 +1606,54 @@ function restoreSession() {
   
   return false;
 }
+/* ============================================
+   ล็อกการหมุนจอ — ใช้ได้เฉพาะ Android เมื่อติดตั้งเป็นแอป (standalone PWA)
+   iOS Safari ไม่รองรับ Screen Orientation Lock API เลย (ข้อจำกัดของ WebKit)
+   ============================================ */
+function applyOrientationLock() {
+  var cfg = ST.getConfig();
+  var mode = cfg.orientationLock || 'any';
+
+  if (!screen.orientation || typeof screen.orientation.lock !== 'function') return;
+
+  if (mode === 'any') {
+    try { screen.orientation.unlock(); } catch (e) {}
+    return;
+  }
+
+  try {
+    var p = screen.orientation.lock(mode);
+    if (p && typeof p.catch === 'function') {
+      p.catch(function(e) { console.warn('[Orientation] lock failed:', e.message); });
+    }
+  } catch (e) {
+    console.warn('[Orientation] lock not supported:', e.message);
+  }
+}
+
+function setOrientationLock(mode) {
+  var cfg = ST.getConfig();
+  cfg.orientationLock = mode;
+  ST.saveConfig(cfg);
+  applyOrientationLock();
+
+  if (mode === 'any') {
+    toast('🔄 ปรับเป็นหมุนตามอุปกรณ์แล้ว', 'success');
+    return;
+  }
+
+  var supported = !!(screen.orientation && typeof screen.orientation.lock === 'function');
+  var isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+
+  if (!supported) {
+    toast('⚠️ อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับการล็อกจอ (ใช้ได้เฉพาะ Android)', 'warning', 4000);
+  } else if (!isStandalone) {
+    toast('⚠️ บันทึกค่าไว้แล้ว แต่ต้องติดตั้งแอปลงหน้าจอโฮมก่อน (Add to Home Screen) ถึงจะล็อกจอได้จริง', 'warning', 4000);
+  } else {
+    toast('🔒 ล็อกจอแล้ว', 'success');
+  }
+}
+
+setTimeout(function() { applyOrientationLock(); }, 500);
+
 console.log('[app.js] loaded');

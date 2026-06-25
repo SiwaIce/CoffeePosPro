@@ -107,7 +107,7 @@ function renderMenuList() {
   }
   html += '</select>';
   html += '<button class="btn btn-primary btn-sm" onclick="modalEditMenu(null)">➕ เพิ่มเมนู</button>';
-    html += '<button class="btn btn-secondary btn-sm" onclick="showBatchToggleModal()">🔘 จัดการเมนูที่เปิดขาย</button>';
+    html += '<button class="btn btn-secondary btn-sm" onclick="showBatchToggleModal(\'menu\')">🔘 จัดการเมนูที่เปิดขาย</button>';
   html += '</div>';
 
   html += '</div>';
@@ -265,23 +265,43 @@ function catColorFromId(catId) {
   return _catColorPalette[Math.abs(hash)];
 }
 // ============================================
-// BATCH TOGGLE - เปิด/ปิดเมนูทีละหลายรายการ
+// BATCH TOGGLE - เปิด/ปิดทีละหลายรายการ (ใช้ร่วมกันได้หลายแท็บ: เมนู, Topping, ...)
 // ============================================
+var _batchToggleEntity = 'menu';
+var BATCH_TOGGLE_CONFIG = {
+  menu: {
+    title: '🔘 จัดการเมนูที่เปิดขาย',
+    emoji: '☕',
+    getList: function() { return ST.getMenu(); },
+    update: function(id, data) { return ST.updateMenuItem(id, data); },
+    refresh: function() { if (typeof renderMenuView === 'function') renderMenuView(); }
+  },
+  topping: {
+    title: '🔘 จัดการ Topping ที่เปิดขาย',
+    emoji: '🧁',
+    getList: function() { return ST.getToppings(); },
+    update: function(id, data) { return ST.updateTopping(id, data); },
+    refresh: function() { if (typeof renderMenuView === 'function') renderMenuView(); }
+  }
+};
 
-function showBatchToggleModal() {
-  var menuItems = ST.getMenu();
+function showBatchToggleModal(entityType) {
+  _batchToggleEntity = entityType || 'menu';
+  var c = BATCH_TOGGLE_CONFIG[_batchToggleEntity];
+  if (!c) return;
+  var items = c.getList();
   var html = '';
-  
+
   html += '<div class="batch-toggle-header mb-16">';
   html += '<div class="flex gap-8 mb-12">';
   html += '<button class="btn btn-secondary btn-sm" onclick="selectAllMenus(true)">☑️ เลือกทั้งหมด</button>';
   html += '<button class="btn btn-secondary btn-sm" onclick="selectAllMenus(false)">☐ ยกเลิกทั้งหมด</button>';
   html += '</div>';
   html += '</div>';
-  
+
   html += '<div class="batch-toggle-list" style="max-height:400px;overflow-y:auto;">';
-  for (var i = 0; i < menuItems.length; i++) {
-    var item = menuItems[i];
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
     var isActive = item.active !== false;
     html += '<div class="batch-toggle-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">';
     html += '<div class="flex gap-12" style="align-items:center;">';
@@ -292,12 +312,12 @@ function showBatchToggleModal() {
     html += '</div>';
   }
   html += '</div>';
-  
+
   var footer = '';
   footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
   footer += '<button class="btn btn-primary" onclick="saveBatchToggle()">💾 บันทึก</button>';
-  
-  openModal('🔘 จัดการเมนูที่เปิดขาย', html, footer, { wide: true });
+
+  openModal(c.title, html, footer, { wide: true });
 }
 
 function selectAllMenus(checked) {
@@ -308,23 +328,23 @@ function selectAllMenus(checked) {
 }
 
 function saveBatchToggle() {
+  var c = BATCH_TOGGLE_CONFIG[_batchToggleEntity] || BATCH_TOGGLE_CONFIG.menu;
   var checkboxes = document.querySelectorAll('.batch-menu-checkbox');
   var updates = [];
-  
+
   for (var i = 0; i < checkboxes.length; i++) {
     var id = checkboxes[i].getAttribute('data-id');
     var isActive = checkboxes[i].checked;
     updates.push({ id: id, active: isActive });
   }
-  
-  // อัปเดตทีละรายการ
+
   for (var u = 0; u < updates.length; u++) {
-    ST.updateMenuItem(updates[u].id, { active: updates[u].active });
+    c.update(updates[u].id, { active: updates[u].active });
   }
-  
+
   closeMForce();
-  toast('อัปเดตสถานะเมนูเรียบร้อย', 'success');
-  renderMenuView(); // รีเฟรชหน้า
+  toast('อัปเดตสถานะเรียบร้อย', 'success');
+  c.refresh();
 }
 function menuListSearch(val) {
   _menuListSearchDebounce(val);
@@ -411,7 +431,10 @@ function renderToppingList() {
   /* Header */
   html += '<div class="flex-between mb-16">';
   html += '<div class="text-muted">Topping ทั้งหมด ' + toppings.length + ' รายการ</div>';
+  html += '<div class="flex gap-8">';
   html += '<button class="btn btn-primary btn-sm" onclick="modalEditTopping(null)">➕ เพิ่ม Topping</button>';
+  html += '<button class="btn btn-secondary btn-sm" onclick="showBatchToggleModal(\'topping\')">🔘 จัดการ Topping ที่เปิดขาย</button>';
+  html += '</div>';
   html += '</div>';
 
   if (toppings.length === 0) {

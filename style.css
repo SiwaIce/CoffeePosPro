@@ -1973,10 +1973,10 @@ input:focus, select:focus, textarea:focus {
   .modal-footer { padding: 10px 16px; }
   .modal-title { font-size: 15px; }
 
-  /* Toast */
+  /* Toast — เผื่อพื้นที่แถบตะกร้าลอย (.mobile-cart-bar) ที่อยู่เหนือ bottomnav อีกชั้น ไม่งั้น toast จะโผล่ไปซ้อนแถบนั้น */
   .toast-container {
     top: auto;
-    bottom: calc(var(--bottomnav-h) + 14px);
+    bottom: calc(var(--bottomnav-h) + 78px);
     right: 10px;
     left: 10px;
   }

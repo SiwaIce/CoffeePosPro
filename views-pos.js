@@ -1304,6 +1304,7 @@ function toggleUseMemberPoints() {
    ============================================ */
 function saveAsHoldOrder() {
   if (POS.cart.length === 0) { toast('ไม่มีรายการในตะกร้า', 'warning'); return; }
+  if (POS.drawerOpen) closeCartDrawer();
   var cfg = ST.getConfig();
   var subtotal = calcCartSubtotal();
   var grandTotal = calcGrandTotal();

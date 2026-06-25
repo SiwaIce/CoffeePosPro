@@ -574,6 +574,19 @@ function renderShopSettings() {
   html += '</div>';
 
   html += '<div class="card mb-16">';
+  html += '<div class="card-header"><div class="card-title">📱 ล็อกการหมุนจอ</div></div>';
+  html += '<div class="text-muted fs-sm mb-12">ใช้ได้เฉพาะ Android และต้องติดตั้งแอปลงหน้าจอโฮม (Add to Home Screen) ก่อน — บน iPhone เบราว์เซอร์ไม่รองรับฟีเจอร์นี้</div>';
+  html += '<div class="form-group">';
+  html += '<label class="form-label">ทิศทางจอ</label>';
+  html += '<select id="cfgOrientationLock" onchange="setOrientationLock(this.value)">';
+  html += '<option value="any"' + (!cfg.orientationLock || cfg.orientationLock === 'any' ? ' selected' : '') + '>🔄 หมุนตามอุปกรณ์ (ปกติ)</option>';
+  html += '<option value="portrait"' + (cfg.orientationLock === 'portrait' ? ' selected' : '') + '>📱 แนวตั้งเท่านั้น</option>';
+  html += '<option value="landscape"' + (cfg.orientationLock === 'landscape' ? ' selected' : '') + '>📱 แนวนอนเท่านั้น</option>';
+  html += '</select>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<div class="card mb-16">';
   html += '<div class="card-header"><div class="card-title">📱 QR PromptPay</div></div>';
   html += '<div class="form-group">';
   html += '<label class="toggle-wrap" onclick="toggleToggle(this)">';
@@ -1030,48 +1043,16 @@ function renderStaffSettings() {
 }
 
 // 🔥 ฟังก์ชันยืนยัน PIN ผู้จัดการก่อนทำรายการสำคัญ
+// (เดิม serialize callback เป็น string แล้ว eval ทีหลัง — พังกับ anonymous function เสมอ
+//  เปลี่ยนมาใช้ requestManagerApproval ที่เก็บ callback จริงไว้ในตัวแปร ไม่ผ่าน string/eval)
 function verifyManagerBeforeAction(callback) {
-  var html = '';
-  html += '<div class="text-center mb-16">';
-  html += '<div style="font-size:48px;margin-bottom:8px;">👑</div>';
-  html += '<div class="fw-700 fs-lg mb-4">ยืนยันสิทธิ์ผู้จัดการ</div>';
-  html += '<div class="text-muted fs-sm mb-8">กรุณาใส่ PIN ผู้จัดการ</div>';
-  html += '</div>';
-  
-  html += '<div class="form-group">';
-  html += '<label class="form-label">PIN ผู้จัดการ</label>';
-  html += '<input type="password" id="managerPinInput" placeholder="****" maxlength="4" inputmode="numeric" style="font-size:24px;text-align:center;letter-spacing:8px;">';
-  html += '</div>';
-  
-  var footer = '';
-  footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
-  footer += '<button class="btn btn-primary" onclick="submitManagerVerify(\'' + callback.toString() + '\')">ยืนยัน</button>';
-  
-  openModal('🔐 ยืนยันสิทธิ์', html, footer);
-}
-
-function submitManagerVerify(callbackStr) {
-  var pin = ($('managerPinInput') || {}).value;
-  if (!pin || pin.length !== 4) {
-    toast('PIN ต้อง 4 หลัก', 'error');
+  if (typeof isManagerApprovedToday === 'function' && isManagerApprovedToday()) {
+    callback && callback();
     return;
   }
-  
-  var staffList = ST.getStaff();
-  var isManager = false;
-  for (var i = 0; i < staffList.length; i++) {
-    if (staffList[i].pin === pin && staffList[i].role === 'manager') {
-      isManager = true;
-      break;
-    }
-  }
-  
-  if (isManager) {
-    closeMForce();
-    eval(callbackStr);
-  } else {
-    toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
-  }
+  requestManagerApproval('กรุณาใส่ PIN ผู้จัดการเพื่อยืนยันสิทธิ์', function() {
+    callback && callback();
+  });
 }
 function renderStaffCard(staff, allShifts) {
   var isActive = staff.active !== false;
@@ -1335,7 +1316,8 @@ function logoutStaff() {
     if (activeShift) ST.clockOut(activeShift.id);
     var name = APP.currentStaff.name;
     APP.currentStaff = null;
-    
+    clearManagerApprovalCache();
+
     ST.remove('current_session');
     
     updateLoginUI();
@@ -2047,53 +2029,6 @@ function createFirstStaff() {
   document.head.appendChild(style);
 })();
 
-// ============================================
-// เพิ่มฟังก์ชันยืนยัน PIN ผู้จัดการ (ใส่หลังฟังก์ชัน renderStaffSettings)
-// ============================================
-
-function verifyManagerBeforeAction(callback) {
-  var html = '';
-  html += '<div class="text-center mb-16">';
-  html += '<div style="font-size:48px;margin-bottom:8px;">👑</div>';
-  html += '<div class="fw-700 fs-lg mb-4">ยืนยันสิทธิ์ผู้จัดการ</div>';
-  html += '<div class="text-muted fs-sm mb-8">กรุณาใส่ PIN ผู้จัดการ</div>';
-  html += '</div>';
-  
-  html += '<div class="form-group">';
-  html += '<label class="form-label">PIN ผู้จัดการ</label>';
-  html += '<input type="password" id="managerPinInput" placeholder="****" maxlength="4" inputmode="numeric" style="font-size:24px;text-align:center;letter-spacing:8px;">';
-  html += '</div>';
-  
-  var footer = '';
-  footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
-  footer += '<button class="btn btn-primary" onclick="submitManagerVerify(\'' + callback.toString() + '\')">ยืนยัน</button>';
-  
-  openModal('🔐 ยืนยันสิทธิ์', html, footer);
-}
-
-function submitManagerVerify(callbackStr) {
-  var pin = ($('managerPinInput') || {}).value;
-  if (!pin || pin.length !== 4) {
-    toast('PIN ต้อง 4 หลัก', 'error');
-    return;
-  }
-  
-  var staffList = ST.getStaff();
-  var isManager = false;
-  for (var i = 0; i < staffList.length; i++) {
-    if (staffList[i].pin === pin && staffList[i].role === 'manager') {
-      isManager = true;
-      break;
-    }
-  }
-  
-  if (isManager) {
-    closeMForce();
-    eval(callbackStr);
-  } else {
-    toast('PIN ผู้จัดการไม่ถูกต้อง', 'error');
-  }
-}
 function showLineNotifyGuide() {
   var html = '';
   html += '<div class="text-center mb-16">';
