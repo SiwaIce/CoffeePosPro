@@ -105,7 +105,8 @@ function notifySyncError(msg) {
 async function syncAllToFirebase() {
   if (!window.currentUser) return false;
   if (!window.userDb) return false;
-  
+
+  _lastSyncStartedAt = Date.now();
   try {
     var dataToSync = {
       menu: ST.getMenu(),
@@ -189,26 +190,38 @@ async function loadAllFromFirebase() {
   }
 }
 
+/* ห่างขั้นต่ำระหว่างรอบซิงค์จริง 30 วิ — กันงานหนัก (รวบรวม+แปลงข้อมูลทั้งร้าน) มารันถี่เกินไป
+   ตอนใช้งานติดๆกัน (ขายหลายบิลใน 1-2 นาที) โดยไม่เปลี่ยนพฤติกรรมซิงค์เอง แค่เปลี่ยนความถี่ */
+var _lastSyncStartedAt = 0;
+var SYNC_MIN_GAP_MS = 30000;
+var _syncDebounceTimer = null;
+
+function _performAutoSyncWhenReady() {
+  var elapsed = Date.now() - _lastSyncStartedAt;
+  if (elapsed < SYNC_MIN_GAP_MS) {
+    _syncDebounceTimer = setTimeout(_performAutoSyncWhenReady, SYNC_MIN_GAP_MS - elapsed);
+    return;
+  }
+  syncAllToFirebase();
+}
+
+function requestAutoSync() {
+  if (!window.currentUser) return;
+  if (_syncDebounceTimer) clearTimeout(_syncDebounceTimer);
+  _syncDebounceTimer = setTimeout(_performAutoSyncWhenReady, 10000);
+}
+
 function setupAutoSync() {
-  var syncDebounceTimer = null;
-  
   ST._onSet = function(key, val) {
-    if (!window.currentUser) return;
-    
-    if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
-    syncDebounceTimer = setTimeout(function() {
-      syncAllToFirebase();
-    }, 2000);
+    requestAutoSync();
   };
 }
 
 function startPeriodicSync() {
   if (periodicSyncInterval) clearInterval(periodicSyncInterval);
-  
+
   periodicSyncInterval = setInterval(function() {
-    if (window.currentUser) {
-      syncAllToFirebase();
-    }
+    requestAutoSync();
   }, 5 * 60 * 1000);
 }
 

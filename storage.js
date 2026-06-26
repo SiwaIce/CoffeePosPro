@@ -57,22 +57,37 @@ ST.set = function(key, val) {
 ST.remove = function(key) {
   try {
     localStorage.removeItem(ST.PREFIX + key);
+    delete _stObjCache[key];
   } catch (e) {
     console.error('[ST.remove]', e);
   }
 };
 
+/* แคชค่าที่ parse แล้วไว้ในความจำ — กันอ่าน+แปลง JSON ก้อนเดิมซ้ำๆทุกครั้งที่แตะหน้าจอ
+   หมายเหตุ: แคชแค่ "ค่าที่มีอยู่จริงแล้ว" เท่านั้น ถ้ายังไม่มี raw data จะไม่แคช (ให้ fallback
+   ของผู้เรียกแต่ละจุดทำงานถูกต้องเหมือนเดิม ไม่ใช่ fallback ของคนที่เรียกก่อน)
+   ยกเว้น key ที่รู้ว่ามีโค้ดเขียน localStorage ตรงๆโดยไม่ผ่าน ST.setObj/remove (เช่น license
+   ที่ถูกเขียนตรงในหลายไฟล์ตอน login/sync) — กัน cache ค้างค่าเก่าผิดๆ */
+var _stObjCache = {};
+var _ST_CACHE_EXCLUDE = { license: true };
+
 ST.getObj = function(key, fallback) {
+  if (!_ST_CACHE_EXCLUDE[key] && Object.prototype.hasOwnProperty.call(_stObjCache, key)) {
+    return _stObjCache[key];
+  }
   var raw = ST.get(key);
   if (!raw) return fallback !== undefined ? fallback : null;
   try {
-    return JSON.parse(raw);
+    var parsed = JSON.parse(raw);
+    if (!_ST_CACHE_EXCLUDE[key]) _stObjCache[key] = parsed;
+    return parsed;
   } catch (e) {
     return fallback !== undefined ? fallback : null;
   }
 };
 
 ST.setObj = function(key, obj) {
+  _stObjCache[key] = obj;
   ST.set(key, JSON.stringify(obj));
 };
 
