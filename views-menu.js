@@ -108,6 +108,9 @@ function renderMenuList() {
   html += '</select>';
   html += '<button class="btn btn-primary btn-sm" onclick="modalEditMenu(null)">➕ เพิ่มเมนู</button>';
     html += '<button class="btn btn-secondary btn-sm" onclick="showBatchToggleModal(\'menu\')">🔘 จัดการเมนูที่เปิดขาย</button>';
+  if (typeof FeatureManager !== 'undefined' && FeatureManager.isEnabled('pro_menu_image')) {
+    html += '<button class="btn btn-secondary btn-sm" onclick="showBulkImageLinkModal()">🖼️ แนบลิงก์รูปเมนู (รวบ)</button>';
+  }
   html += '</div>';
 
   html += '</div>';
@@ -346,6 +349,56 @@ function saveBatchToggle() {
   toast('อัปเดตสถานะเรียบร้อย', 'success');
   c.refresh();
 }
+
+// ============================================
+// แนบลิงก์รูปเมนูแบบรวบ (เฉพาะ Pro License — pro_menu_image)
+// ============================================
+function showBulkImageLinkModal() {
+  if (typeof FeatureManager === 'undefined' || !FeatureManager.isEnabled('pro_menu_image')) {
+    toast('🔒 ฟีเจอร์นี้สำหรับ Pro License เท่านั้น', 'error');
+    return;
+  }
+
+  var menuItems = ST.getMenu();
+  var html = '';
+  html += '<div class="text-muted fs-sm mb-12">วางลิงก์รูป (เช่นจาก imgbb.com) ทีละแถว แล้วกด "บันทึกทั้งหมด" ครั้งเดียว</div>';
+  html += '<div class="bulk-image-list" style="max-height:420px;overflow-y:auto;">';
+  for (var i = 0; i < menuItems.length; i++) {
+    var item = menuItems[i];
+    var imgVal = sanitize(item.image || '');
+    html += '<div class="flex gap-8 mb-8" style="align-items:center;">';
+    html += '<img class="bulk-image-thumb" data-id="' + sanitize(item.id) + '" src="' + imgVal + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover;background:var(--bg-card-hover);flex-shrink:0;" onerror="this.style.visibility=\'hidden\'">';
+    html += '<span class="fw-600 fs-sm" style="width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + sanitize(item.name) + '</span>';
+    html += '<input type="text" class="bulk-image-input" data-id="' + sanitize(item.id) + '" value="' + imgVal + '" placeholder="https://..." style="flex:1;" oninput="updateBulkImageThumb(this)">';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  var footer = '';
+  footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
+  footer += '<button class="btn btn-primary" onclick="saveBulkImageLinks()">💾 บันทึกทั้งหมด</button>';
+
+  openModal('🖼️ แนบลิงก์รูปเมนู (รวบ)', html, footer, { wide: true });
+}
+
+function updateBulkImageThumb(input) {
+  var id = input.getAttribute('data-id');
+  var thumb = document.querySelector('.bulk-image-thumb[data-id="' + id + '"]');
+  if (thumb) thumb.src = input.value;
+}
+
+function saveBulkImageLinks() {
+  var inputs = document.querySelectorAll('.bulk-image-input');
+  for (var i = 0; i < inputs.length; i++) {
+    var id = inputs[i].getAttribute('data-id');
+    var url = inputs[i].value.trim();
+    ST.updateMenuItem(id, { image: url });
+  }
+  closeMForce();
+  toast('บันทึกรูปเมนูทั้งหมดแล้ว', 'success');
+  if (typeof renderMenuView === 'function') renderMenuView();
+}
+
 function menuListSearch(val) {
   _menuListSearchDebounce(val);
 }
