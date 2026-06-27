@@ -219,7 +219,9 @@ ST._defaultCategories = function() {
     { id: 'cat_tea', name: 'ชา', icon: '🍵', sort: 2 },
     { id: 'cat_blend', name: 'ปั่น', icon: '🧋', sort: 3 },
     { id: 'cat_bakery', name: 'เบเกอรี่', icon: '🍰', sort: 4 },
-    { id: 'cat_other', name: 'อื่นๆ', icon: '🥤', sort: 5 }
+    { id: 'cat_other', name: 'อื่นๆ', icon: '🥤', sort: 5 },
+    { id: 'cat_energy', name: 'เครื่องดื่มชูกำลัง', icon: '⚡', sort: 6 },
+    { id: 'cat_alcohol', name: 'เครื่องดื่มแอลกอฮอล์', icon: '🍺', sort: 7 }
   ];
 };
 
@@ -780,7 +782,32 @@ ST.seedSampleData = function() {
     /* อื่นๆ */
     { id: 'm_water', name: 'น้ำเปล่า', catId: 'cat_other', emoji: '💧', image: 'https://i.ibb.co/j9cgz8nZ/Water.png', prices: { S: 20 }, cost: 5, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 26, created: todayStr() },
     { id: 'm_soda', name: 'น้ำอัดลม', catId: 'cat_other', emoji: '🥤', image: 'https://i.ibb.co/jvWJnZcv/Soda.png', prices: { S: 35, M: 45 }, cost: 10, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 27, created: todayStr() },
-    { id: 'm_juice', name: 'น้ำผลไม้', catId: 'cat_other', emoji: '🧃', image: 'https://i.ibb.co/vvqY5qyZ/Juice.png', prices: { S: 45, M: 55 }, cost: 15, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 28, created: todayStr() }
+    { id: 'm_juice', name: 'น้ำผลไม้', catId: 'cat_other', emoji: '🧃', image: 'https://i.ibb.co/vvqY5qyZ/Juice.png', prices: { S: 45, M: 55 }, cost: 15, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 28, created: todayStr() },
+    /* กาแฟ/ชาพิเศษ */
+    { id: 'm_orange_americano', name: 'Orange Americano (อเมริกาโน่ส้ม)', catId: 'cat_coffee', emoji: '🍊', image: 'https://i.ibb.co/dJwC2WKL/Orange-Americano.png', prices: { S: 70, M: 80, L: 90 }, cost: 22, active: true, allowDrinkType: true, availableDrinkTypes: ['dt_iced'], allowSweetLevel: true, sort: 29, created: todayStr() },
+    { id: 'm_honey_americano', name: 'Honey Americano (อเมริกาโน่น้ำผึ้ง)', catId: 'cat_coffee', emoji: '🍯', image: 'https://i.ibb.co/twBtd7sx/Honey-Americano.png', prices: { S: 70, M: 80, L: 90 }, cost: 22, active: true, allowDrinkType: true, availableDrinkTypes: ['dt_hot', 'dt_iced'], allowSweetLevel: true, sort: 30, created: todayStr() },
+    { id: 'm_peach_tea', name: 'Peach Tea (ชาพีช)', catId: 'cat_tea', emoji: '🍑', image: 'https://i.ibb.co/7thkLKvv/Peach-Tea.png', prices: { S: 60, M: 70, L: 80 }, cost: 18, active: true, allowDrinkType: true, availableDrinkTypes: ['dt_iced'], allowSweetLevel: true, sort: 31, created: todayStr() },
+    { id: 'm_milktea2', name: 'Milk Tea (ชานม)', catId: 'cat_tea', emoji: '🧋', image: 'https://i.ibb.co/gC5j9vY/Milk-Tea.png', prices: { S: 55, M: 65, L: 75 }, cost: 15, active: true, allowDrinkType: true, availableDrinkTypes: ['dt_hot', 'dt_iced'], allowSweetLevel: true, sort: 32, created: todayStr() },
+    /* ปั่น */
+    { id: 'm_cookies_cream_frappe', name: 'Cookies & Cream Frappe (คุกกี้แอนด์ครีมปั่น)', catId: 'cat_blend', emoji: '🍪', image: 'https://i.ibb.co/jZQfnJhj/Cookies-Cream-Frappe.png', prices: { S: 85, M: 95, L: 105 }, cost: 28, active: true, allowDrinkType: true, availableDrinkTypes: ['dt_blend'], allowSweetLevel: true, sort: 33, created: todayStr() },
+    { id: 'm_caramel_frappe', name: 'Caramel Frappe (คาราเมลปั่น)', catId: 'cat_blend', emoji: '🍮', image: 'https://i.ibb.co/DD4yJg9g/Caramel-Frappe.png', prices: { S: 85, M: 95, L: 105 }, cost: 28, active: true, allowDrinkType: true, availableDrinkTypes: ['dt_blend'], allowSweetLevel: true, sort: 34, created: todayStr() },
+    { id: 'm_matcha_frappe', name: 'Matcha Frappe (ชาเขียวปั่น)', catId: 'cat_blend', emoji: '🍵', image: 'https://i.ibb.co/YBLp1pxC/Matcha-Frappe.png', prices: { S: 85, M: 95, L: 105 }, cost: 28, active: true, allowDrinkType: true, availableDrinkTypes: ['dt_blend'], allowSweetLevel: true, sort: 35, created: todayStr() },
+    /* โซดา */
+    { id: 'm_strawberry_soda', name: 'Strawberry Soda (สตรอว์เบอร์รีโซดา)', catId: 'cat_other', emoji: '🍓', image: 'https://i.ibb.co/B2hQk3NN/Strawberry-Soda.png', prices: { S: 60, M: 70, L: 80 }, cost: 18, active: true, allowDrinkType: false, allowSweetLevel: true, sort: 36, created: todayStr() },
+    { id: 'm_passionfruit_soda', name: 'Passion Fruit Soda (เสาวรสโซดา)', catId: 'cat_other', emoji: '🟡', image: 'https://i.ibb.co/BKjCPwFC/Passion-Fruit-Soda.png', prices: { S: 60, M: 70, L: 80 }, cost: 18, active: true, allowDrinkType: false, allowSweetLevel: true, sort: 37, created: todayStr() },
+    { id: 'm_yuzu_soda', name: 'Yuzu Soda (ยูซุโซดา)', catId: 'cat_other', emoji: '🍋', image: 'https://i.ibb.co/RTmHV3Bt/Yuzu-Soda.png', prices: { S: 60, M: 70, L: 80 }, cost: 18, active: true, allowDrinkType: false, allowSweetLevel: true, sort: 38, created: todayStr() },
+    { id: 'm_lychee_soda', name: 'Lychee Soda (ลิ้นจี่โซดา)', catId: 'cat_other', emoji: '🍈', image: 'https://i.ibb.co/chmQ5jx6/Lychee-Soda.png', prices: { S: 60, M: 70, L: 80 }, cost: 18, active: true, allowDrinkType: false, allowSweetLevel: true, sort: 39, created: todayStr() },
+    /* น้ำอัดลมขวด */
+    { id: 'm_coke', name: 'โค้ก (Cola ขวดแก้วฉลากแดง)', catId: 'cat_other', emoji: '🥤', image: 'https://i.ibb.co/chcRFw1L/Coke.png', prices: { S: 25 }, cost: 12, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 40, created: todayStr() },
+    { id: 'm_fanta_orange', name: 'แฟนต้าน้ำส้ม (Orange Soda ขวดแก้วฉลากส้ม)', catId: 'cat_other', emoji: '🥤', image: 'https://i.ibb.co/4gnZLtbh/Orange-Fanta.png', prices: { S: 25 }, cost: 12, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 41, created: todayStr() },
+    { id: 'm_pepsi', name: 'เป๊ปซี่ (Cola ขวดแก้วฉลากน้ำเงิน)', catId: 'cat_other', emoji: '🥤', image: 'https://i.ibb.co/846X78Wd/Pepsi.png', prices: { S: 25 }, cost: 12, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 42, created: todayStr() },
+    /* เครื่องดื่มชูกำลัง */
+    { id: 'm_m150', name: 'M-150 (ขวดแก้วสีชา ฉลากเหลือง-แดง)', catId: 'cat_energy', emoji: '⚡', image: 'https://i.ibb.co/93rqMvt5/M-150.png', prices: { S: 25 }, cost: 13, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 43, created: todayStr() },
+    { id: 'm_redbull', name: 'กระทิงแดง (ขวดแก้วสีชา ฉลากน้ำเงิน-เงิน)', catId: 'cat_energy', emoji: '⚡', image: 'https://i.ibb.co/TxqjjjZb/image.png', prices: { S: 25 }, cost: 13, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 44, created: todayStr() },
+    { id: 'm_lipo', name: 'ลิโพ (ขวดแก้วสีชา ฉลากขาว-น้ำเงิน)', catId: 'cat_energy', emoji: '⚡', image: 'https://i.ibb.co/sd4bJZTq/image.png', prices: { S: 25 }, cost: 13, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 45, created: todayStr() },
+    /* แอลกอฮอล์ */
+    { id: 'm_beer_brown', name: 'เบียร์ขวดแก้วสีชา (สิงห์/ลีโอ)', catId: 'cat_alcohol', emoji: '🍺', image: 'https://i.ibb.co/WW4rR5tQ/image.png', prices: { S: 70 }, cost: 35, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 46, created: todayStr() },
+    { id: 'm_beer_green', name: 'เบียร์ขวดแก้วสีเขียว (ไฮเนเก้น/ช้าง)', catId: 'cat_alcohol', emoji: '🍺', image: 'https://i.ibb.co/8Db8Z107/image.png', prices: { S: 70 }, cost: 35, active: true, allowDrinkType: false, allowSweetLevel: false, sort: 47, created: todayStr() }
   ];
   
   ST.saveMenu(sampleMenu);
