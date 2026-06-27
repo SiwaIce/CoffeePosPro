@@ -641,7 +641,13 @@ function renderShopSettings() {
     cardRadius: 16,
     showShadow: true,
     showBorder: false,
-    textAlign: 'default'
+    textAlign: 'default',
+    infoLayout: 'split',
+    infoOpacity: 55,
+    infoBlur: 6,
+    infoSize: 'normal',
+    nameColor: '',
+    priceColor: ''
   };
 
   html += '<div class="card mb-16">';
@@ -691,6 +697,53 @@ function renderShopSettings() {
   html += '</select>';
   html += '<div class="text-muted fs-sm mt-2">ถ้าซ่อนชื่อหรือราคาอย่างใดอย่างหนึ่ง ระบบจะจัดข้อความที่เหลือกึ่งกลางให้อัตโนมัติ</div>';
   html += '</div>';
+
+  // รูปแบบแถบชื่อ/ราคา
+  html += '<div class="form-group"><label class="form-label">รูปแบบแถบชื่อ/ราคา</label>';
+  html += '<select id="designInfoLayout">';
+  html += '<option value="split"' + (design.infoLayout !== 'overlay' && design.infoLayout !== 'badge' ? ' selected' : '') + '>ชั้นแยก (ปกติ)</option>';
+  html += '<option value="overlay"' + (design.infoLayout === 'overlay' ? ' selected' : '') + '>ภาพเต็มการ์ด + แถบโปร่งแสง</option>';
+  html += '<option value="badge"' + (design.infoLayout === 'badge' ? ' selected' : '') + '>ภาพเต็มการ์ด + ป้ายลอย</option>';
+  html += '</select>';
+  html += '</div>';
+
+  // โปร่งแสง/เบลอ — เฉพาะโหมด overlay
+  html += '<div class="form-row" id="designOverlayControls" style="display:' + (design.infoLayout === 'overlay' ? '' : 'none') + ';">';
+  html += '<div class="form-group">';
+  html += '<label class="form-label">ความทึบแถบ (%)</label>';
+  html += '<input type="range" id="designInfoOpacity" min="0" max="100" step="5" value="' + (design.infoOpacity !== undefined ? design.infoOpacity : 55) + '">';
+  html += '</div>';
+  html += '<div class="form-group">';
+  html += '<label class="form-label">ระดับเบลอ (px)</label>';
+  html += '<input type="range" id="designInfoBlur" min="0" max="16" step="1" value="' + (design.infoBlur !== undefined ? design.infoBlur : 6) + '">';
+  html += '</div>';
+  html += '</div>';
+
+  // ขนาดแถบ — ไม่ใช้กับโหมดป้ายลอย (มีขนาดคงที่อยู่แล้ว)
+  html += '<div class="form-group" id="designInfoSizeWrap" style="display:' + (design.infoLayout === 'badge' ? 'none' : '') + ';">';
+  html += '<label class="form-label">ขนาดแถบ</label>';
+  html += '<select id="designInfoSize">';
+  html += '<option value="compact"' + (design.infoSize === 'compact' ? ' selected' : '') + '>กระชับ (เตี้ย)</option>';
+  html += '<option value="normal"' + (!design.infoSize || design.infoSize === 'normal' ? ' selected' : '') + '>ปานกลาง</option>';
+  html += '<option value="spacious"' + (design.infoSize === 'spacious' ? ' selected' : '') + '>กว้าง</option>';
+  html += '</select>';
+  html += '</div>';
+
+  // สีตัวหนังสือ
+  html += '<div class="form-row">';
+  html += '<div class="form-group"><label class="form-label">สีชื่อเมนู</label>';
+  html += '<div class="flex gap-8" style="align-items:center;">';
+  html += '<input type="color" id="designNameColor" value="' + (design.nameColor || '#ffffff') + '" style="width:44px;height:36px;padding:2px;" onchange="$(\'designNameColorEnabled\').value=\'1\';">';
+  html += '<button class="btn btn-secondary btn-sm" onclick="resetDesignColor(\'designNameColor\')">ค่าเริ่มต้น</button>';
+  html += '</div></div>';
+  html += '<div class="form-group"><label class="form-label">สีราคา</label>';
+  html += '<div class="flex gap-8" style="align-items:center;">';
+  html += '<input type="color" id="designPriceColor" value="' + (design.priceColor || '#f97316') + '" style="width:44px;height:36px;padding:2px;" onchange="$(\'designPriceColorEnabled\').value=\'1\';">';
+  html += '<button class="btn btn-secondary btn-sm" onclick="resetDesignColor(\'designPriceColor\')">ค่าเริ่มต้น</button>';
+  html += '</div></div>';
+  html += '</div>';
+  html += '<input type="hidden" id="designNameColorEnabled" value="' + (design.nameColor ? '1' : '0') + '">';
+  html += '<input type="hidden" id="designPriceColorEnabled" value="' + (design.priceColor ? '1' : '0') + '">';
 
   html += '<button class="btn btn-primary" onclick="savePOSCardDesign()">💾 บันทึกดีไซน์การ์ด</button>';
   html += '</div></div></div>';
@@ -824,6 +877,14 @@ function renderPOSCardPreview() {
   var showShadow = document.getElementById('designShowShadow');
   var showBorder = document.getElementById('designShowBorder');
   var textAlignSelect = document.getElementById('designTextAlign');
+  var infoLayoutSelect = document.getElementById('designInfoLayout');
+  var infoOpacityInput = document.getElementById('designInfoOpacity');
+  var infoBlurInput = document.getElementById('designInfoBlur');
+  var infoSizeSelect = document.getElementById('designInfoSize');
+  var nameColorInput = document.getElementById('designNameColor');
+  var priceColorInput = document.getElementById('designPriceColor');
+  var nameColorEnabled = document.getElementById('designNameColorEnabled');
+  var priceColorEnabled = document.getElementById('designPriceColorEnabled');
 
   var fontSize = fontSizeSelect ? fontSizeSelect.value : 'medium';
   var cardRadius = cardRadiusInput ? (parseInt(cardRadiusInput.value) || 0) : 16;
@@ -832,25 +893,62 @@ function renderPOSCardPreview() {
   var priceOn = !showPrice || showPrice.checked;
   var textAlign = textAlignSelect ? textAlignSelect.value : 'default';
   var stacked = (textAlign === 'center') || (nameOn !== priceOn);
+  var infoLayout = infoLayoutSelect ? infoLayoutSelect.value : 'split';
+  var infoOpacity = infoOpacityInput ? (parseInt(infoOpacityInput.value) / 100) : 0.55;
+  var infoBlur = infoBlurInput ? parseInt(infoBlurInput.value) : 6;
+  var infoSize = infoSizeSelect ? infoSizeSelect.value : 'normal';
+  var infoPadding = infoSize === 'compact' ? '5px 10px' : infoSize === 'spacious' ? '16px 14px' : '10px 12px';
+  var nameColor = (nameColorEnabled && nameColorEnabled.value === '1' && nameColorInput) ? nameColorInput.value : '';
+  var priceColor = (priceColorEnabled && priceColorEnabled.value === '1' && priceColorInput) ? priceColorInput.value : '';
 
-  var html = '<div style="background:var(--bg-card); border-radius:' + cardRadius + 'px; overflow:hidden;' +
+  var isFullBleed = (infoLayout === 'overlay' || infoLayout === 'badge');
+  var mediaStyle = isFullBleed ? 'aspect-ratio:1/1;' : 'aspect-ratio:4/3;';
+  var nameColorStyle = nameColor ? ('color:' + nameColor + ';') : (isFullBleed ? 'color:#fff;' : 'color:var(--text-primary);');
+  var priceColorStyle = priceColor ? ('color:' + priceColor + ';') : (isFullBleed ? 'color:#fff;' : 'color:var(--accent);');
+
+  var html = '<div style="position:relative; background:var(--bg-card); border-radius:' + cardRadius + 'px; overflow:hidden;' +
     ((!showShadow || showShadow.checked) ? ' box-shadow:0 4px 12px rgba(0,0,0,0.12);' : '') +
     ((showBorder && showBorder.checked) ? ' border:1px solid var(--border);' : '') + '">';
-  html += '<div style="aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; font-size:44px; background:linear-gradient(135deg,var(--bg-card-hover,var(--bg-card)),var(--bg-card));">☕</div>';
-  if (stacked) {
-    html += '<div style="padding:10px 12px; display:flex; flex-direction:column; align-items:center; gap:2px; text-align:center;">';
+  html += '<div style="' + mediaStyle + ' display:flex; align-items:center; justify-content:center; font-size:44px; background:linear-gradient(135deg,var(--bg-card-hover,var(--bg-card)),var(--bg-card));">☕</div>';
+
+  var infoStyle = '';
+  if (infoLayout === 'overlay') {
+    infoStyle = 'position:absolute; left:0; right:0; bottom:0; padding:' + infoPadding + '; background:rgba(0,0,0,' + infoOpacity + '); backdrop-filter:blur(' + infoBlur + 'px); -webkit-backdrop-filter:blur(' + infoBlur + 'px);';
+  } else if (infoLayout === 'badge') {
+    infoStyle = 'position:absolute; left:8px; right:8px; bottom:8px; padding:6px 10px; background:rgba(0,0,0,0.55); border-radius:10px;';
   } else {
-    html += '<div style="padding:10px 12px; display:flex; justify-content:space-between; gap:8px;">';
+    infoStyle = 'padding:' + infoPadding + ';';
   }
-  if (nameOn) html += '<span style="font-size:' + fontPx + 'px; font-weight:600;">อเมริกาโน่</span>';
-  if (priceOn) html += '<span style="font-size:' + fontPx + 'px; font-weight:800; color:var(--accent);">฿60</span>';
+  infoStyle += stacked ? ' display:flex; flex-direction:column; align-items:center; gap:2px; text-align:center;' : ' display:flex; justify-content:space-between; gap:8px;';
+
+  html += '<div style="' + infoStyle + '">';
+  if (nameOn) html += '<span style="font-size:' + fontPx + 'px; font-weight:600;' + nameColorStyle + '">อเมริกาโน่</span>';
+  if (priceOn) html += '<span style="font-size:' + fontPx + 'px; font-weight:800;' + priceColorStyle + '">฿60</span>';
   html += '</div></div>';
 
   container.innerHTML = html;
 }
 
+function resetDesignColor(inputId) {
+  var input = $(inputId);
+  var enabledFlag = $(inputId + 'Enabled');
+  if (enabledFlag) enabledFlag.value = '0';
+  if (input) input.value = (inputId === 'designNameColor') ? '#ffffff' : '#f97316';
+  renderPOSCardPreview();
+}
+
+function toggleDesignInfoLayoutControls() {
+  var layoutSelect = document.getElementById('designInfoLayout');
+  var layout = layoutSelect ? layoutSelect.value : 'split';
+  var overlayControls = document.getElementById('designOverlayControls');
+  var sizeWrap = document.getElementById('designInfoSizeWrap');
+  if (overlayControls) overlayControls.style.display = (layout === 'overlay') ? '' : 'none';
+  if (sizeWrap) sizeWrap.style.display = (layout === 'badge') ? 'none' : '';
+}
+
 function bindPOSCardPreviewEvents() {
-  var ids = ['designShowName', 'designShowPrice', 'designFontSize', 'designCardRadius', 'designShowShadow', 'designShowBorder', 'designTextAlign'];
+  var ids = ['designShowName', 'designShowPrice', 'designFontSize', 'designCardRadius', 'designShowShadow', 'designShowBorder', 'designTextAlign',
+    'designInfoLayout', 'designInfoOpacity', 'designInfoBlur', 'designInfoSize', 'designNameColor', 'designPriceColor'];
   for (var i = 0; i < ids.length; i++) {
     var el = document.getElementById(ids[i]);
     if (el && !el._previewBound) {
@@ -858,6 +956,11 @@ function bindPOSCardPreviewEvents() {
       el.addEventListener('change', renderPOSCardPreview);
       el._previewBound = true;
     }
+  }
+  var layoutSelect = document.getElementById('designInfoLayout');
+  if (layoutSelect && !layoutSelect._layoutToggleBound) {
+    layoutSelect.addEventListener('change', toggleDesignInfoLayoutControls);
+    layoutSelect._layoutToggleBound = true;
   }
 }
 
@@ -2087,6 +2190,9 @@ function savePOSCardDesign() {
   var cfg = ST.getConfig();
   var prevManageCard = (cfg.menuCardDesign && cfg.menuCardDesign.manageCard) || null;
 
+  var nameColorEnabled = ($('designNameColorEnabled') || {}).value === '1';
+  var priceColorEnabled = ($('designPriceColorEnabled') || {}).value === '1';
+
   var design = {
     showName: document.getElementById('designShowName').checked,
     showPrice: document.getElementById('designShowPrice').checked,
@@ -2094,7 +2200,13 @@ function savePOSCardDesign() {
     cardRadius: parseInt(document.getElementById('designCardRadius').value) || 16,
     showShadow: document.getElementById('designShowShadow').checked,
     showBorder: document.getElementById('designShowBorder').checked,
-    textAlign: document.getElementById('designTextAlign').value
+    textAlign: document.getElementById('designTextAlign').value,
+    infoLayout: document.getElementById('designInfoLayout').value,
+    infoOpacity: parseInt(document.getElementById('designInfoOpacity').value) || 55,
+    infoBlur: parseInt(document.getElementById('designInfoBlur').value) || 0,
+    infoSize: document.getElementById('designInfoSize').value,
+    nameColor: nameColorEnabled ? document.getElementById('designNameColor').value : '',
+    priceColor: priceColorEnabled ? document.getElementById('designPriceColor').value : ''
   };
   if (prevManageCard) design.manageCard = prevManageCard;
 
