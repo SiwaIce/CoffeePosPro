@@ -129,7 +129,13 @@ ST.getConfig = function() {
       showShadow: true,
       showBorder: false,
       textAlign: 'default',          // 'default' (ชื่อซ้าย-ราคาขวา) หรือ 'center' (กึ่งกลางทั้งหมด)
-      
+      infoLayout: 'split',           // 'split' (ชั้นแยก) / 'overlay' (ภาพเต็ม+แถบโปร่งแสง) / 'badge' (ภาพเต็ม+ป้ายลอย)
+      infoOpacity: 55,               // % ความทึบของแถบ (ใช้กับ overlay เท่านั้น)
+      infoBlur: 6,                   // px ระดับเบลอของแถบ (ใช้กับ overlay เท่านั้น)
+      infoSize: 'normal',            // 'compact' / 'normal' / 'spacious' — ความสูงของแถบ (ใช้กับ split/overlay)
+      nameColor: '',                 // สีตัวหนังสือชื่อเมนู ('' = ใช้สีตามธีม)
+      priceColor: '',                // สีตัวหนังสือราคา ('' = ใช้สีตามธีม)
+
       // ===== หน้า Manage Menu (เก็บไว้ข้างใน) — ลดความซับซ้อน เหลือเฉพาะที่ใช้บ่อย =====
       manageCard: {
         imageSize: 70,
@@ -145,12 +151,20 @@ ST.getConfig = function() {
   for (var k in defaults) {
     if (cfg[k] === undefined) cfg[k] = defaults[k];
   }
-  
-  // เผื่อ menuCardDesign ไม่มี
+
+  // เผื่อ menuCardDesign มีอยู่แล้วแต่ขาด field ใหม่ๆที่เพิ่มเข้ามาทีหลัง (เช่น account เก่าที่บันทึกไว้ก่อนมีฟีเจอร์ใหม่)
   if (!cfg.menuCardDesign) {
     cfg.menuCardDesign = defaults.menuCardDesign;
+  } else {
+    for (var dk in defaults.menuCardDesign) {
+      if (dk === 'manageCard') continue;
+      if (cfg.menuCardDesign[dk] === undefined) cfg.menuCardDesign[dk] = defaults.menuCardDesign[dk];
+    }
+    if (!cfg.menuCardDesign.manageCard) {
+      cfg.menuCardDesign.manageCard = defaults.menuCardDesign.manageCard;
+    }
   }
-  
+
   return cfg;
 };
 ST.saveConfig = function(cfg) {
