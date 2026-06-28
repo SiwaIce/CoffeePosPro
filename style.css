@@ -840,6 +840,30 @@ select { -webkit-appearance: none; appearance: none; }
 }
 .pay-method-icon { font-size: 18px; }
 
+.pay-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.pay-numpad-btn {
+  padding: 16px 0;
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+.pay-numpad-btn:active {
+  background: var(--bg-card-hover, var(--bg-card));
+  transform: scale(0.96);
+}
+.pay-numpad-clear {
+  color: var(--danger, #ef4444);
+  font-size: 14px;
+}
+
 .btn-pay {
   padding: 16px;
   font-size: 17px;
@@ -3349,7 +3373,7 @@ html {
 
 .menu-item-name {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--menu-item-name-color, var(--text-primary));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3359,9 +3383,56 @@ html {
 
 .menu-item-price {
   font-weight: 800;
-  color: var(--accent);
+  color: var(--menu-item-price-color, var(--accent));
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+/* ขนาดแถบ (ความสูง) — ใช้กับโหมด split/overlay เท่านั้น (badge มีขนาดคงที่ของตัวเอง) */
+.menu-item[data-info-size="compact"] .menu-item-info { padding: 5px 10px; }
+.menu-item[data-info-size="normal"] .menu-item-info { padding: 10px 12px; }
+.menu-item[data-info-size="spacious"] .menu-item-info { padding: 16px 14px; }
+
+/* โหมดภาพเต็มการ์ด (overlay / badge) — รูปขยายเต็มการ์ด แถบ/ป้ายลอยทับด้านล่าง */
+.menu-item[data-info-layout="overlay"] .menu-item-media,
+.menu-item[data-info-layout="badge"] .menu-item-media {
+  flex: 1;
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.menu-item[data-info-layout="overlay"] .menu-item-info,
+.menu-item[data-info-layout="badge"] .menu-item-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+}
+
+.menu-item[data-info-layout="overlay"] .menu-item-info {
+  background: rgba(0, 0, 0, var(--info-opacity, 0.55));
+  backdrop-filter: blur(var(--info-blur, 6px));
+  -webkit-backdrop-filter: blur(var(--info-blur, 6px));
+}
+
+.menu-item[data-info-layout="badge"] .menu-item-info {
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.menu-item[data-info-layout="overlay"] .menu-item-name,
+.menu-item[data-info-layout="badge"] .menu-item-name {
+  color: var(--menu-item-name-color, #fff);
+}
+
+.menu-item[data-info-layout="overlay"] .menu-item-price,
+.menu-item[data-info-layout="badge"] .menu-item-price {
+  color: var(--menu-item-price-color, #fff);
 }
 
 .menu-item[data-font="small"] .menu-item-name,

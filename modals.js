@@ -160,7 +160,7 @@ function modalAddToCart(menuItem) {
   html += '<div class="flex gap-12 mb-12" style="align-items:center;">';
   html += '<span style="font-size:36px;">' + (menuItem.emoji || '☕') + '</span>';
   html += '<div>';
-  html += '<div class="fw-700 fs-lg">' + sanitize(menuItem.name) + '</div>';
+  html += '<div class="fw-700 fs-lg">' + sanitize(getMenuDisplayName(menuItem)) + '</div>';
   html += '<div class="text-accent fw-700">' + formatMoneySign(prices[defaultSize] || 0) + '+</div>';
   html += '</div>';
   html += '</div>';
@@ -277,7 +277,7 @@ function modalAddToCart(menuItem) {
 
   /* Hidden data */
   html += '<input type="hidden" id="modalCartMenuId" value="' + sanitize(menuItem.id) + '">';
-  html += '<input type="hidden" id="modalCartMenuName" value="' + sanitize(menuItem.name) + '">';
+  html += '<input type="hidden" id="modalCartMenuName" value="' + sanitize(getMenuDisplayName(menuItem)) + '">';
   html += '<input type="hidden" id="modalCartSingleSize" value="' + (singleSize ? defaultSize : '') + '">';
   html += '<input type="hidden" id="modalCartAllowSweet" value="' + (allowSweet ? '1' : '0') + '">';
   html += '<input type="hidden" id="modalCartAllowDrinkType" value="' + (allowDrinkType ? '1' : '0') + '">';
@@ -286,7 +286,7 @@ function modalAddToCart(menuItem) {
   footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
   footer += '<button class="btn btn-primary" onclick="confirmAddToCart()" style="flex:1;">🛒 เพิ่มลงตะกร้า</button>';
 
-  openModal(sanitize(menuItem.name), html, footer, { noAutoFocus: true });
+  openModal(sanitize(getMenuDisplayName(menuItem)), html, footer, { noAutoFocus: true });
 
   setTimeout(function() {
     updateCartModalTotal();
@@ -578,7 +578,7 @@ function modalPayment(cartItems, subtotal, discount, discountType) {
   html += '<div id="cashSection">';
   html += '<div class="form-group">';
   html += '<label class="form-label">เงินที่รับ</label>';
-  html += '<input type="number" id="payReceived" inputmode="numeric" min="0" value="' + grandTotal + '" placeholder="0" oninput="calcChange()" style="font-size:24px;text-align:center;font-weight:800;">';
+  html += '<input type="text" id="payReceived" inputmode="none" readonly value="' + grandTotal + '" placeholder="0" onclick="openPayNumpad()" style="font-size:24px;text-align:center;font-weight:800;cursor:pointer;">';
   html += '</div>';
 
   html += '<div class="flex flex-wrap gap-6 mb-16">';
@@ -588,6 +588,21 @@ function modalPayment(cartItems, subtotal, discount, discountType) {
     if (quickList[qa] <= 0 || quickList[qa] === grandTotal) continue;
     html += '<button class="btn btn-secondary btn-sm" onclick="setPayReceived(' + quickList[qa] + ')">' + formatMoneySign(quickList[qa]) + '</button>';
   }
+  html += '</div>';
+
+  html += '<div id="payNumpad" class="pay-numpad" style="display:none;">';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'1\')">1</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'2\')">2</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'3\')">3</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'4\')">4</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'5\')">5</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'6\')">6</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'7\')">7</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'8\')">8</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'9\')">9</button>';
+  html += '<button type="button" class="pay-numpad-btn pay-numpad-clear" onclick="npClear()">ลบ</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npPress(\'0\')">0</button>';
+  html += '<button type="button" class="pay-numpad-btn" onclick="npBackspace()">⌫</button>';
   html += '</div>';
 
   html += '<div class="card-glass text-center p-16">';
@@ -648,7 +663,7 @@ function modalPayment(cartItems, subtotal, discount, discountType) {
   footer += '<button class="btn btn-secondary" onclick="closeMForce()">ยกเลิก</button>';
   footer += '<button class="btn btn-success btn-lg" onclick="confirmPayment()" style="flex:1;">✅ ยืนยันชำระเงิน</button>';
 
-  openModal('💳 ชำระเงิน', html, footer);
+  openModal('💳 ชำระเงิน', html, footer, { noAutoFocus: true });
 
   setTimeout(function() {
     calcChange();
@@ -678,6 +693,7 @@ function selectPayMethod(el) {
   if (cashSection) cashSection.style.display = method === 'cash' ? '' : 'none';
   if (ppSection) ppSection.style.display = method === 'promptpay' ? '' : 'none';
   if (tfSection) tfSection.style.display = method === 'transfer' ? '' : 'none';
+  if (method !== 'cash') closePayNumpad();
 }
 
 function selectModalChannel(el) {
@@ -701,7 +717,46 @@ function setPayReceived(amount) {
     el.value = amount;
     calcChange();
   }
+  closePayNumpad();
   vibrate(20);
+}
+
+function openPayNumpad() {
+  var pad = $('payNumpad');
+  if (!pad) return;
+  pad.style.display = pad.style.display === 'none' ? 'grid' : 'none';
+  vibrate(10);
+}
+
+function closePayNumpad() {
+  var pad = $('payNumpad');
+  if (pad) pad.style.display = 'none';
+}
+
+function npPress(d) {
+  var el = $('payReceived');
+  if (!el) return;
+  var cur = (el.value === '0' || el.value === '') ? '' : el.value;
+  if ((cur + d).length > 6) return;
+  el.value = cur + d;
+  calcChange();
+  vibrate(10);
+}
+
+function npBackspace() {
+  var el = $('payReceived');
+  if (!el) return;
+  el.value = el.value.slice(0, -1);
+  calcChange();
+  vibrate(10);
+}
+
+function npClear() {
+  var el = $('payReceived');
+  if (!el) return;
+  el.value = '';
+  calcChange();
+  vibrate(10);
 }
 
 function calcChange() {
@@ -933,9 +988,15 @@ function modalEditMenu(item) {
 
   var html = '';
 
+  html += '<div class="form-row">';
   html += '<div class="form-group">';
-  html += '<label class="form-label">ชื่อเมนู *</label>';
+  html += '<label class="form-label">ชื่อเมนู (ไทย) *</label>';
   html += '<input type="text" id="fMenuName" value="' + sanitize(m.name || '') + '" placeholder="เช่น อเมริกาโน่">';
+  html += '</div>';
+  html += '<div class="form-group">';
+  html += '<label class="form-label">ชื่อเมนู (อังกฤษ)</label>';
+  html += '<input type="text" id="fMenuNameEn" value="' + sanitize(m.nameEn || '') + '" placeholder="เช่น Americano">';
+  html += '</div>';
   html += '</div>';
 
   html += '<div class="form-row">';
@@ -1217,6 +1278,7 @@ function saveMenuFromModal() {
 
   var data = {
     name: name,
+    nameEn: (($('fMenuNameEn') || {}).value || '').trim(),
     catId: ($('fMenuCat') || {}).value || '',
     emoji: ($('fMenuEmoji') || {}).value || '☕',
     prices: prices,
