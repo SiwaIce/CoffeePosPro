@@ -307,7 +307,7 @@ function renderFavoritesRow() {
     html += '<div class="fav-item" onclick="onMenuItemClick(\'' + sanitize(it.id) + '\')">';
     if (cartQty > 0) html += '<span class="fav-badge">' + cartQty + '</span>';
     html += '<span class="fav-emoji">' + (it.emoji || '☕') + '</span>';
-    html += '<span class="fav-name">' + sanitize(it.name) + '</span>';
+    html += '<span class="fav-name">' + sanitize(getMenuDisplayName(it)) + '</span>';
     html += '<span class="fav-price">' + formatMoneySign(basePrice) + '</span>';
     html += '</div>';
   }
@@ -424,6 +424,12 @@ function renderMenuItems() {
   // ถ้าแสดงแค่ชื่อหรือแค่ราคาอย่างเดียว ให้จัดกึ่งกลางอัตโนมัติ
   var stacked = (design.textAlign === 'center') || (showName !== showPrice);
 
+  var infoLayout = design.infoLayout || 'split';
+  var infoSize = design.infoSize || 'normal';
+  var infoOpacity = (design.infoOpacity !== undefined ? design.infoOpacity : 55) / 100;
+  var infoBlur = design.infoBlur !== undefined ? design.infoBlur : 6;
+  var colorVarStyle = '--menu-item-name-color:' + (design.nameColor || '') + '; --menu-item-price-color:' + (design.priceColor || '') + ';';
+
   var html = '';
   for (var m = 0; m < items.length; m++) {
     var it = items[m];
@@ -445,8 +451,12 @@ function renderMenuItems() {
     dataAttrs += ' data-font="' + fontSize + '"';
     dataAttrs += ' data-shadow="' + showShadow + '"';
     dataAttrs += ' data-border="' + showBorder + '"';
+    dataAttrs += ' data-info-layout="' + infoLayout + '"';
+    if (infoLayout !== 'badge') dataAttrs += ' data-info-size="' + infoSize + '"';
 
-    html += '<div class="menu-item anim-fadeUp' + (soldOut ? ' is-soldout' : '') + '"' + dataAttrs + ' style="--card-radius: ' + cardRadius + 'px;" onclick="onMenuItemClick(\'' + sanitize(it.id) + '\')">';
+    var cardStyle = '--card-radius: ' + cardRadius + 'px; --info-opacity: ' + infoOpacity + '; --info-blur: ' + infoBlur + 'px; ' + colorVarStyle;
+
+    html += '<div class="menu-item anim-fadeUp' + (soldOut ? ' is-soldout' : '') + '"' + dataAttrs + ' style="' + cardStyle + '" onclick="onMenuItemClick(\'' + sanitize(it.id) + '\')">';
 
     // ปุ่มโปรด (⭐) — มุมซ้ายบนเสมอ
     var isFav = ST.isFavorite(it.id);
@@ -485,7 +495,7 @@ function renderMenuItems() {
 
     // ชื่อและราคา
     html += '<div class="menu-item-info' + (stacked ? ' menu-item-info--stacked' : '') + '">';
-    if (showName) html += '<div class="menu-item-name">' + sanitize(it.name) + '</div>';
+    if (showName) html += '<div class="menu-item-name">' + sanitize(getMenuDisplayName(it)) + '</div>';
     if (showPrice) html += '<div class="menu-item-price">' + formatMoneySign(basePrice) + '</div>';
     html += '</div>';
 
@@ -565,7 +575,7 @@ function onMenuItemClick(menuId) {
     var cartItem = {
       id: genId('ci'),
       menuId: item.id,
-      name: item.name,
+      name: getMenuDisplayName(item),
       size: sizeName,
       drinkType: defDT,
       drinkTypeName: defDTName,
@@ -582,7 +592,7 @@ function onMenuItemClick(menuId) {
       note: ''
     };
     addToCart(cartItem);
-    toast(item.name + ' เพิ่มแล้ว', 'success', 1200);
+    toast(getMenuDisplayName(item) + ' เพิ่มแล้ว', 'success', 1200);
     return;
   }
   modalAddToCart(item);
@@ -1801,7 +1811,7 @@ function quickAddToCart(menuId, btn) {
   var cartItem = {
     id: genId('ci'),
     menuId: menu.id,
-    name: menu.name,
+    name: getMenuDisplayName(menu),
     size: defaultSize,
     drinkType: drinkTypeId,
     drinkTypeName: drinkTypeName,
@@ -1822,7 +1832,7 @@ function quickAddToCart(menuId, btn) {
   addToCart(cartItem);
   
   // 6. แจ้งเตือน
-  toast('➕ ' + menu.name + ' x1', 'success', 1200);
+  toast('➕ ' + getMenuDisplayName(menu) + ' x1', 'success', 1200);
   vibrate(30);
   if (typeof playSound === 'function') playSound('add');
 }

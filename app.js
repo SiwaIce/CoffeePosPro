@@ -1656,4 +1656,17 @@ function setOrientationLock(mode) {
 
 setTimeout(function() { applyOrientationLock(); }, 500);
 
+function setMenuNameLang(lang) {
+  var cfg = ST.getConfig();
+  cfg.menuNameLang = lang;
+  ST.saveConfig(cfg);
+
+  if (typeof APP !== 'undefined') {
+    if (APP.currentView === 'pos' && typeof renderPOSView === 'function') renderPOSView();
+    if (APP.currentView === 'menu' && typeof renderMenuView === 'function') renderMenuView();
+  }
+
+  toast(lang === 'en' ? '🇬🇧 แสดงชื่อเมนูเป็นภาษาอังกฤษแล้ว' : '🇹🇭 แสดงชื่อเมนูเป็นภาษาไทยแล้ว', 'success');
+}
+
 console.log('[app.js] loaded');

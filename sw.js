@@ -1,80 +1,87 @@
-// ================================================================
-// SERVICE WORKER — DJI Sales Assistant
-// กลยุทธ์: network-first (ได้โค้ดล่าสุดเสมอเมื่อออนไลน์) + cache fallback (ออฟไลน์)
-// ================================================================
-var CACHE_VERSION = 'dji-sales-v48';   // ⬅️ bump เลขนี้ทุกครั้งที่ deploy โค้ดใหม่ (v1 → v2 → v3 ...)
+/* ============================================
+   COFFEE POS — SERVICE WORKER
+   Offline-first + Cache
+   ============================================ */
 
-// app shell ที่จะ precache (relative path → ทำงานใต้ /work-assistant/)
-var APP_SHELL = [
+var CACHE_NAME = 'coffee-pos-v19';
+var urlsToCache = [
   './',
   './index.html',
-  './manifest.json',
   './style.css',
   './utils.js',
   './storage.js',
-  './products.js',
   './firebase-sync.js',
-  './views-today.js',
+  './app.js',
+  './views-pos.js',
+  './views-menu.js',
+  './views-orders.js',
+  './views-report.js',
+  './views-stock.js',
   './modals.js',
-  './views-dealer.js',
-  './views-pipeline.js',
-  './views-visit.js',
-  './views-work.js',
-  './views-prospects.js',
-  './views-quotation.js',
-  './kanban.js',
-  './export.js',
   './admin.js',
-  './features.js',
-  './audit.js',
-  './views-kpi.js',
-  './app.js'
+  './export.js',
+  './manifest.json'
 ];
 
-// ---- INSTALL: precache (ทนต่อไฟล์ที่ 404 — ไม่ทำให้ install ล้ม) ----
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then(function(cache) {
-      return Promise.allSettled(
-        APP_SHELL.map(function(url) { return cache.add(url); })
-      );
-    }).then(function() { return self.skipWaiting(); })
+/* Install */
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.addAll(urlsToCache);
+    })
   );
+  self.skipWaiting();
 });
 
-// ---- ACTIVATE: ลบ cache เวอร์ชันเก่า ----
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(keys) {
+/* Activate — clean old caches */
+self.addEventListener('activate', function(e) {
+  e.waitUntil(
+    caches.keys().then(function(names) {
       return Promise.all(
-        keys.filter(function(k) { return k !== CACHE_VERSION; })
-            .map(function(k) { return caches.delete(k); })
+        names.filter(function(n) {
+          return n !== CACHE_NAME;
+        }).map(function(n) {
+          return caches.delete(n);
+        })
       );
-    }).then(function() { return self.clients.claim(); })
+    })
   );
+  self.clients.claim();
 });
 
-// ---- FETCH: network-first สำหรับ same-origin GET เท่านั้น ----
-self.addEventListener('fetch', function(event) {
-  var req = event.request;
+/* Fetch — cache first, fallback network */
+self.addEventListener('fetch', function(e) {
+  /* Skip non-GET and Firebase requests */
+  if (e.request.method !== 'GET') return;
+  var url = e.request.url;
+  if (url.indexOf('firestore.googleapis.com') !== -1) return;
+  if (url.indexOf('googleapis.com') !== -1) return;
+  if (url.indexOf('gstatic.com') !== -1) return;
 
-  // ข้าม: ไม่ใช่ GET, หรือ cross-origin (Firebase / gstatic / cdn) → ปล่อยผ่านตรง
-  if (req.method !== 'GET') return;
-  var url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;
-
-  event.respondWith(
-    fetch(req).then(function(res) {
-      // เก็บสำเนาลง cache (เฉพาะ response ที่ใช้ได้)
-      if (res && res.status === 200 && res.type === 'basic') {
-        var copy = res.clone();
-        caches.open(CACHE_VERSION).then(function(cache) { cache.put(req, copy); });
+  e.respondWith(
+    caches.match(e.request).then(function(cached) {
+      if (cached) {
+        /* Return cache, also fetch fresh copy */
+        var fetchPromise = fetch(e.request).then(function(response) {
+          if (response && response.status === 200) {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) {
+              cache.put(e.request, clone);
+            });
+          }
+          return response;
+        }).catch(function() {});
+        return cached;
       }
-      return res;
-    }).catch(function() {
-      // ออฟไลน์ → ใช้ cache; ถ้าเป็น navigation และไม่มีใน cache ให้ fallback index.html
-      return caches.match(req).then(function(cached) {
-        return cached || caches.match('./index.html');
+      /* No cache — fetch from network */
+      return fetch(e.request).then(function(response) {
+        if (response && response.status === 200) {
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(e.request, clone);
+          });
+        }
+        return response;
       });
     })
   );

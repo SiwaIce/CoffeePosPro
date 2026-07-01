@@ -155,7 +155,7 @@ function filterMenuItems(allItems) {
     /* Category filter */
     if (MENUVIEW.selectedCat !== 'all' && it.catId !== MENUVIEW.selectedCat) continue;
     /* Search filter */
-    if (MENUVIEW.searchQuery && !searchMatch(it.name, MENUVIEW.searchQuery)) continue;
+    if (MENUVIEW.searchQuery && !searchMatch(it.name, MENUVIEW.searchQuery) && !searchMatch(it.nameEn || '', MENUVIEW.searchQuery)) continue;
     items.push(it);
   }
 
@@ -205,11 +205,11 @@ function renderMenuManageCard(item, cats) {
   // บรรทัดที่ 1: ชื่อ + สวิตช์
   if (statusInline) {
     html += '<div class="menu-manage-name" style="' + nameStyle + '">';
-    html += '<span class="menu-manage-name-text" style="' + textAlignStyle + '">' + sanitize(item.name) + '</span>';
+    html += '<span class="menu-manage-name-text" style="' + textAlignStyle + '">' + sanitize(getMenuDisplayName(item)) + '</span>';
     html += toggleHtml;
     html += '</div>';
   } else {
-    html += '<div class="menu-manage-name" style="' + nameStyle + ' ' + textAlignStyle + '">' + sanitize(item.name) + '</div>';
+    html += '<div class="menu-manage-name" style="' + nameStyle + ' ' + textAlignStyle + '">' + sanitize(getMenuDisplayName(item)) + '</div>';
     html += '<div class="menu-manage-status-row" style="' + textAlignStyle + '">';
     html += toggleHtml;
     html += '</div>';
@@ -309,7 +309,7 @@ function showBatchToggleModal(entityType) {
     html += '<div class="batch-toggle-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">';
     html += '<div class="flex gap-12" style="align-items:center;">';
     html += '<input type="checkbox" class="batch-menu-checkbox" data-id="' + sanitize(item.id) + '" ' + (isActive ? 'checked' : '') + ' style="width:20px;height:20px;">';
-    html += '<span class="fw-600">' + sanitize(item.name) + '</span>';
+    html += '<span class="fw-600">' + sanitize(getMenuDisplayName(item)) + '</span>';
     html += '</div>';
     html += '<span class="menu-manage-status ' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'เปิด' : 'ปิด') + '</span>';
     html += '</div>';
@@ -368,7 +368,7 @@ function showBulkImageLinkModal() {
     var imgVal = sanitize(item.image || '');
     html += '<div class="flex gap-8 mb-8" style="align-items:center;">';
     html += '<img class="bulk-image-thumb" data-id="' + sanitize(item.id) + '" src="' + imgVal + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover;background:var(--bg-card-hover);flex-shrink:0;" onerror="this.style.visibility=\'hidden\'">';
-    html += '<span class="fw-600 fs-sm" style="width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + sanitize(item.name) + '</span>';
+    html += '<span class="fw-600 fs-sm" style="width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + sanitize(getMenuDisplayName(item)) + '</span>';
     html += '<input type="text" class="bulk-image-input" data-id="' + sanitize(item.id) + '" value="' + imgVal + '" placeholder="https://..." style="flex:1;" oninput="updateBulkImageThumb(this)">';
     html += '</div>';
   }

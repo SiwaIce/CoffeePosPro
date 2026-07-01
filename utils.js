@@ -329,6 +329,14 @@ function searchMatch(text, query) {
   return t.indexOf(q) !== -1;
 }
 
+/* === MENU NAME LANGUAGE === */
+function getMenuDisplayName(item) {
+  if (!item) return '';
+  var cfg = ST.getConfig();
+  if (cfg.menuNameLang === 'en' && item.nameEn) return item.nameEn;
+  return item.name;
+}
+
 /* === NUMBER HELPERS === */
 function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));

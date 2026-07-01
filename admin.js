@@ -587,6 +587,18 @@ function renderShopSettings() {
   html += '</div>';
 
   html += '<div class="card mb-16">';
+  html += '<div class="card-header"><div class="card-title">🌐 ภาษาเมนู</div></div>';
+  html += '<div class="text-muted fs-sm mb-12">เลือกภาษาที่จะใช้แสดงชื่อเมนูในหน้า POS / จัดการเมนู — เมนูที่ไม่มีชื่อภาษาอังกฤษจะแสดงชื่อไทยแทนโดยอัตโนมัติ</div>';
+  html += '<div class="form-group">';
+  html += '<label class="form-label">แสดงชื่อเมนูเป็น</label>';
+  html += '<select id="cfgMenuNameLang" onchange="setMenuNameLang(this.value)">';
+  html += '<option value="th"' + (cfg.menuNameLang !== 'en' ? ' selected' : '') + '>🇹🇭 ภาษาไทย</option>';
+  html += '<option value="en"' + (cfg.menuNameLang === 'en' ? ' selected' : '') + '>🇬🇧 ภาษาอังกฤษ</option>';
+  html += '</select>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<div class="card mb-16">';
   html += '<div class="card-header"><div class="card-title">📱 QR PromptPay</div></div>';
   html += '<div class="form-group">';
   html += '<label class="toggle-wrap" onclick="toggleToggle(this)">';
